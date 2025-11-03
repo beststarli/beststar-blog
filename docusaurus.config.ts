@@ -5,10 +5,9 @@ import social from './data/social'
 
 const config: Config = {
   title: '嘉星的博客',
-  tagline: '让行动超过思考',
-  url: 'https://beststar-blog.vercel.app/', // TODO: 替换为博客域名
+  url: 'https://beststar-blog.vercel.app/',
   baseUrl: '/',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/beststar.jpg',
   organizationName: 'beststarli',
   projectName: 'blog',
   customFields: {
