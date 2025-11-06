@@ -56,7 +56,7 @@ export const Tags: Record<TagType, Tag> = {
   },
   large: {
     label: '大型',
-    description: '大型项目，原多于平均数的页面',
+    description: '大型项目，远多于平均数的页面',
     color: '#8c2f00',
   },
   personal: {
@@ -70,6 +70,14 @@ export const TagList = Object.keys(Tags) as TagType[]
 
 export const projects: Project[] = [
   {
+    title: '江苏省长江崩岸预警应用系统',
+    description: '针对长江民主沙岸段崩岸风险预警监测与报警系统',
+    preview: '/img/tech/bengan.png',
+    website: '',
+    tags: ['design', 'product', 'large', 'favorite'],
+    type: 'web',
+  },
+  {
     title: '交互式水动力建模与模拟平台',
     description: '支持香港北部都会区建设的城市洪涝灾害仿真模拟系统',
     preview: '/img/tech/gridman.png',
@@ -79,16 +87,7 @@ export const projects: Project[] = [
     type: 'web',
   },
   {
-    title: 'React项目脚手架',
-    description: '封装了TailwindCSS, shadcn/ui, Vite, TypeScript的React项目脚手架',
-    preview: '/img/tech/scaffold.png',
-    website: 'https://github.com/beststarli/scaffold',
-    source: 'https://github.com/beststarli/scaffold',
-    tags: ['opensource', 'personal', 'favorite'],
-    type: 'personal',
-  },
-  {
-    title: 'AutoWater洪水管网演示系统',
+    title: 'AutoWater洪水管网可视化演示系统',
     description: '结合洪水演进、三维地图瓦片、管道管网的可视化演示系统',
     preview: '/img/tech/autowater.png',
     website: 'https://github.com/beststarli/AutoWaterNeo',
@@ -104,6 +103,33 @@ export const projects: Project[] = [
     source: 'https://github.com/beststarli/verdandi',
     tags: ['opensource', 'personal'],
     type: 'app',
+  },
+  {
+    title: 'React项目脚手架',
+    description: '封装了TailwindCSS, shadcn/ui, Vite, TypeScript的开箱即用React项目脚手架',
+    preview: '/img/tech/scaffold.png',
+    website: 'https://react-scaffold-orcin.vercel.app/',
+    source: 'https://github.com/beststarli/scaffold',
+    tags: ['opensource', 'personal', 'favorite'],
+    type: 'personal',
+  },
+  {
+    title: 'OpenGMS介绍页',
+    description: '基于React和TailwindCSS搭建的前端技术栈练习Demo',
+    preview: '/img/tech/ogmsintro.png',
+    website: 'https://ogms-intro.vercel.app/',
+    source: 'https://github.com/beststarli/ogms-intro',
+    tags: ['opensource', 'personal', 'design'],
+    type: 'personal',
+  },
+  {
+    title: '个人留言板',
+    description: '基于Vue和TailwindCSS搭建的留言板,学习从前端到后端再到部署全流程',
+    preview: '/img/tech/liuyan.png',
+    website: 'https://github.com/beststarli/comments-vue',
+    source: 'https://github.com/beststarli/comments-vue',
+    tags: ['opensource', 'personal', 'design'],
+    type: 'personal',
   },
 ]
 

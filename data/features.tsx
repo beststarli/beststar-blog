@@ -36,7 +36,7 @@ const FEATURES: FeatureItem[] = [
     title: <Translate id="homepage.feature.openSource">开源贡献</Translate>,
     description: (
       <Translate id="homepage.feature.openSource.desc">
-        积极参与开源社区，分享优质项目
+        积极参与开源社区，分享自己的项目
       </Translate>
     ),
     header: <OpenSourceSvg className="h-auto w-full" height={150} role="img" />,

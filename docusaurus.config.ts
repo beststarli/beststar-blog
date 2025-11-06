@@ -25,20 +25,25 @@ const config: Config = {
     metadata: [
       {
         name: 'author',
-        content: 'Your Name',
+        content: '嘉星',
       },
       {
         name: 'keywords',
-        content: 'blog, javascript, typescript, node, react, web',
+        content: '博客, 技术, 生活, 编程, 项目',
       },
     ],
+    colorMode: {
+      defaultMode: 'light',
+      disableSwitch: false,
+      respectPrefersColorScheme: true, // 跟随系统主题
+    },
     docs: {
       sidebar: {
         hideable: true,
       },
     },
     navbar: {
-      title: 'My Blog',
+      title: 'BestStar Blog',
       logo: {
         alt: '嘉星',
         src: 'img/beststar.jpg',

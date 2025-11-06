@@ -1,3 +1,27 @@
 .darkNavbarColorModeToggle:hover {
   background: var(--ifm-color-gray-800);
 }
+
+.toggleButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--ifm-navbar-link-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggleButton:hover {
+  background: var(--ifm-color-emphasis-200);
+  transform: scale(1.1);
+}
+
+.toggleButton:active {
+  transform: scale(0.95);
+}

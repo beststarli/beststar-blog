@@ -8,14 +8,12 @@ import Link from '@docusaurus/Link'
 import { motion } from 'motion/react'
 import styles from './styles.module.css'
 
-const TITLE = '友链'
-const DESCRIPTION = '有很多良友，胜于有很多财富。'
-// TODO: 修改为你的 GitHub 仓库地址
+const TITLE = '友情链接'
+const DESCRIPTION = '是良友，更是老师'
 const ADD_FRIEND_URL = 'https://github.com/beststarli/beststar-blog/edit/main/data/friends.tsx'
-// TODO: 修改为你的网站信息
 const SITE_INFO = `title: '嘉星的博客'
 description: '让行动超越思考'
-website: 'https://beststar-blog.vercel.app'
+website: 'https://www.beststarli.cn/'
 avatar: 'https://beststar-blog.vercel.app/img/logo.svg'
 `
 const friends = Friends
