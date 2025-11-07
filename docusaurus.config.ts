@@ -176,7 +176,31 @@ const config: Config = {
       theme: 'light',
       darkTheme: 'dark_dimmed',
     } satisfies Partial<GiscusConfig>,
+    // Mermaid 图表配置
+    mermaid: {
+      theme: { light: 'neutral', dark: 'dark' },
+    },
   } satisfies Preset.ThemeConfig,
+
+  // Markdown 配置
+  markdown: {
+    mermaid: true,
+  },
+
+  // 主题配置
+  themes: [
+    '@docusaurus/theme-mermaid',
+    [
+      require.resolve('@easyops-cn/docusaurus-search-local'),
+      {
+        indexPages: true,
+        hashed: true,
+        language: ['en', 'zh'],
+        highlightSearchTermsOnTargetPage: true,
+        explicitSearchResultPath: true,
+      },
+    ],
+  ],
 
   // 预设配置：使用 Docusaurus 经典主题预设
   presets: [
