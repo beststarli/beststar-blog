@@ -20,7 +20,7 @@ const friends = Friends
 
 function SiteInfo() {
   return (
-    <div className="w-96 rounded-[var(--ifm-pre-border-radius)] border border-solid border-black border-opacity-10 text-left text-sm leading-none">
+    <div className="w-96 rounded-[var(--ifm-pre-border-radius)] border border-solid border-black/10 text-left text-sm leading-none">
       <CodeBlock language="yaml" title="本站信息" className={styles.codeBlock}>
         {SITE_INFO}
       </CodeBlock>
@@ -41,7 +41,10 @@ function FriendHeader() {
 }
 
 const FriendCard = memo(({ friend }: { friend: Friend }) => (
-  <li className="relative flex min-h-24 cursor-pointer flex-row items-center overflow-hidden rounded-card bg-card px-4 py-1 transition-all duration-300 hover:translate-y-[-5px] hover:scale-[1.01] hover:bg-[rgba(229,231,235,0.3)] hover:shadow-[0_3px_10px_0_rgba(164,190,217,0.3)]">
+  <li
+    className="relative flex min-h-24 cursor-pointer flex-row items-center overflow-hidden rounded-card bg-card px-4 py-1 transition-all duration-300 hover:translate-y-[-5px] hover:scale-[1.01] hover:bg-[rgba(229,231,235,0.3)] hover:shadow-[0_3px_10px_0_rgba(164,190,217,0.3)]"
+    onClick={() => window.open(friend.website, '_blank', 'noopener,noreferrer')}
+  >
     <img
       src={typeof friend.avatar === 'string' ? friend.avatar : friend.avatar}
       alt={friend.title}
@@ -51,8 +54,9 @@ const FriendCard = memo(({ friend }: { friend: Friend }) => (
       <div className="mb-1 flex items-center">
         <h4 className="mb-0 flex-1">
           <Link
-            to={friend.website}
-            rel=""
+            href={friend.website}
+            target="_blank"
+            rel="noopener noreferrer"
             className="from-ifm-color-primary to-ifm-color-primary bg-gradient-to-b bg-[length:0%_1px] bg-[0%_100%] bg-no-repeat no-underline transition-[background-size] duration-200 ease-out hover:bg-[length:100%_1px] focus:bg-[length:100%_1px]"
           >
             {friend.title}
