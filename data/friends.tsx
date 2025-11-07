@@ -69,4 +69,10 @@ export const Friends: Friend[] = [
     website: 'https://github.com/Flittly',
     avatar: '/img/friend/Flittly.png',
   },
+  {
+    title: 'Lingkai Shi',
+    description: '码上自由',
+    website: 'https://paxton-miller.github.io',
+    avatar: '/img/friend/lingkai.png',
+  },
 ]
