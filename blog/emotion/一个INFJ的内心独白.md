@@ -1,6 +1,6 @@
 ---
 slug: an-emotional-half-year
-title: 一个INFJ的内心活动
+title: 一个INFJ的内心独白
 date: 2025-11-06
 authors: [beststar]
 tags: [随笔, 生活]

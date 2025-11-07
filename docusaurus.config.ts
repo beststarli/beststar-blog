@@ -5,23 +5,29 @@ import social from './data/social'
 import type { GiscusConfig } from './src/components/Comment'
 
 const config: Config = {
+
   title: '嘉星的博客',
-  url: 'https://beststar-blog.vercel.app/',
+  url: 'https://www.beststarli.cn/',
   baseUrl: '/',
   favicon: 'img/beststar.jpg',
   organizationName: 'beststarli',
-  projectName: 'blog',
+  projectName: 'beststar-blog',
+  // 自定义字段
   customFields: {
     bio: '让行动超越思考',
     description: '欢迎访问我的博客，这是一个基于 Docusaurus 构建的个人博客，主要分享技术文章、项目经验和生活碎碎念。',
   },
 
+  // 启用 Docusaurus v4 新特性
   future: {
     v4: true,
   },
 
+  // 主题配置
   themeConfig: {
-    image: 'img/docusaurus-social-card.jpg',
+    // 社交媒体分享时显示的默认图片
+    image: 'img/beststar.jpg',
+    // 网站的 meta 标签，用于 SEO 优化
     metadata: [
       {
         name: 'author',
@@ -32,16 +38,19 @@ const config: Config = {
         content: '博客, 技术, 生活, 编程, 项目',
       },
     ],
+    // 主题模式配置
     // colorMode: {
     //   defaultMode: 'light',
     //   disableSwitch: false,
-    //   respectPrefersColorScheme: true, // 跟随系统主题
+    //   respectPrefersColorScheme: true,
     // },
+    // 文档页面配置
     docs: {
       sidebar: {
         hideable: true,
       },
     },
+    // 导航栏配置
     navbar: {
       title: 'BestStar Blog',
       logo: {
@@ -50,6 +59,7 @@ const config: Config = {
         srcDark: 'img/beststar.jpg',
       },
       hideOnScroll: true,
+      // 导航栏菜单项
       items: [
         { label: '文档', position: 'right', to: '/docs/intro' },
         { label: '博客', position: 'right', to: 'blog' },
@@ -65,8 +75,10 @@ const config: Config = {
         },
       ],
     },
+    // 页脚配置
     footer: {
       style: 'dark',
+      // 页脚链接分组
       links: [
         {
           title: '学习',
@@ -107,11 +119,14 @@ const config: Config = {
           ],
         },
       ],
+      // 版权信息
       copyright: `Copyright © ${new Date().getFullYear()} BestStar's Blog. Built with Docusaurus.`,
     },
+    // 代码高亮配置
     prism: {
       theme: themes.oneLight,
       darkTheme: themes.oneDark,
+      // 额外支持的编程语言
       additionalLanguages: [
         'bash',
         'json',
@@ -125,6 +140,8 @@ const config: Config = {
         'diff',
       ],
       defaultLanguage: 'javascript',
+
+      // 魔法注释：用于在代码块中高亮特定行
       magicComments: [
         {
           className: 'theme-code-block-highlighted-line',
@@ -137,10 +154,12 @@ const config: Config = {
         },
       ],
     },
+    // 目录配置
     tableOfContents: {
       minHeadingLevel: 2,
       maxHeadingLevel: 4,
     },
+    // 图片缩放配置
     zoom: {
       selector: '.markdown :not(em) > img',
       background: {
@@ -148,6 +167,7 @@ const config: Config = {
         dark: 'rgb(50, 50, 50)',
       },
     },
+    // Giscus 评论系统配置
     giscus: {
       repo: 'beststarli/beststar-blog',
       repoId: 'R_kgDOQMrJ0Q',
@@ -158,18 +178,24 @@ const config: Config = {
     } satisfies Partial<GiscusConfig>,
   } satisfies Preset.ThemeConfig,
 
+  // 预设配置：使用 Docusaurus 经典主题预设
   presets: [
     [
       'classic',
       {
+        // 文档配置
         docs: {
           path: 'docs',
           sidebarPath: './sidebars.ts',
         },
         blog: false,
+
+        // 主题配置
         theme: {
           customCss: ['./src/css/custom.css', './src/css/tweet-theme.css'],
         },
+
+        // 网站地图配置
         sitemap: {
           priority: 0.5,
         },
@@ -177,22 +203,34 @@ const config: Config = {
     ],
   ],
 
+  // 插件配置
   plugins: [
+
+    // 图片缩放插件
     'docusaurus-plugin-image-zoom',
+
+    // 自定义博客插件
     [
       './src/plugin/plugin-content-blog',
       {
         path: 'blog',
+
+        // 编辑链接生成函数
         editUrl: ({ locale, blogDirPath, blogPath }) =>
           `https://github.com/beststarli/blog/edit/main/${blogDirPath}/${blogPath}`,
+
         editLocalizedFiles: false,
         blogDescription: '记录技术成长和生活感悟',
         blogSidebarCount: 10,
         blogSidebarTitle: '最近文章',
         postsPerPage: 12,
         showReadingTime: true,
+
+        // 阅读时间计算函数（按每分钟 300 字计算）
         readingTime: ({ content, frontMatter, defaultReadingTime, locale }) =>
           defaultReadingTime({ content, locale, options: { wordsPerMinute: 300 } }),
+
+        // RSS Feed 配置
         feedOptions: {
           type: 'all',
           title: '嘉星的博客',
@@ -200,6 +238,7 @@ const config: Config = {
         },
       },
     ],
+    // Tailwind CSS 插件
     async function tailwindcssPlugin() {
       return {
         name: 'docusaurus-tailwindcss',
@@ -212,6 +251,7 @@ const config: Config = {
     },
   ],
 
+  // HTML head 标签配置
   headTags: [
     {
       tagName: 'meta',
@@ -222,17 +262,20 @@ const config: Config = {
     },
   ],
 
+  // 外部样式表配置
   stylesheets: [
     'https://cdn.jsdelivr.net/npm/misans@4.0.0/lib/Normal/MiSans-Normal.min.css',
     'https://cdn.jsdelivr.net/npm/misans@4.0.0/lib/Normal/MiSans-Medium.min.css',
     'https://cdn.jsdelivr.net/npm/misans@4.0.0/lib/Normal/MiSans-Semibold.min.css',
   ],
 
+  // 国际化配置
   i18n: {
     defaultLocale: 'zh-CN',
     locales: ['zh-CN'],
   },
 
+  // 断链处理：遇到断链时显示警告而不是报错
   onBrokenLinks: 'warn',
 }
 
