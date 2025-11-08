@@ -207,11 +207,8 @@ const config: Config = {
     [
       'classic',
       {
-        // 文档配置
-        docs: {
-          path: 'docs',
-          sidebarPath: './sidebars.ts',
-        },
+        // 文档配置关闭，使用自定义插件
+        docs: false,
         blog: false,
 
         // 主题配置
@@ -232,6 +229,16 @@ const config: Config = {
 
     // 图片缩放插件
     'docusaurus-plugin-image-zoom',
+
+    // 自定义文档插件
+    [
+      './src/plugin/plugin-content-docs',
+      {
+        path: 'docs',
+        sidebarPath: './sidebars.ts',
+        editUrl: 'https://github.com/beststarli/blog/edit/main/',
+      },
+    ],
 
     // 自定义博客插件
     [

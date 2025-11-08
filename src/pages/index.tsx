@@ -1,6 +1,7 @@
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import BlogSection from '../components/landing/BlogSection'
+import DocsSection from '../components/landing/DocsSection'
 import FeaturesSection from '../components/landing/FeaturesSection'
 import Hero from '../components/landing/Hero'
 import ProjectSection from '../components/landing/ProjectSection'
@@ -20,6 +21,7 @@ export default function Home() {
 
         <div className="relative">
           <div className="mx-auto max-w-7xl bg-background lg:px-8">
+            <DocsSection />
             <BlogSection />
             <ProjectSection />
             <FeaturesSection />
