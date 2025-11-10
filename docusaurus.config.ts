@@ -236,7 +236,6 @@ const config: Config = {
       {
         path: 'docs',
         sidebarPath: './sidebars.ts',
-        editUrl: 'https://github.com/beststarli/blog/edit/main/',
       },
     ],
 
