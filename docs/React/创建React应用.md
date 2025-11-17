@@ -13,13 +13,13 @@ date: 2025-11-11
 
 ### Next.js
 Next.js由Vercel维护。
-Next.js的 App Router 打包器让我们可以在同一个React树中混合使用构建时、仅服务器端和交互式组件。App Router还集成了使用Suspense的数据获取，可以直接在React树中为用户界面的不同部分指定加载状态。服务器组件和 Suspense 是 React 的特性，而不是 Next.js 的特性。
+Next.js的App Router打包器让我们可以在同一个React树中混合使用构建时、仅服务器端和交互式组件。App Router还集成了使用Suspense的数据获取，可以直接在React树中为用户界面的不同部分指定加载状态。服务器组件和Suspense是React的特性，而不是Next.js的特性。
 ```bash
 npx create-next-app@latest
 ```
 
 ### React Router
-React Router是React最流行的路由库，可以与 Vite 结合创建一个全栈React框架。
+React Router是React最流行的路由库，可以与Vite结合创建一个全栈React框架。
 ```bash
 npx create-react-router@latest
 ```
