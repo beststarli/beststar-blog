@@ -13,6 +13,16 @@
   permalink: /life
   description: 生活感悟
 
+思考:
+  label: 思考
+  permalink: /think
+  description: 思考感悟
+
+感悟:
+  label: 感悟
+  permalink: /insight
+  description: 人生感悟
+
 工作:
   label: 工作
   permalink: /job
