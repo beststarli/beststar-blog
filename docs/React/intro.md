@@ -23,3 +23,4 @@ date: 2025-11-03
 - [React Flow](https://reactflow.dev/)
 - [Zustand](https://zustand-demo.pmnd.rs/)
 - [Next.js](https://nextjs.org/)
+- [图解 React 源码系列](https://github.com/7kms/react-illustration-series)
