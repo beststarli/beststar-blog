@@ -109,7 +109,7 @@ export const projects: Project[] = [
     description: '封装了TailwindCSS, shadcn/ui, Vite, TypeScript的开箱即用React项目脚手架',
     preview: '/img/tech/scaffold.png',
     website: 'https://react-scaffold-orcin.vercel.app/',
-    source: 'https://github.com/beststarli/scaffold',
+    source: 'https://github.com/beststarli/react-scaffold',
     tags: ['opensource', 'personal', 'favorite'],
     type: 'personal',
   },
