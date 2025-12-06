@@ -115,7 +115,7 @@ function CategoryTimeline({ categoryData, index }: { categoryData: CategoryDocs,
 
                 <div className="flex-1">
                   <div className="flex items-baseline gap-3">
-                    <span className="flex-1 text-base font-medium text-gray-900 transition-colors group-hover/item:text-blue-600 dark:text-gray-100 dark:group-hover/item:text-blue-400">
+                    <span className="flex-1 text-base font-medium text-gray-900 transition-colors group-hover/item:text-sky-400 dark:text-gray-100 dark:group-hover/item:text-blue-400">
                       {doc.title || '未命名文档'}
                     </span>
                     <time className="shrink-0 text-xs font-medium text-gray-400 dark:text-gray-500">
@@ -150,7 +150,7 @@ export default function DocsSection() {
     const categoryMap = new Map<string, DocItem[]>()
 
     // 定义要显示的分类和顺序
-    const targetCategories = ['JavaScript', 'TypeScript', 'React', '算法']
+    const targetCategories = ['JavaScript', 'TypeScript', 'React', 'Web开发', '算法']
     const categoryConfig = {
       JavaScript: {
         icon: 'logos:javascript',
@@ -164,8 +164,12 @@ export default function DocsSection() {
         icon: 'logos:react',
         color: '#61DAFB',
       },
+      Web开发: {
+        icon: 'mdi:web',
+        color: '#FF7B00',
+      },
       算法: {
-        icon: 'mdi:chart-tree',
+        icon: 'mdi:code-block-tags',
         color: '#10B981',
       },
     }
