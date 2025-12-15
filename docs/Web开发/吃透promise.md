@@ -1,6 +1,6 @@
 ---
 title: 吃透promise
-sidebar_position: 4
+sidebar_position: 3
 tags: [Web]
 date: 2025-11-28
 ---
