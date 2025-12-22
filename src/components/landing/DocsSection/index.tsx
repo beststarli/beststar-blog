@@ -124,7 +124,7 @@ function CategoryTimeline({ categoryData, index }: { categoryData: CategoryDocs,
                   </div>
 
                   {doc.description && (
-                    <p className="mt-1.5 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                    <p className="mb-0.5 mt-1.5 text-sm text-gray-600 dark:text-gray-400">
                       {doc.description}
                     </p>
                   )}
@@ -150,7 +150,7 @@ export default function DocsSection() {
     const categoryMap = new Map<string, DocItem[]>()
 
     // 定义要显示的分类和顺序
-    const targetCategories = ['JavaScript', 'TypeScript', 'React', 'Web开发', '移动端开发', '算法']
+    const targetCategories = ['JavaScript', 'TypeScript', 'React', 'Web开发', '计算机网络', '移动端开发', '算法']
     const categoryConfig = {
       JavaScript: {
         icon: 'logos:javascript',
@@ -167,6 +167,10 @@ export default function DocsSection() {
       Web开发: {
         icon: 'mdi:web',
         color: '#FF7B00',
+      },
+      计算机网络: {
+        icon: 'mdi:network',
+        color: '#1E40AF',
       },
       移动端开发: {
         icon: 'logos:apple',

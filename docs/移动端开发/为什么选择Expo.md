@@ -1,5 +1,6 @@
 ---
 title: 为什么选择Expo
+description: Expo是React Native的一个开源平台和工具链，主要用于简化移动应用的开发、构建和部署。
 sidebar_position: 2
 tags: [APP]
 date: 2025-12-09

@@ -1,6 +1,6 @@
 ---
 title: 介绍
-description: React Native移动端开发学习笔记
+description: 记录React Native移动端开发学习笔记。
 sidebar_position: 1
 date: 2025-12-09
 ---
