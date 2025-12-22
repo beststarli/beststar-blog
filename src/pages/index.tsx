@@ -6,6 +6,7 @@ import FeaturesSection from '../components/landing/FeaturesSection'
 import Hero from '../components/landing/Hero'
 import ProjectSection from '../components/landing/ProjectSection'
 import Particles from '../components/magicui/particles'
+import { Analytics } from '@vercel/analytics/react'
 
 export default function Home() {
   const {
@@ -17,6 +18,7 @@ export default function Home() {
     <Layout title={tagline} description={description}>
       <main>
         <Hero />
+        <Analytics />
         <Particles className="absolute inset-0" quantity={100} ease={80} color="#ffffff" refresh />
 
         <div className="relative">
