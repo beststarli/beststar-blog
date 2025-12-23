@@ -230,6 +230,17 @@ const config: Config = {
     // 图片缩放插件
     'docusaurus-plugin-image-zoom',
 
+    // [
+    //   '@docusaurus/plugin-ideal-image',
+    //   {
+    //     quality: 80,
+    //     max: 1030, // 最大图像宽度（像素）
+    //     min: 640, // 最小图像宽度（像素）
+    //     steps: 2, // 图像尺寸之间的步进数
+    //     disableInDev: false, // 在开发环境中禁用
+    //   },
+    // ],
+
     // 自定义文档插件
     [
       './src/plugin/plugin-content-docs',
