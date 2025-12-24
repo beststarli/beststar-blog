@@ -150,7 +150,7 @@ export default function DocsSection() {
     const categoryMap = new Map<string, DocItem[]>()
 
     // 定义要显示的分类和顺序
-    const targetCategories = ['JavaScript', 'TypeScript', 'React', 'Web开发', '计算机网络', '移动端开发', '算法']
+    const targetCategories = ['JavaScript', 'TypeScript', 'React', 'Web开发与安全', '计算机网络', '移动端开发', '算法']
     const categoryConfig = {
       JavaScript: {
         icon: 'logos:javascript',
@@ -164,7 +164,7 @@ export default function DocsSection() {
         icon: 'logos:react',
         color: '#61DAFB',
       },
-      Web开发: {
+      Web开发与安全: {
         icon: 'mdi:web',
         color: '#FF7B00',
       },
