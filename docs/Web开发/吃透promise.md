@@ -1,5 +1,5 @@
 ---
-title: 吃透promise
+title: 吃透Promise
 description: Promise是
 sidebar_position: 3
 tags: [Web]
