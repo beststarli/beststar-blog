@@ -1,7 +1,7 @@
 ---
 title: JWT身份认证
 description: JWT全称为JSON Web Token，是一种开放标准，用于在网络应用之间安全地传输声明。
-sidebar_position: 4
+sidebar_position: 5
 tags: [Web]
 date: 2025-12-22
 ---
@@ -50,7 +50,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4
 
 ### JWT的优势
 #### 无状态
-JWT自身包含了身份验证所需要的所有信息，因此，我们的服务器不需要存储 Session 信息。这显然增加了系统的可用性和伸缩性，大大减轻了服务端的压力。
+JWT自身包含了身份验证所需要的所有信息，因此，我们的服务器不需要存储[Session](/docs/Web开发与安全/Session与Cookie)信息。这显然增加了系统的可用性和伸缩性，大大减轻了服务端的压力。
 
 不过，也正是由于JWT的无状态，也导致了它最大的缺点：**不可控**！
 

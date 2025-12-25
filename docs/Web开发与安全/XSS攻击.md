@@ -1,7 +1,7 @@
 ---
 title: XSS攻击
 description: XSS（Cross-Site Scripting）跨站脚本攻击是一种常见的Web安全漏洞。
-sidebar_position: 5
+sidebar_position: 6
 tags: [Web]
 date: 2025-12-24
 ---
