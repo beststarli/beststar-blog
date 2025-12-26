@@ -72,7 +72,7 @@ export const projects: Project[] = [
   {
     title: '江苏省长江崩岸预警应用系统',
     description: '针对长江民主沙岸段崩岸风险预警监测与报警系统',
-    preview: '/img/tech/bengan.png',
+    preview: '/img/tech/projects/bengan.png',
     website: '',
     tags: ['design', 'product', 'large', 'favorite'],
     type: 'web',
@@ -80,7 +80,7 @@ export const projects: Project[] = [
   {
     title: '交互式水动力建模与模拟平台',
     description: '支持香港北部都会区建设的城市洪涝灾害仿真模拟系统',
-    preview: '/img/tech/gridman.png',
+    preview: '/img/tech/projects/gridman.png',
     website: 'https://github.com/beststarli/gridman',
     source: 'https://github.com/beststarli/gridman',
     tags: ['opensource', 'design', 'large', 'favorite'],
@@ -89,7 +89,7 @@ export const projects: Project[] = [
   {
     title: 'AutoWater洪水管网可视化演示系统',
     description: '结合洪水演进、三维地图瓦片、管道管网的可视化演示系统',
-    preview: '/img/tech/autowater.png',
+    preview: '/img/tech/projects/autowater.png',
     website: 'https://github.com/beststarli/AutoWaterNeo',
     source: 'https://github.com/beststarli/AutoWaterNeo',
     tags: ['opensource', 'design'],
@@ -98,7 +98,7 @@ export const projects: Project[] = [
   {
     title: 'Verdandi描述性文本文件生成器',
     description: '为信息资源树Yggdrail服务的Schema和Component描述JSON文件生成器',
-    preview: '/img/tech/verdandi.png',
+    preview: '/img/tech/projects/verdandi.png',
     website: 'https://github.com/beststarli/verdandi',
     source: 'https://github.com/beststarli/verdandi',
     tags: ['opensource', 'personal'],
@@ -107,7 +107,7 @@ export const projects: Project[] = [
   {
     title: 'React项目脚手架',
     description: '封装了TailwindCSS, shadcn/ui, Vite, TypeScript的开箱即用React项目脚手架',
-    preview: '/img/tech/scaffold.png',
+    preview: '/img/tech/projects/scaffold.png',
     website: 'https://react-scaffold-orcin.vercel.app/',
     source: 'https://github.com/beststarli/react-scaffold',
     tags: ['opensource', 'personal', 'favorite'],
@@ -116,7 +116,7 @@ export const projects: Project[] = [
   {
     title: 'OpenGMS介绍页',
     description: '基于React和TailwindCSS搭建的前端技术栈练习Demo',
-    preview: '/img/tech/ogmsintro.png',
+    preview: '/img/tech/projects/ogmsintro.png',
     website: 'https://ogms-intro.vercel.app/',
     source: 'https://github.com/beststarli/ogms-intro',
     tags: ['opensource', 'personal', 'design'],
@@ -125,10 +125,19 @@ export const projects: Project[] = [
   {
     title: '个人留言板',
     description: '基于Vue和TailwindCSS搭建的留言板,学习从前端到后端再到部署全流程',
-    preview: '/img/tech/liuyan.png',
+    preview: '/img/tech/projects/liuyan.png',
     website: 'https://github.com/beststarli/comments-vue',
     source: 'https://github.com/beststarli/comments-vue',
     tags: ['opensource', 'personal', 'design'],
+    type: 'personal',
+  },
+  {
+    title: '双token无感刷新demo',
+    description: '基于React、Express、PostgreSQL实现的双token无感刷新验证Demo',
+    preview: '/img/tech/projects/doubleToken.png',
+    website: 'https://github.com/beststarli/double-token-demo',
+    source: 'https://github.com/beststarli/double-token-demo',
+    tags: ['opensource', 'personal', 'design', 'favorite'],
     type: 'personal',
   },
 ]
