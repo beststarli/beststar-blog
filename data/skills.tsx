@@ -22,6 +22,13 @@ const SKILLS = [
   'postman',
   'anaconda',
   'vercel',
+  'figma',
+  'reactrouter',
+  'lucide',
+  'shadcnui',
+  'mapbox',
+  'docusaurus',
+  'apacheecharts',
 ]
 
 export default SKILLS
