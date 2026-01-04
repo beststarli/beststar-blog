@@ -98,21 +98,6 @@ Grok给出的报错原因如下：
 ![Grok](/img/tech/doubleToken/grok.png)
 本质上还是我想在SPA方式下实现，但v0提供了SSR方案导致的。既然需要舍弃Next.js的文件即路由方案，那么就需要用别的技术栈来实现路由，于是理所应当地引入了React Router。
 ```tsx
-main.tsx
-
-import App from './App.tsx'
-// import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-
-createRoot(document.getElementById('root')!).render(
-    // <StrictMode>
-        <App />
-    // </StrictMode>
-)
-```
-> 个人习惯在React编写过程中关闭StrictMode，不推荐学习🙂
-
-```tsx
 App.tsx
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
