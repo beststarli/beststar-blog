@@ -1,4 +1,3 @@
-/* eslint-disable @stylistic/indent */
 export type Friend = {
   title: string
   description: string
@@ -52,10 +51,10 @@ export const Friends: Friend[] = [
     avatar: '/img/friend/yinb1426.png',
   },
   {
-    title: 'StevenDa',
+    title: 'StevnDa',
     description: '看山还是山',
-    website: 'https://github.com/StevenDa',
-    avatar: '/img/friend/StevenDa.png',
+    website: 'https://github.com/StevnDa',
+    avatar: '/img/friend/StevnDa.png',
   },
   {
     title: 'Fliicker',
