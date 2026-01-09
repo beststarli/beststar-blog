@@ -2,6 +2,7 @@
 title: Omit实用类型
 description: Omit是TypeScript提供的一个高级类型工具，用于从一个类型中排除指定的键，从而构造一个新的类型。
 sidebar_position: 2
+tags: [TypeScript]
 date: 2025-12-26
 ---
 
