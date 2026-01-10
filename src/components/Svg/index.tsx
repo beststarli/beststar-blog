@@ -1,5 +1,5 @@
 import { cn } from '@site/src/lib/utils'
-import { type ComponentProps, type ReactNode } from 'react'
+import { JSX, type ComponentProps, type ReactNode } from 'react'
 import styles from './styles.module.css'
 
 export interface SvgIconProps extends ComponentProps<'svg'> {
