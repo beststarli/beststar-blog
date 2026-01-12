@@ -72,7 +72,7 @@ function setProperty<T, K extends keyof T>(obj: T, key: K, value: T[K]) {
 type Exclude<T, U> = T extends U ? never : T
 ```
 `Exclude<Type, ExcludedUnion>`，`Exclude`简单理解就是数学集合中找出Type的“差集”，就是将类型A与B对比，返回A中独有的类型。示例：
-![Exclude](/img/docs/typescript/Exclude.png)
+![Exclude](/img/docs/ts/Exclude.png)
 
 ### Extends
 ```ts
