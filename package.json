@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@docusaurus/core": "3.9.2",
+    "@docusaurus/plugin-ideal-image": "^3.9.2",
     "@docusaurus/preset-classic": "3.9.2",
     "@docusaurus/theme-mermaid": "^3.9.2",
     "@easyops-cn/docusaurus-search-local": "^0.52.1",
@@ -71,6 +72,17 @@
     "eslint-plugin-tailwindcss": "3.18.0",
     "typescript": "~5.7.3",
     "typescript-eslint": "^8.20.0"
+  },
+  "overrides": {
+    "@docusaurus/plugin-ideal-image": {
+      "sharp": "0.34.5"
+    },
+    "@docusaurus/lqip-loader": {
+      "sharp": "0.34.5"
+    },
+    "@docusaurus/responsive-loader": {
+      "sharp": "0.34.5"
+    }
   },
   "browserslist": {
     "production": [
