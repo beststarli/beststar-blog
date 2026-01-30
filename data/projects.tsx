@@ -140,6 +140,15 @@ export const projects: Project[] = [
     tags: ['opensource', 'personal', 'design', 'favorite'],
     type: 'personal',
   },
+  {
+    title: '携程前端训练营作业',
+    description: '携程集团第五期前端训练营大师课课后作业',
+    preview: '/img/tech/projects/trip.png',
+    website: 'https://github.com/beststarli/trip-master',
+    source: 'https://github.com/beststarli/trip-master',
+    tags: ['opensource', 'personal', 'favorite'],
+    type: 'personal',
+  },
 ]
 
 export const groupByProjects = projects.reduce(
