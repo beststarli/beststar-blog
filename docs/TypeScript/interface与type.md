@@ -217,4 +217,4 @@ interface和type的核心区别对比：
 
 ## 参考
 - [**TypeScript 中的 type 和 interface：你真的了解它们的不同吗？**](https://juejin.cn/post/7340854234894876684?searchId=20260130194952003E6044403FB73C6BFF)
-- [**跟着阮一峰老师学Typescript 认识any，unknow，never类型！！！**](https://juejin.cn/post/7377595015047381003?searchId=202601301613131F5549BBD838D8233A74)
+- [**Typescript中type和interface的区别**](https://juejin.cn/post/7555717437410983988?searchId=20260130194952003E6044403FB73C6BFF)
