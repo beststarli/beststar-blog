@@ -86,6 +86,7 @@ a:hover {
   .bg-blog {
     background: var(--blog-item-background-color);
   }
+
   .bg-blog-shade {
     background: var(--blog-item-shade);
   }
@@ -149,15 +150,15 @@ article .markdown video {
   margin: 0 auto;
 }
 
-article .markdown > h2 {
+article .markdown>h2 {
   font-size: 1.6em;
 }
 
-article .markdown > h3 {
+article .markdown>h3 {
   font-size: 1.4em;
 }
 
-article .markdown > h4 {
+article .markdown>h4 {
   font-size: 1.2em;
 }
 
@@ -169,11 +170,11 @@ article .a-icon {
   display: none;
 }
 
-article p > span > .a-icon {
+article p>span>.a-icon {
   display: block;
 }
 
-article p > span > a {
+article p>span>a {
   line-height: 1.5rem;
 }
 
@@ -186,7 +187,7 @@ article p > span > a {
 }
 
 .navbar-sidebar__items {
-  height: calc(100% - var(--ifm-navbar-height) - 444px);
+  height: calc(100% - var(--ifm-navbar-height));
 }
 
 @media (max-width: 570px) {
@@ -194,18 +195,19 @@ article p > span > a {
     font-size: 1.6em;
   }
 
-  article > .markdown > h2 {
+  article>.markdown>h2 {
     font-size: 1.4em;
   }
 
-  article > .markdown > h3 {
+  article>.markdown>h3 {
     font-size: 1.2em;
   }
 }
 
 @media (max-width: 1100px) {
-  .navbar > .container,
-  .navbar > .container-fluid {
+
+  .navbar>.container,
+  .navbar>.container-fluid {
     padding: 0;
   }
 
@@ -231,15 +233,14 @@ code {
 }
 
 div[class^='announcementBar_'] {
-  background: repeating-linear-gradient(
-    -35deg,
-    var(--ifm-color-primary-lighter),
-    var(--ifm-color-primary-lighter) 20px,
-    var(--ifm-color-primary-lightest) 10px,
-    var(--ifm-color-primary-lightest) 40px
-  );
+  background: repeating-linear-gradient(-35deg,
+      var(--ifm-color-primary-lighter),
+      var(--ifm-color-primary-lighter) 20px,
+      var(--ifm-color-primary-lightest) 10px,
+      var(--ifm-color-primary-lightest) 40px);
   font-weight: 700;
 }
+
 .code-block-error-line {
   background-color: #ff000020;
   display: block;
@@ -278,22 +279,15 @@ div[class^='announcementBar_'] {
   margin: 0;
 }
 
-.prose
-  :where(strong):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+.prose :where(strong):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
   color: var(--tw-prose-bold);
   font-weight: 520;
 }
 
-.prose
-  :where(code):not(
-    :where([class~='not-prose'], [class~='not-prose'] *)
-  )::before {
+.prose :where(code):not( :where([class~='not-prose'], [class~='not-prose'] *))::before {
   content: '';
 }
 
-.prose
-  :where(code):not(
-    :where([class~='not-prose'], [class~='not-prose'] *)
-  )::after {
+.prose :where(code):not( :where([class~='not-prose'], [class~='not-prose'] *))::after {
   content: '';
 }
