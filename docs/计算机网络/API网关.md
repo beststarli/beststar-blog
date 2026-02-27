@@ -2,7 +2,7 @@
 title: API网关
 description: API网关是一种服务器端组件（通常作为微服务架构的核心），充当客户端和后端服务之间的“单一入口点”。
 sidebar_position: 4
-tags: [Web]
+tags: [Network]
 date: 2025-12-29
 ---
 

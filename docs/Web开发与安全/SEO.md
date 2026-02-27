@@ -1,6 +1,6 @@
 ---
 title: SEO
-description: 单点登录（Single Sign-On，简称SSO）是一种身份认证机制，允许用户使用一组凭证（如用户名和密码）登录一次，就能访问多个相互信任的应用程序、系统或网站，而无需每次都重复登录。
+description: SEO是Search Engine Optimizatio（搜索引擎优化）的首字母缩写，利用搜索引擎的规则对网站进行内部及外部的调整优化，提高网页或网站在搜索引擎中关键词的自然排名, 以求得获得更多的展现量和吸引免费的点击流量，从而达到互联网营销及品牌建设的目标。
 sidebar_position: 9
 tags: [Web]
 date: 2026-01-28

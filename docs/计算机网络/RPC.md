@@ -2,7 +2,7 @@
 title: RPC
 description: RPC是远程过程调用（Remote Procedure Call）的缩写，是一种计算机通信协议。
 sidebar_position: 3
-tags: [Web]
+tags: [Network]
 date: 2025-12-15
 ---
 
