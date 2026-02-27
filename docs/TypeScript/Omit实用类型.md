@@ -284,5 +284,5 @@ const userResponse: UserResponse = {
 Omit是一个非常强大的工具类型，通过结合条件类型、联合类型、递归类型和映射类型等高级类型特性，可以实现复杂的类型操作。它在很多场景下都非常有用，例如创建请求和响应类型、动态属性过滤、构建嵌套对象类型等。通过灵活运用Omit，可以使TypeScript代码更加灵活和类型安全，提高代码的可维护性和可读性。
 
 ## 参考
-[TypeScript学习之Omit](https://juejin.cn/post/6993651076096360479?searchId=20251229101059D00FF8BB160E2C4DF9EF)
-[深入TS高级类型Omit，轻松把没用的东西剔除掉🫣🫣🫣](https://juejin.cn/post/7384266820466245684?searchId=20251229101059D00FF8BB160E2C4DF9EF)
+- [**TypeScript学习之Omit**](https://juejin.cn/post/6993651076096360479?searchId=20251229101059D00FF8BB160E2C4DF9EF)
+- [**深入TS高级类型Omit，轻松把没用的东西剔除掉🫣🫣🫣**](https://juejin.cn/post/7384266820466245684?searchId=20251229101059D00FF8BB160E2C4DF9EF)
