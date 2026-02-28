@@ -123,6 +123,26 @@
     'Ubuntu Mono', Menlo, monospace;
 }
 
-.archiveItem a > span:hover {
+.archiveItem a>span:hover {
   color: var(--ifm-color-primary);
+}
+
+@media (max-width: 996px) {
+  .archiveItem a {
+    white-space: normal;
+    align-items: flex-start;
+  }
+
+  .archiveTime {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .archiveItem a>span {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
 }
