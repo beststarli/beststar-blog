@@ -6,26 +6,26 @@ export type Friend = {
 }
 
 export const Friends: Friend[] = [
-    // 示例友链，请替换为你自己的友链
-    //   {
-    //     title: '示例友链',
-    //     description: '这是一个示例友链，请替换为实际友链',
-    //     website: 'https://example.com',
-    //     avatar: '/img/friend/example.png',
-    //   },
-    ////////////////////////////////
-    {
-        title: '愧怍',
-        description: 'Never let yourself be idle',
-        website: 'https://github.com/kuizuo',
-        avatar: '/img/friend/kuizuo.png',
-    },
-    {
-        title: '峰华前端工程师',
-        description: '致力于帮助你以最直观、最快速的方式学会前端开发',
-        website: 'https://zxuqian.cn',
-        avatar: '/img/friend/zxuqian.png',
-    },
+  // 示例友链，请替换为你自己的友链
+  //   {
+  //     title: '示例友链',
+  //     description: '这是一个示例友链，请替换为实际友链',
+  //     website: 'https://example.com',
+  //     avatar: '/img/friend/example.png',
+  //   },
+  ////////////////////////////////
+  {
+    title: '愧怍',
+    description: 'Never let yourself be idle',
+    website: 'https://github.com/kuizuo',
+    avatar: '/img/friend/kuizuo.png',
+  },
+  {
+    title: '峰华前端工程师',
+    description: '致力于帮助你以最直观、最快速的方式学会前端开发',
+    website: 'https://zxuqian.cn',
+    avatar: '/img/friend/zxuqian.png',
+  },
   {
     title: 'YcSoku',
     description: 'GISer ❎ Toy Maker ✅ Toy Factory',
@@ -35,7 +35,7 @@ export const Friends: Friend[] = [
   {
     title: 'UyNauh Loo',
     description: '实事求是',
-    website: 'https://github.com/unaloo',
+    website: 'https://unaloo.github.io/',
     avatar: '/img/friend/unaloo.png',
   },
   {
