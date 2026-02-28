@@ -18,6 +18,7 @@ export default [
     rules: {
       ...react.configs['jsx-runtime'].rules,
       '@stylistic/indent': 'off',
+      '@stylistic/jsx-indent-props': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',

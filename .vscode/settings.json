@@ -4,21 +4,21 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
-  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  // "editor.defaultFormatter": "dbaeumer.vscode-eslint",
   
-  // TypeScript/JavaScript 使用 ESLint 格式化
-  "[typescript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  },
-  "[javascriptreact]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  },
+  // // TypeScript/JavaScript 使用 ESLint 格式化
+  // "[typescript]": {
+  //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  // },
+  // "[typescriptreact]": {
+  //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  // },
+  // "[javascript]": {
+  //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  // },
+  // "[javascriptreact]": {
+  //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  // },
   
   // JSON/Markdown 使用默认格式化器
   "[json]": {
