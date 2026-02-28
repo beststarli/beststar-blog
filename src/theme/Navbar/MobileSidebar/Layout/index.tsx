@@ -2,6 +2,7 @@ import { useNavbarSecondaryMenu } from '@docusaurus/theme-common/internal'
 import UserCard from '@site/src/components/UserCard'
 import { cn } from '@site/src/lib/utils'
 import type { Props } from '@theme/Navbar/MobileSidebar/Layout'
+import { JSX } from 'react'
 
 export default function NavbarMobileSidebarLayout({ header, primaryMenu, secondaryMenu }: Props): JSX.Element {
   const { shown: secondaryMenuShown } = useNavbarSecondaryMenu()
