@@ -27,7 +27,7 @@ const social: Social = {
   email: 'mailto:beststarli@foxmail.com',
   // x: 'https://twitter.com/yourusername',
   // wx: 'https://img.yourdomain.com/wechat.png',
-  // qq: 'https://img.yourdomain.com/qq.png',
+  // qq: '',
   // zhihu: 'https://www.zhihu.com/people/yourusername',
   // discord: 'https://discord.gg/YOUR_INVITE',
 }
@@ -98,7 +98,7 @@ const socialSet: Record<keyof Social | 'rss', SocialValue> = {
     href: social.email,
     title: '邮箱',
     icon: 'ri:mail-line',
-    color: '#D44638',
+    color: '#F8D810',
   },
   rss: {
     href: '/blog/rss.xml',
