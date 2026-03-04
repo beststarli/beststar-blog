@@ -5,7 +5,7 @@ date: 2025-12-26
 authors: [beststar]
 tags: [技术]
 keywords: [双token, 技术原理]
-image: /img/tech/doubleToken/fengmian.png
+image: https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/doubleToken/fengmian.png
 ---
 
 前几天的一个深夜躺在床上玩手机玩到了一点半，在困意的逼迫下才终于按下息屏键准备入睡，突然一个念头闪过，想到现在做的系统其实还没有真正引入用户的概念，当然也就没做用户登录功能，之前经常听劳达和橙子哥提起双token无感刷新，感觉有点意思，我想在这个系统里实现一下，结果带着这个想法睡着了。
@@ -28,7 +28,7 @@ image: /img/tech/doubleToken/fengmian.png
 前端界面的搭建流程还是老样子，我习惯先给[v0](https://v0.app/)写一串十分详细的需求和提示词让它帮忙生成一下界面样式，然后拿它生成的第一个version的界面代码迁移到自己的项目里再根据需要进行修改。
 
 之所以只使用第一个version是因为在过去使用v0的过程中发现它有很强的幻觉，最多给它提需求让它优化出第二个version，再往下无论我把提示词和需求描述的多么准确详细，v0都无法生成出相较于version 1和version 2更让我满意的版本。
-![v0](/img/tech/doubleToken/v0.png)
+![v0](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/doubleToken/v0.png)
 
 v0的审美我很认可，但是逻辑性还是不太行，不过我还是会让它预留好组件关联的触发空函数，函数内部的处理代码后续由我自己来完成。这次在需求描述中还顺带着让它把后端的处理逻辑也预留好空函数方便我后面填入处理代码，有一说一v0生成的界面我真的很喜欢。
 
@@ -79,23 +79,23 @@ finally {
 ### 添加路由
 虽然目前并没有真正实现后端的登录逻辑，登录按钮触发并不能完成登录认证并进行页面跳转，但是在登录页中**忘记密码**和**立即注册**是无需接入后端服务就应当能触发界面跳转的，所以我又让v0以与登录页相同的风格生成了一下**注册页**和**密码重置页**的界面。
 
-![注册页1](/img/tech/doubleToken/zhuce1.png)
+![注册页1](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/doubleToken/zhuce1.png)
 
-![重置页1](/img/tech/doubleToken/chongzhi1.png)
+![重置页1](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/doubleToken/chongzhi1.png)
 
 可以看到有些文本的间距看着不太舒服，简单调整了一下margin和gap属性，v0不习惯给按钮添加cursor-pointer，为了交互感我比较喜欢按钮悬浮的手势变化就自己再添加了一下。
 
 对于注册页来说，这个验证系统的用户只需要拥有邮箱和密码即可，因此删去了用户名输入组件。“服务条款”与“隐私政策”链接按钮目前没有做功能实现。
-![注册页2](/img/tech/doubleToken/zhuce2.png)
+![注册页2](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/doubleToken/zhuce2.png)
 
 对于密码重置页来说，这个Demo系统暂时先不考虑实现真正的密码重置功能，简单调整一下布局样式作为后续功能扩展预留。
-![重置页2](/img/tech/doubleToken/chongzhi2.png)
+![重置页2](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/doubleToken/chongzhi2.png)
 
 仔细审查v0提供的注册页和密码重置页的前端代码，发现在**返回登录**这个按钮路由跳转的逻辑上它还是使用了Next.js中的Link组件来实现的，由于我一开始就没有考虑要使用和引入Next.js，所以也就没有对Next.js进行配置，导致发生了以下报错：
-![Link报错](/img/tech/doubleToken/baocuo.png)
+![Link报错](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/doubleToken/baocuo.png)
 
 Grok给出的报错原因如下：
-![Grok](/img/tech/doubleToken/grok.png)
+![Grok](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/doubleToken/grok.png)
 本质上还是我想在SPA方式下实现，但v0提供了SSR方案导致的。既然需要舍弃Next.js的文件即路由方案，那么就需要用别的技术栈来实现路由，于是理所应当地引入了React Router。
 ```tsx
 App.tsx

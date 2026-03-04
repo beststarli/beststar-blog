@@ -42,7 +42,7 @@ HTTP协议的无状态性，指的是客户端的每次HTTP请求都是独立的
 ### 原理
 Session的原理是基于服务器端的存储和管理，因此相对来说比较安全。在用户访问Web应用程序时，服务器会为每个用户创建一个唯一的Session ID，服务器会将Session ID和对应的会话状态存储在内存或者数据库中，同时也返回一份Session ID给浏览器，让浏览器存储在Cookie中，并在一定时间内保持有效。当用户进行后续的请求时，服务器会根据Session ID来识别用户，并获取和维护用户的会话状态。最后，当用户关闭浏览器或者超过一定时间没有活动时，服务器会自动销毁对应的Session。
 
-![Session原理](/img/docs/web/Session.png)
+![Session原理](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/web/Session.png)
 
 Session的优点是安全性相对较高，存储容量可以存储任意数据类型，并且可以设置失效时间。但是它也存在一些缺点：
 - 存储在服务器端，需要占用服务器资源（比如内存资源）。
@@ -144,7 +144,7 @@ Cookie和Session总是会被拿来比较的。Cookie和Session都是用来跟踪
 
 浏览器之后再次访问服务器时就会携带服务器创建的 Cookie，**这不需要我们做任何操作，不需要写任何代码，浏览器帮我们实现了在每一次的请求中都携带上Cookie**。服务器端通过Cookie中携带的数据区分不同的用户。
 
-![Cookie原理](/img/docs/web/Cookie.png)
+![Cookie原理](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/web/Cookie.png)
 
 Cookie的优点是可以长时间保存，并且可以在客户端设置，但是它也存在一些缺点：
 - 安全性相对较差，容易被不法分子获取

@@ -10,7 +10,7 @@ React是通过组件化的思路来构建界面的，如果把界面比作一棵
 
 ## 设计原型拆解
 一开始，我们应对要构建的界面UI设计蓝图进行层级化和原子化组件分割，每个组件匹配原型的中的每个部分，这样的思路在搭建[Gridman](https://github.com/beststarli/gridman)前端交互界面基座时便有所体现，这个系统是以VSCode界面为设计原型。
-![Gridman基座](/img/docs/react/gridman.png)
+![Gridman基座](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/react/gridman.png)
 
 可以看到基座Framework组件经过抽象大致可以分割成四个子组件，即IconBar、Explorer、TabBar、Scenario四部分，如果把IconBar作为上层组件，则每个Icon Button是它的子组件；如果把Explorer作为上层组件，对它而言还可以再分出Private Tree和Public Tree两个子组件；如果把TabBar作为上层组件，则每个TabNode又是它的子组件。他们的组织嵌套结构就好像一棵树，也就是组件树，数据在这颗树上的各组件之间流动。
 - Framework

@@ -13,7 +13,7 @@ date: 2025-12-29
 **API网关**简单来说是一种主要工作在七层、专门用于 API 的管理和流量转发的基础设施，并拥有强大的扩展性。
 
 网关的角色是作为一个API架构，用来保护、增强和控制对于API服务的访问。它是一个处于应用程序或服务（提供REST API接口服务）之前的系统，用来管理授权、访问控制和流量限制等。这样REST API接口服务就被网关保护起来，对所有的调用者透明。因此，隐藏在API网关后面的业务系统就可以专注于创建和管理服务，无需关心这些策略性的请求。
-![gateway](/img/docs/network/gateway.png)
+![gateway](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/network/gateway.png)
 
 ## 需具备的特点
 ### 高性能

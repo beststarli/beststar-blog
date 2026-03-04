@@ -6,7 +6,7 @@ draft: true
 authors: [beststar]
 tags: [随笔, 生活, 思考]
 keywords: [心情, 个人成长]
-image: /img/emotion/infj/infj.png
+image: https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/emotion/infj/infj.png
 ---
 
 这篇博客起笔于2025年11月10日，是在我刚刚走出自己人生至此最为痛苦黑暗的一段时间后，意识到那些痛苦的经历事实上逼着我史无前例地对自己的人生观进行了一场彻底的大思考，于是决定写下此篇来记录这些感悟。
@@ -20,12 +20,12 @@ image: /img/emotion/infj/infj.png
 
 确切来说现在的我是一名INFJ-A，或者其他人所说的高阶INFJ。实际上在半年之前我还是INFJ-T，一个低阶或中阶的INFJ，过去这半年我一直让自己陷于内耗和情绪低落的状态，至于为什么说是“我让自己”在下面我会说明，好在最近想透和看透了一些事情后，我已经走出了情绪低谷，回头来看，我是逼着自己进行了一场个人社会化的大思考，这次思考让我意外的或者说终于升阶到了INFJ-A。
 
-![MBTI](/img/emotion/infj/infja.png)
+![MBTI](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/emotion/infj/infja.png)
 
 老实说起码在24年年初之前我都是不相信什么MBTI的，那时的我和大部分不相信这个测评的人一样，认为这就和星座差不多属于是玄学、新时代迷信，“信这玩意的这辈子有了”。那时我测出了自己是INFJ，但完全不清楚这四个字母代表什么，只知道这种人格似乎很适合当心理咨询师，代表人物还有甘地和马丁路德金，其他的就看不懂了。直到那年寒假在家，恒让老妈也测一测自己的类型，我才想起来我也做过这个测试，想着找找INFJ这个人格的[解读视频](https://v.douyin.com/-Xkp08QcXB0/)了解一下，于是我看到了这两张图。
 
-![解读1](/img/emotion/infj/jiedu2.jpg)
-![解读2](/img/emotion/infj/jiedu1.jpg)
+![解读1](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/emotion/infj/jiedu2.jpg)
+![解读2](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/emotion/infj/jiedu1.jpg)
 
 看完后我惊呆了，虽然这个视频的内容可能会有符合[巴纳姆效应](https://baike.baidu.com/item/%E5%B7%B4%E7%BA%B3%E5%A7%86%E6%95%88%E5%BA%94/342014)的部分，但关于备忘录这块真的说的太准确了，我的手机的确是不设置密码的，但我的备忘录确实设置了密码，因为在备忘录里记录着我所有的计划、购物清单、人生规划、心里话，与其说这是备忘录，不如说它更像是真实的我，有我的天真和理想，也有我的扭曲和阴暗。
 
