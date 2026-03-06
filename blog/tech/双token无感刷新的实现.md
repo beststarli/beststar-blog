@@ -4,7 +4,7 @@ title: 双token无感刷新的实现
 date: 2025-12-26
 authors: [beststar]
 tags: [技术]
-keywords: [双token, 技术原理]
+keywords: [双token,技术原理]
 image: https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/doubleToken/fengmian.png
 ---
 
