@@ -16,5 +16,17 @@ image: https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/agent/cov
 欢迎访问并使用我的[AI Agent](https://www.agentstar.online/)。
 ![我的处女作](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/agent/cover.png)
 
-## 学习契机
 AI发展的速度超乎了我们的想象，在读研刚进组时24年中旬，我们还在用着网页版的KIMI复制粘贴代码来写Python脚本，在这不到两年的时间里，我个人经历了KIMI、Grok、Copilot、Claude Code、Gemini、Cursor等等一些列AI相关产品，目睹着AI对产业的一次次产生的革命性影响，对它的看法也从悄然改变，从原本的抵触（本科时我从未使用过ChatGPT，当时还是3.5版本，只在做毕设写论文时用过文心一言降重）到现在的共生。
+
+## 学习契机
+
+## 基础知识补习
+
+## 技术选型
+
+## 项目实现
+
+## 参考
+
+（***未完待续***）
+
