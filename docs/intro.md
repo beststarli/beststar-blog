@@ -14,7 +14,7 @@ date: 2025-11-03
 - [TypeScript](./TypeScript/intro.md)
 - [React](./React/intro.md)
 - [Web开发与安全](./Web开发与安全/intro.md)
-- [移动端开发](./移动端开发/intro.md)
+- [跨端开发](./跨端开发/intro.md)
 - [计算机网络](./计算机网络/intro.md)
 - [前端工程化](./前端工程化/intro.md)
 - [情景题](./情景题/intro.md)
