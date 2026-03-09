@@ -188,3 +188,56 @@ let language = message.slice(7, 17);
 
 console.log(language);  // JavaScript
 ```
+
+### 处理字符串格式化方法
+#### 转换字符串大小写
+`toUpperCase()`方法将整个字符串转换为大写字母。原始字符串保持不变，因为`toUpperCase()`返回的是一个新字符串，而不是修改原始字符串。反过来，`toLowerCase()`方法会将字符串中的所有字符转换为小写。
+
+#### 字符串格式化方法
+`trim()`方法是删除字符串首尾空白的最常用方法。trimStart()`删除字符串开头（或起始）的空白。`trimEnd()`删除字符串末尾的空白。
+
+### 处理字符串修改方法
+#### 用另一个字符串部分地替换字符串
+`replace()`方法允许你在字串中查找指定的值（例如单词或字符）并将其替换为另一个值。该方法返回一个带有替换的新字串，并且保持原字串不变，因为 JavaScript 字串是不可变的。
+```js
+string.replace(searchValue, newValue);
+```
+`searchValue`是要在字符串中搜索的值。 它可以是字符串，也可以是正则表达式（regex），后者描述文本的模式。`newValue`是用于替换`searchValue`的值。 
+
+`replace()`方法区分大小写，这意味着它只会查找与 searchValue 完全匹配的内容。
+```js
+let sentence = "I enjoy working with JavaScript.";
+console.log(sentence);  // "I enjoy working with JavaScript."
+let updatedSentence = sentence.replace("javascript", "coding");
+console.log(updatedSentence);  // "I enjoy working with JavaScript."
+```
+
+默认情况下，`replace()`方法仅替换第一个与`searchValue`匹配的内容。 如果该值在字符串中出现多次，则只替换第一个
+```js
+let phrase = "Hello, world! Welcome to the world of coding.";
+console.log(phrase);  // "Hello, world! Welcome to the world of coding."
+let updatedPhrase = phrase.replace("world", "universe");
+console.log(updatedPhrase);  // "Hello, universe! Welcome to the world of coding."
+```
+
+#### 多次重复字符串
+`repeat()`方法是`JavaScript`中的一个内置函数，可让你重复指定次数的字符串。 这是基本语法：
+```js
+string.repeat(count);
+```
+`string`是要重复的字符串，`count`是你希望字符串重复的次数。`count`参数必须是非负数。如果传递的是负数，JavaScript将抛出`RangeError`错误。`count`必须是一个有限的数字。 如果你尝试无限次重复一个字符串，或使用`Infinity`作为计数，也将得到`RangeError`。在 JavaScript 中，`Infinity`是一个表示无限量的特殊值。 它用来表示比任何有限数都大的数。如果计数不是整数（例如小数，如`2.5`），`repeat()`方法将四舍五入为最接近的整数。如果你传递`0`作为计数，`repeat()`方法将返回空字符串。
+```js
+let word = "Test";
+console.log(word.repeat(-1));  // Throws RangeError: Invalid count value
+
+let word = "Test";
+console.log(word.repeat(Infinity));  // Throws RangeError: Invalid count value
+
+let word = "Test";
+console.log(word.repeat(2.5));  // "TestTest"
+
+let word = "Test";
+console.log(word.repeat(0));  // ""
+```
+
+## 布尔值与数字
