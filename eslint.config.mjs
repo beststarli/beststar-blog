@@ -20,6 +20,7 @@ export default [
       '@stylistic/indent': 'off',
       '@stylistic/indent-binary-ops': 'off',
       '@stylistic/jsx-indent-props': 'off',
+      '@stylistic/no-tabs': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',

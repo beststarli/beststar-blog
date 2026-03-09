@@ -5,21 +5,21 @@ import React from 'react'
 import styles from './styles.module.css'
 
 export default function NavbarColorModeToggle({ className }: Props): React.JSX.Element | null {
-  const navbarStyle = useThemeConfig().navbar.style
-  const disabled = useThemeConfig().colorMode.disableSwitch
-  const { colorMode, setColorMode } = useColorMode()
+    const navbarStyle = useThemeConfig().navbar.style
+    const disabled = useThemeConfig().colorMode.disableSwitch
+    const { colorMode, setColorMode } = useColorMode()
 
-  if (disabled) {
-    return null
-  }
+    if (disabled) {
+        return null
+    }
 
-  return (
-    <ColorModeToggle
-      className={className}
-      buttonClassName={navbarStyle === 'dark' ? styles.darkNavbarColorModeToggle : undefined}
-      value={colorMode}
-      onChange={setColorMode}
-      respectPrefersColorScheme={true}
-    />
-  )
+    return (
+        <ColorModeToggle
+            className={className}
+            buttonClassName={navbarStyle === 'dark' ? styles.darkNavbarColorModeToggle : undefined}
+            value={colorMode}
+            onChange={setColorMode}
+            respectPrefersColorScheme={true}
+        />
+    )
 }
