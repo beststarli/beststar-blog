@@ -241,3 +241,25 @@ console.log(word.repeat(0));  // ""
 ```
 
 ## 布尔值与数字
+### 处理数字与算数运算符
+#### Number类型
+JavaScript 的`Number`类型包含各种数值，从简单的整数和浮点数到特殊值，如`Infinity`和`NaN`，或“非数字”。用`Infinity`表示超出最大限制的数字。如果尝试对不是数字的值执行数学运算，将得到`NaN`，表示“非数字”。`NaN`的类型也是 Number:
+```js
+const notANumber = 'hello world' / 2;
+console.log(typeof notANumber); // number
+```
+
+#### 数字与字符串计算
+**类型强制**是指将一种数据类型的值转换成另一种数据类型。
+
+对于`null`和`undefined`，进行数学运算时，JavaScript 将`null`视为`0`、`undefined`视为`NaN`：
+```js
+const result1 = null + 5;
+console.log(result1); // 5
+console.log(typeof result1); // number
+
+const result2 = undefined + 5;
+console.log(result2); // NaN
+console.log(typeof result2); // number
+```
+
