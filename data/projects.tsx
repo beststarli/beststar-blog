@@ -72,7 +72,7 @@ export const projects: Project[] = [
     {
         title: '江苏省长江崩岸预警应用系统',
         description: '针对长江民主沙岸段崩岸风险预警监测与报警系统',
-        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/bengan.png',
+        preview: 'http://img.beststarli.cn/projects/bengan.png',
         website: '',
         tags: ['design', 'product', 'large', 'favorite'],
         type: 'web',
@@ -80,7 +80,7 @@ export const projects: Project[] = [
     {
         title: '交互式水动力建模与模拟平台',
         description: '支持香港北部都会区建设的城市洪涝灾害仿真模拟系统',
-        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/gridman.png',
+        preview: 'http://img.beststarli.cn/projects/gridman.png',
         website: 'https://github.com/beststarli/gridman',
         source: 'https://github.com/beststarli/gridman',
         tags: ['opensource', 'design', 'large', 'favorite'],
@@ -89,7 +89,7 @@ export const projects: Project[] = [
     {
         title: 'AutoWater洪水管网可视化演示系统',
         description: '结合洪水演进、三维地图瓦片、管道管网的可视化演示系统',
-        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/autowater.png',
+        preview: 'http://img.beststarli.cn/projects/autowater.png',
         website: 'https://github.com/beststarli/AutoWaterNeo',
         source: 'https://github.com/beststarli/AutoWaterNeo',
         tags: ['opensource', 'design'],
@@ -98,7 +98,7 @@ export const projects: Project[] = [
     {
         title: 'Verdandi描述性文本文件生成器',
         description: '为信息资源树Yggdrail服务的Schema和Component描述JSON文件生成器',
-        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/verdandi.png',
+        preview: 'http://img.beststarli.cn/projects/verdandi.png',
         website: 'https://github.com/beststarli/verdandi',
         source: 'https://github.com/beststarli/verdandi',
         tags: ['opensource', 'personal'],
@@ -107,7 +107,7 @@ export const projects: Project[] = [
     {
         title: 'React项目脚手架',
         description: '封装了TailwindCSS, shadcn/ui, Vite, TypeScript的开箱即用React项目脚手架',
-        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/scaffold.png',
+        preview: 'http://img.beststarli.cn/projects/scaffold.png',
         website: 'https://react-scaffold-orcin.vercel.app/',
         source: 'https://github.com/beststarli/react-scaffold',
         tags: ['opensource', 'personal', 'favorite'],
@@ -116,7 +116,7 @@ export const projects: Project[] = [
     {
         title: 'OpenGMS介绍页',
         description: '基于React和TailwindCSS搭建的前端技术栈练习Demo',
-        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/ogmsintro.png',
+        preview: 'http://img.beststarli.cn/projects/ogmsintro.png',
         website: 'https://ogms-intro.vercel.app/',
         source: 'https://github.com/beststarli/ogms-intro',
         tags: ['opensource', 'personal', 'design'],
@@ -125,7 +125,7 @@ export const projects: Project[] = [
     {
         title: '个人留言板',
         description: '基于Vue和TailwindCSS搭建的留言板,学习从前端到后端再到部署全流程',
-        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/liuyan.png',
+        preview: 'http://img.beststarli.cn/projects/liuyan.png',
         website: 'https://github.com/beststarli/comments-vue',
         source: 'https://github.com/beststarli/comments-vue',
         tags: ['opensource', 'personal', 'design'],
@@ -134,7 +134,7 @@ export const projects: Project[] = [
     {
         title: '双token无感刷新demo',
         description: '基于React、Express、PostgreSQL实现的双token无感刷新验证Demo',
-        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/doubleToken.png',
+        preview: 'http://img.beststarli.cn/projects/doubleToken.png',
         website: 'https://github.com/beststarli/double-token-demo',
         source: 'https://github.com/beststarli/double-token-demo',
         tags: ['opensource', 'personal', 'design', 'favorite'],
@@ -143,7 +143,7 @@ export const projects: Project[] = [
     {
         title: '携程前端训练营作业',
         description: '携程集团第五期前端训练营大师课课后作业',
-        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/trip.png',
+        preview: 'http://img.beststarli.cn/projects/trip.png',
         website: 'https://github.com/beststarli/trip-master',
         source: 'https://github.com/beststarli/trip-master',
         tags: ['opensource', 'personal', 'favorite'],
@@ -152,7 +152,7 @@ export const projects: Project[] = [
     {
         title: '李嘉星的个人AI Agent',
         description: '基于Next.js与Vercel AI SDK构建的Agent开发架构探索Demo',
-        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/agent/cover.png',
+        preview: 'http://img.beststarli.cn/blog/tech/agent/cover.png',
         website: 'https://www.agentstar.online/',
         source: 'https://github.com/beststarli/beststar-ai-agent',
         tags: ['opensource', 'personal', 'favorite'],

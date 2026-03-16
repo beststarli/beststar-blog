@@ -4,6 +4,9 @@ import { themes } from 'prism-react-renderer'
 import social from './data/social'
 import type { GiscusConfig } from './src/components/Comment'
 
+const beian = '冀ICP备2026007642号-1'
+const beian1 = ''
+
 const config: Config = {
 
   title: '嘉星的博客',
@@ -120,7 +123,12 @@ const config: Config = {
         },
       ],
       // 版权信息
-      copyright: `Copyright © ${new Date().getFullYear()} BestStar's Blog. Built with Docusaurus.`,
+      copyright: `
+        <p style="margin-bottom: 0;"><a href="http://beian.miit.gov.cn/">${beian}</a></p>
+        <p style="display: inline-flex; align-items: center;"><img style="height:20px;margin-right: 0.5rem;" src="/img/police.png" alt="police" height="20"/><a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=${beian1.match(/\d+/)?.[0]
+        }" >${beian1}</a></p>
+        <p>Copyright © ${new Date().getFullYear()} BestStar's Blog. Built with Docusaurus.</p>
+        `,
     },
     // 代码高亮配置
     prism: {
