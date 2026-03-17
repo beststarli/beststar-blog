@@ -263,3 +263,26 @@ console.log(result2); // NaN
 console.log(typeof result2); // number
 ```
 
+### 运算符行为
+#### 自增和自减运算符
+自增和自减运算符分别用`++`和`--`表示。前缀形式`++x`是先增加变量的值，然后返回新值。 后缀形式`x++`是先返回变量的当前值，然后增加该值。 同样，前缀形式`--x`先减少变量的值，然后返回新值。 后缀形式`x--`先返回当前值，然后减少它。
+```js
+let x = 5;
+console.log(++x); // 6
+console.log(x); // 6
+
+let y = 5;
+console.log(y++); // 5
+console.log(y); // 6
+
+let x = 5;
+console.log(--x); // 4
+console.log(x); // 4
+
+let y = 5;
+console.log(y--); // 5
+console.log(y); // 4
+```
+如果需要立即获得更新值，请使用前缀。如果想先得到当前值，然后再考虑自增，那么就使用后缀.
+
+
