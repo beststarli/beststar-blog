@@ -285,4 +285,35 @@ console.log(y); // 4
 ```
 如果需要立即获得更新值，请使用前缀。如果想先得到当前值，然后再考虑自增，那么就使用后缀.
 
+### 一元运算符和位运算符
+#### 一元运算符如何工作
+一元加号运算符将操作数转换为数字。 如果操作数已经是数字，则保持不变。也有一元负号运算符。 它会对操作数的值取负。 它的工作原理与一元加号类似，只是符号会翻转。
+```js
+const str = '42';
 
+const strToNum = +str;
+console.log(strToNum); // 42
+console.log(typeof str); // string
+console.log(typeof strToNum); // number
+
+const strToNegativeNum = -str;
+console.log(strToNegativeNum); // -42
+console.log(typeof str); // string
+console.log(typeof strToNegativeNum); // number
+```
+按位非运算符是一种不太常用的一元运算符。 它由一个波浪号`~`表示，会对一个数的二进制表示进行取反操作。 
+```js
+const num = 5; // The binary for 5 is 00000101
+
+console.log(~num); // -6
+```
+`void`关键字是一个一元运算符，用于评估表达式并返回`undefined`结果。
+```js
+const result = void (2 + 2);
+
+console.log(result); // undefined
+```
+`void`也常用于超链接，防止点击后页面跳转：
+```js
+<a href="javascript:void(0);">Click Me</a>
+```

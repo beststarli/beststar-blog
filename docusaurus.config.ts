@@ -5,7 +5,7 @@ import social from './data/social'
 import type { GiscusConfig } from './src/components/Comment'
 
 const beian = '冀ICP备2026007642号-1'
-const beian1 = ''
+const beian1 = '冀公网安备13040202001096号'
 
 const config: Config = {
 
