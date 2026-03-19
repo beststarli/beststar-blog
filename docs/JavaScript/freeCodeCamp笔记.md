@@ -7,12 +7,11 @@ date: 2026-03-06
 ---
 
 # freeCodeCamp笔记
-记录在freeCodeCamp笔记网站学习JavaScript中个人需注意的知识点，方便翻看学习，并非网站全部内容。
+记录在[freeCodeCamp](https://www.freecodecamp.org/chinese/learn/javascript-v9/)笔记网站学习JavaScript中个人需注意的知识点，方便翻看学习，按需记录并非网站全部内容。
 
 ## 变量与字符串
 ### JavaScript入门讲座
 #### 数据类型
-##### Symbol
 `Symbol`是 JavaScript 中一种特殊类型的值，始终唯一且不可更改。 它通常用于为属性创建独特的标签或标识符：
 ```js
 Symbol('description');
@@ -23,7 +22,6 @@ const crypticKey2= Symbol("saltNpepper");
 console.log(crypticKey1 === crypticKey2); // 输出结果为 false
 ```
 
-##### BigInt
 `BigInt`用于超过`Number`类型限制的超大数字：
 ```js
 const veryBigNumber = 1234567890123456789012345678901234567890n;
@@ -102,7 +100,6 @@ prompt(message, default);
 
 ### 处理字符串字符方法
 #### ASCII、charCodeAt()和fromCharCode()
-##### ASCII
 虽然 JavaScript 字串在内部使用 Unicode（UTF-16），但 ASCII 值匹配前 128 个 Unicode 字符，这就是基于 ASCII 的示例在 JavaScript 中有效的原因。
 
 ASCII 标准包含 128 个字符，包括：
@@ -111,7 +108,6 @@ ASCII 标准包含 128 个字符，包括：
 - 常见标点符号和特殊字符（!、@、# 等）。
 - 控制字符（如换行符和制表符）。
 
-##### charCodeAt()
 可以使用`charCodeAt()`方法访问字符的数字代码。该方法返回指定索引处字符的 UTF-16 代码单元。对于前 128 个字符，该值与 ASCII 代码匹配。
 ```js
 let letter = "A";
@@ -121,7 +117,6 @@ let symbol = "!";
 console.log(symbol.charCodeAt(0));  // 33
 ```
 
-###### fromCharCode()
 `charCodeAt()`帮助我们获取字符的数字代码，`fromCharCode()`方法则允许我们执行相反的操作：将 UTF-16 代码单元（对于基本字符与 ASCII 匹配）转换为对应的字符。
 ```js
 let char = String.fromCharCode(65);
@@ -695,7 +690,7 @@ console.log(toObject([1, 2, 3])); // [1, 2, 3]
 ```
 
 ### JSON
-#### JSON.parse() 和 JSON.stringify() 
+#### JSON.parse()和JSON.stringify() 
 `JSON.stringify()`用于将 JavaScript 对象转换为 JSON 字串。`JSON.stringify()`方法还接受一个名为`replacer`的可选参数，该参数可以是一个函数或数组。当我们使用`JSON.stringify()`方法时，我们可以为第二个参数传入一个数组，并指定我们想要序列化的属性。结果将是一个只包含`firstName`和`country`属性的序列化对象字串。
 ```js
 const developerObj = {
@@ -737,3 +732,258 @@ console.log(userObject);
 // Result:
 // { name: 'John', age: 30, isAdmin: true }
 ```
+
+## 循环
+### 学习循环
+`for...in`循环：当你需要循环遍历一个对象的属性时，这种类型的循环是最合适的。此循环将迭代对象的所有可枚举属性，包括继承的属性和非数字属性。
+```js
+const fruit = {
+  name: 'apple',
+  color: 'red',
+  price: 0.99
+};
+
+for (const prop in fruit) {
+  console.log(fruit[prop]);
+}
+```
+
+## JavaScript基础复习
+### 代码质量与执行
+#### 闭包
+本质上，闭包是一个函数，即使在外部函数已经返回之后，仍然可以访问其外部封闭词法作用域中的变量。
+```js
+function outerFunction(x) {
+    let y = 10;
+    function innerFunction(){
+        console.log(x + y);
+    }
+    return innerFunction;
+}
+
+let closure = outerFunction(5);
+console.log(closure()); // 15
+```
+在这个例子中，`outerFunction`接受一个参数`x`并定义一个局部变量`y`。然后它定义了一个使用`x`和`y`的`innerFunction`。最后它返回 `innerFunction`。当我们调用`outerFunction(5)`时，它返回`innerFunction`，我们将其赋值给变量`closure`。当我们稍后调用`closure()`时，它仍然可以访问来自`outerFunction`的`x`和`y`，即使`outerFunction`已经执行完毕。这就是闭包的本质。内部函数维护对其外部词法环境的引用，即使外部函数已完成，也能保持对该环境中变量的访问。
+
+闭包对于创建私有变量和函数特别有用。
+```js
+function createCounter() {
+    let count = 0;
+    return function () {
+        count++;
+        return count;
+    };
+}
+
+let counter = createCounter();
+console.log(counter()); // 1
+console.log(counter()); // 2
+```
+在这种分支中，`createCounter`返回一个函数，该函数递增并返回一个`count`变量。`count`变量不能从`createCounter`外部直接访问，但返回的函数（我们的闭包）可以访问它。每次我们调用`counter()`，它都会递增并返回`count`。
+
+闭包还可以从它们的外部作用域捕捉多个变量。
+```js
+function multiply(x) {
+    return function (y) {
+        return x * y;
+    };
+}
+
+let double = multiply(2);
+console.log(double(5)); // 10
+```
+这里内部函数捕捉了来自`multiply`的`x`参数。当我们通过调用`multiply(2)`创建`double`时，它返回一个函数，该函数总是将其参数乘以`2`。
+
+闭包捕捉变量是通过引用而不是通过值。这意味着如果被捕捉变量的值发生变化，闭包将看到新的值。
+```js
+function createIncrementer() {
+    let count = 0;
+    return function () {
+        count++;
+        console.log(count);
+    };
+}
+
+let increment = createIncrementer();
+increment(); // 1
+increment(); // 2
+```
+每次我们调用`increment`时，它都在使用相同的`count`变量，而不是它初始值的拷贝。
+
+### var关键字与提升
+#### var关键字
+当使用`var`声明一个变量时，它会变成函数作用域或全局作用域。这意味着如果你在函数内部使用`var`声明一个变量，它只能在该函数内访问。然而，如果你在任何函数外部声明它，它会变成一个全局变量，可以在整个脚本中访问。
+
+`var`的一个问题是它允许你多次重新声明同一个变量而不会抛出错误。这可能导致意外覆盖并使调试更加困难。
+```js
+var num = 5;
+console.log(num); // 5
+
+// This is allowed and doesn't throw an error
+var num = 10;
+console.log(num); // 10
+```
+
+`var`最大的问题是它缺乏块级作用域。在`if`语句或`for`循环等块内用`var`声明的变量仍然可以在该块外访问。
+```js
+if (true) {
+  var num = 5;
+}
+console.log(num); // 5
+```
+
+#### 提升
+让我们从变量提升开始，当你使用`var`关键字声明一个变量时，JavaScript 会将声明提升到其作用域的顶部。然而，关键的是要注意，只有声明被提升，初始化不会被提升。这意味着你可以在声明变量之前在代码中使用它，但它的值将是`undefined`，直到你实际为它赋值。
+```js
+console.log(x); // undefined
+var x = 5;
+console.log(x); // 5
+```
+
+函数提升的工作方式有些不同。当你使用`function`声明语法声明一个函数时，函数名和函数体都会被提升。这意味着你可以在代码中声明函数之前调用它。
+```js
+sayHello(); // "Hello, World!"
+
+function sayHello(){
+  console.log("Hello, World!");
+}
+```
+
+需要注意的是，ES6 中引入的 let 和 const 声明的提升行为不同。
+```js
+console.log(y); // Throws a ReferenceError
+let y = 10;
+```
+这些声明会被提升，但它们不会被初始化，并且不能在代码中实际声明之前访问它们。这通常被称为暂时性死区。
+
+## 高阶函数与回调函数
+### 学习高阶函数与回调函数
+#### 回调函数与forEach
+回调函数是作为参数传递给另一个函数的函数，以便外部函数可以在特定点调用它。
+
+`forEach`中的回调函数实际上可以接受最多三个参数：当前元素、当前元素的索引以及调用`forEach`的数组。
+```js
+let numbers = [1, 2, 3, 4, 5];
+numbers.forEach((number, index, array) => {
+    console.log(`Element ${number} is at index ${index} in array ${array}`);
+});
+```
+
+#### 高阶函数
+本质上，高阶函数是一个函数，它要么接受一个或多个函数作为参数，要么返回一个函数，或者两者兼有。这意味着函数可以像其他任何值一样被对待——它们可以被赋值给变量，作为参数传递给其他函数，并且可以从函数中返回。
+
+高阶函数也可以返回函数。这对于基于更通用的函数创建特化函数特别有用。这个概念通常被称为函数工厂。
+```js
+function multiplyBy(factor) {
+    return function(number) {
+      return number * factor;
+    }
+}
+
+let double = multiplyBy(2);
+let triple = multiplyBy(3);
+
+console.log(double(5)); // 10
+console.log(triple(5)); // 15
+```
+
+JavaScript 中许多内置数组方法，如`map()`、`filter()`和`reduce()`，都是高阶函数。这些方法将函数作为参数，并以各种方式将其应用到数组的元素上。
+
+#### Reduce方法
+`reduce`方法是 JavaScript 中的一个函数，允许你处理一个数组并将其压缩为单个值。这个单个值可以是数字、字串、对象，甚至是另一个数组。`reduce`的核心工作原理是按顺序将一个函数应用到数组中的每个元素，将每次计算的结果传递给下一个。这个函数通常被称为`reducer`函数。
+
+`reducer`函数接受两个主要参数：累加器和当前值。累加器是你保存操作运行结果的地方，当前值是正在处理的数组元素。
+```js
+const numbers = [1, 2, 3, 4, 5];
+const sum = numbers.reduce(
+  (accumulator, currentValue) => accumulator + currentValue,
+  0
+);
+
+console.log(sum); // 15
+```
+`reducer`函数接受累加器（从`0`开始，由传递给`reduce`的第二个参数指定）并将每个数字添加到它上面。每次添加的结果成为下一次迭代的新建累加器。如果不提供初始值，`reduce`将使用数组的第一个元素作为初始累加器，并从第二个元素开始进程。
+
+#### 方法链
+方法链是一种连续调用多个方法的技术。可以在 JavaScript 中的多种类型的值上使用方法链，包括字串、数组和对象。尽管字串是原语值，但当使用字串方法时，JavaScript 会临时将它们包装在一个`String`对象中。
+```js
+const result = "  Hello, World!  "
+  .trim()
+  .toLowerCase()
+  .replace("world", "JavaScript");
+
+console.log(result); // "hello, JavaScript!"
+```
+
+#### 排序方法
+`sort`方法用于排列数组的元素，并返回已排序数组的引用。不会进行拷贝，因为元素是在原地排序的。`sort`方法将元素转换为字串，然后比较它们的 UTF-16 码元序列值。UTF-16 代码单元是表现字串中字符的数值。
+```js
+const numbers = [414, 200, 5, 10, 3];
+
+numbers.sort((a, b) => a - b);
+
+console.log(numbers); // [3, 5, 10, 200, 414]
+```
+参数`a`和`b`是被比较的两个元素。如果`a`应该排在`b`之前，比较函数应返回负值；如果`a`应该排在`b`之后，比较函数应返回正值；如果`a`和`b`相等，比较函数应返回零。
+
+#### every()和some()方法
+`every()`方法测试数组中的所有元素是否通过由提供的函数实现的测试。简单来说，它检查数组中的每一项是否满足指定的条件。如果提供的函数对数组中的所有元素都返回`true`，则`every()`方法返回`true`。如果有任何元素未通过测试，该方法会立即返回`false`并停止检查剩余元素。
+```js
+const numbers = [2, 4, 6, 8, 10];
+const hasAllEvenNumbers = numbers.every((num) => num % 2 === 0);
+
+console.log(hasAllEvenNumbers); // true
+```
+
+`some()`检查是否至少有一个元素通过测试。`some()`方法一旦找到通过测试的元素就返回`true`。如果没有元素通过测试，则返回`false`。
+```js
+const numbers = [1, 3, 5, 7, 8, 9];
+const hasSomeEvenNumbers = numbers.some((num) => num % 2 === 0);
+
+console.log(hasSomeEvenNumbers); // true
+```
+
+这两种方法一旦能够确定结果就会停止执行。对于`every()`，这意味着一旦找到`false`结果就会停止。对于`some()`，一旦找到`true`结果就会停止。
+
+## DOM操作与事件
+### DOM、点击事件与API
+#### API与Web API
+API 代表应用编程接口。API 建立了一套规则和协议，使软件应用能够相互通信并高效交换数据。可以将它们视为允许开发者基于已实现的更简单的创建块来创建更复杂功能性的构造。
+
+API 有多种类型。Web API 专门为网页应用设计。客户端 JavaScript 开发有不同类型的 Web API。它们不是 JavaScript 本身的一部分。
+
+这些类型的 API 通常分为两大类：浏览器 API 和第三方 API。
+
+#### 什么是DOM，如何访问元素
+DOM 代表文档对象模型。它是一个编程接口，允许我们与超文本标记语言文档进行交互。
+
+HTML 文档是 DOM 层次结构中的根节点。它有一个子节点，即`html`元素。由于所有其他节点都从它派生，因此它是 HTML 文档的根元素。要在 JavaScript 中访问这些元素，可以使用`getElementById()`和`querySelector()`方法。这些方法是 Web API，因为它们提供了使用 JavaScript 访问 DOM 的标准化方式。
+
+使用`getElementById()`，可以获取一个表现具有指定`id`的超文本标记语言元素的对象。`id`在每个超文本标记语言文档中必须是唯一的，因此此方法只会返回一个`Element`对象。
+```js
+const container = document.getElementById("container");
+```
+
+`querySelector()`比`getElementById()`更广泛。使用`querySelector()`，你可以获取 HTML 文档中第一个匹配作为参数传入的 CSS 选择器的元素。如果想使用`querySelector()`通过类名选择一个元素，需要在类名前加上点号`.`。
+
+#### querySelectorAll()方法
+`querySelectorAll()`方法可以获取匹配特定 CSS 选择器的所有 DOM 元素的列表。
+```js
+document.querySelectorAll(selectors);
+```
+在`document`对象上调用它，并传入包含 CSS 选择器的字串作为参数。该参数必须是有效的 CSS 选择器字串。否则，将抛出`SyntaxError`异常。`querySelectorAll()`返回一个`NodeList`对象，该对象是匹配指定 CSS 选择器的节点集合。该列表将包含每个匹配 CSS 选择器的`Element`对象。如果未找到匹配项，列表将为空。这些元素将按照它们在 HTML 文档中出现的顺序排列。
+
+#### 使用innerHTML和createElement()创建新节点
+`innerHTML`是`Element`对象的一个属性，你可以用它来设置它们的超文本标记语言结构。通过`innerHTML`，你可以用字串设置现有元素的超文本标记语言结构，从而创建所有必要的节点。
+
+如果字串将由用户输入，不应该使用`innerHTML`，因为用户可能会将恶意内容插入到你的网站中。因此，通常建议使用`textContent`来插入纯文本。
+
+另一种创建新节点的方法是使用`createElement()`方法。通过这个新方法可以通过指定它的标签名称来创建一个新元素。如果文档是`HTMLDocument`，则 `createElement()`方法返回一个新建的`HTMLElement`对象。否则，它返回一个`Element`对象。
+
+一旦准备好这个新元素，可以使用`appendChild()`方法将它作为另一个现有元素的子元素添加到 DOM 中，或者可以使用其他方法将它插入到特定位置。
+
+#### innerText、textContent和innerHTML的区别
+`innerText`表现 HTML 元素及其子元素的可见文本内容。此属性不包括隐藏文本或 HTML 标签，仅包含渲染的文本。由于`innerText`会考虑可见性，获取其值会触发一个称为 "reflow" 的进程，该进程会重新计算网站上某些元素的位置。此进程可能计算量很大，因此如果可能，应该避免触发它。
+
+`textContent`返回一个元素的纯文本内容，包括其所有子孙中的文本。`innerText`和`textContent`之间最重要的区别是，`textContent`始终返回一个超文本标记语言元素及其子元素的完整文本内容，无论其是可见还是隐藏。`textContent`也将包含像`script`和`style`这样的元素的内容。如果你尝试替换节点上的`textContent`的值，它将删除所有子节点，并用包含新字串的单个文本节点替换它们.
