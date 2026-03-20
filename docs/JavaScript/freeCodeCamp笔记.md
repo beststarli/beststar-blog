@@ -987,3 +987,256 @@ document.querySelectorAll(selectors);
 `innerText`表现 HTML 元素及其子元素的可见文本内容。此属性不包括隐藏文本或 HTML 标签，仅包含渲染的文本。由于`innerText`会考虑可见性，获取其值会触发一个称为 "reflow" 的进程，该进程会重新计算网站上某些元素的位置。此进程可能计算量很大，因此如果可能，应该避免触发它。
 
 `textContent`返回一个元素的纯文本内容，包括其所有子孙中的文本。`innerText`和`textContent`之间最重要的区别是，`textContent`始终返回一个超文本标记语言元素及其子元素的完整文本内容，无论其是可见还是隐藏。`textContent`也将包含像`script`和`style`这样的元素的内容。如果你尝试替换节点上的`textContent`的值，它将删除所有子节点，并用包含新字串的单个文本节点替换它们.
+
+#### appendChild()和removeChild()
+`appendChild()`方法用于将节点添加到指定父节点的子节点列表末尾。
+```js
+parentNode.appendChild(newNode);
+```
+要从 DOM 中移除节点，可以使用`removeChild()`方法。
+```js
+parentNode.removeChild(childNode);
+```
+ 
+#### Navigator、Window和Document
+`Navigator`接口提供有关浏览器环境的信息，例如用户代理字串、平台和浏览器版本。用户代理字串是一个标识所使用浏览器和操作系统的文本字串。
+```js
+console.log(navigator.userAgent);
+// "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+
+console.log(navigator.language);
+// "zh-CN"
+```
+
+`Window`接口表现包含 DOM 文档的浏览器窗口。它提供用于与浏览器窗口交互的方法和属性，例如调整窗口大小、打开新窗口以及导航到不同的 URL。大多数情况下不需要直接与`Window`接口交互，因为它会自动在 JavaScript 代码的全局作用域中可用。
+```js
+console.log(window.innerWidth);
+
+console.log(location);
+```
+
+`Document`接口表现浏览器窗口中显示的 DOM 文档。它提供用于操作 DOM 的方法和属性，例如选择元素、新建元素以及修改元素内容.
+
+#### 使用setAttribute()添加属性
+```js
+setAttribute(attribute, value);
+```
+
+#### 事件对象
+`Event`对象是一个负载，当用户以某种方式与你的网页交互时触发。所有`Event`对象都将具有`type`属性。该属性显示触发负载的事件类型，例如 "keydown" 或 "click"。
+
+`Event`对象将始终具有`target`属性。`target`属性是对触发该事件的对象的引用。最常见的是某种`HTMLElement`对象，或者是`Document`或 `Window`对象。但它也可以是更具体的东西，比如`AudioContext`。
+
+事件也有方法，这些方法是作为属性暴露在对象上的函数。一个常用的方法是`preventDefault()`，调用它可以阻止事件的默认行为。`stopPropagation()`方法阻止事件向上冒泡或传播到父元素。
+
+#### addEventListener()
+`addEventListener()`方法用于监听事件。它接受两个参数：你想监听的事件和事件发生时将被调用的函数。
+```js
+element.addEventListener("event", listener);
+```
+元素是要监视事件的超文本标记语言元素，event 指定要监听的事件类型，例如`"click"`。监听器是一个对象，当事件发生时它将接收通知。大多数情况下，这将是定义的用于处理该事件的函数。
+
+#### removeEventListener()
+`removeEventListener()`方法用于移除之前通过`addEventListener()`方法为元素添加的事件监听器。`removeEventListener()`方法接受两个参数：想要移除的事件和之前添加的监听器函数。
+```js
+element.removeEventListener("event", listener);
+```
+`removeEventListener()`方法还可以传入一个额外的可选第三个参数。该参数可以是`options`或`useCapture`。`options`参数是一个对象，用于指定事件监听器的选项，例如事件监听器是否应该是被动的或只执行一次。`useCapture`参数是一个布尔值，用于指定事件是否应在事件传播阶段被捕捉。
+
+#### 内联事件处理器
+内联事件处理器是超文本标记语言元素上的特殊属性，用于在事件发生时执行 JavaScript 代码。
+
+内联事件处理器只能用于为一个元素添加一个事件监听器。如果你想为同一个元素添加多个事件监听器，你需要使用`addEventListener()`。另一个原因是内联事件处理器将超文本标记语言和 JavaScript 代码混合在一起，这会使你的代码更难读取和维护。最好通过使用`addEventListener()`将事件监听器添加到元素，从而将超文本标记语言代码和 JavaScript 代码分开。
+
+内联事件处理器不推荐在现代 JavaScript 中使用。因此，在处理 JavaScript 中的事件时，最好坚持使用`addEventListener()`方法。
+
+#### 使用Element.style和Element.classList操作样式
+`Element.style`属性是一个只读属性，表现元素的内联样式。可以使用此属性来获取或设置元素的样式。`style`属性可用于设置许多 CSS 属性，例如 `color`、`background-color`、`font-size`、`font-weight`等。
+
+操作样式的另一种方法是使用`Element.classList`属性。`classList`属性是一个只读属性，可用于为元素添加、移除或切换类。让我们来看几个示例。
+
+#### DOMContentLoaded事件
+当 HTML 文档中的所有内容都已装载并解析时，会触发`DOMContentLoaded`事件。如果你有外部样式表或图像，`DOMContentLoaded`事件不会等待它们装载。它只会等待 HTML 装载完成。与`load`事件不同，后者等待所有内容装载完成，包括外部样式表、图像等。
+
+#### setTimeout和setInterval 
+setTimeout()和setInterval()都接受两个参数：一个函数和一个延迟。
+
+由于`setInterval()`会在指定的间隔内持续执行提供的函数，可能想要停止它。为此必须使用`clearInterval()`方法。`clearInterval()`需要你想停止的`setInterval()`的 ID。这可以是你为该间隔赋值的变量。停止间隔的一种方法是在`setTimeout()`内部，因为这将在一定时间后停止间隔:
+```js
+const intervalID = setInterval(() => {
+ console.log("This will stop after 5 seconds");
+}, 1000);
+
+setTimeout(() => {
+ clearInterval(intervalID);
+}, 5000);
+```
+也可以使用`clearTimeout()`方法停止超时：
+```js
+let timeoutID = setTimeout(() => {
+ console.log("This will not run");
+}, 5000);
+
+clearTimeout(timeoutID);
+```
+
+#### requestAnimationFrame()
+`requestAnimationFrame()`是一种方法，允许你在下一次屏幕重绘之前调度动画的下一步，从而实现流畅且视觉上吸引人的体验。下一次屏幕重绘是指浏览器刷新网页视觉显示的时刻。这通常每秒发生多次，在大多数显示器上大约为 60 次（或每秒 60 帧）。要使用`requestAnimationFrame()`方法，只需调用它并传入一个回调函数：
+```js
+requestAnimationFrame(callback);
+```
+调用`requestAnimationFrame()`必须首先发生在处理动画的函数内，例如`animate()`，以及一个用于更新动画的函数，传统上称为`update()`：
+```js
+function animate() {
+  // Update the animation...
+  // for example, move an element, change a style, and more.
+  update();
+  // Request the next frame
+  requestAnimationFrame(animate);
+}
+```
+`update()`函数是魔法发生的地方。在其中，你可以更改任何你想要动画化的内容。例如，更新样式或更改元素的位置：
+```js
+function update() {
+  element.style.transform = `translateX(${position}px)`;
+  position += 2;
+}
+```
+最终启动动画的是调用`requestAnimationFrame()`并传入`animate`函数，这次是在`animate`函数外部：
+```js
+requestAnimationFrame(animate);
+```
+
+#### Web Animations与CSS动画属性
+`Web Animations`API（WAAPI）允许你直接在 JavaScript 中创建和控件动画。使用 WAAPI，你可以更动态地处理动画，使操作更加简便。WAAPI 的核心是`Animation`构造函数，它提供了多个实例方法和属性，允许你动态地为元素制作动画。`Animation`构造函数中的一个重要方法是`animate()`。它允许你通过指定关键帧和持续时间、方向、缓动和迭代等选项来创建动画。以下是`animate()`方法的基本语法：
+```js
+element.animate(keyframes, options);
+```
+`Animation`构造的实例方法和实例属性包括：
+```js
+play()
+pause()
+reverse()
+finish()
+cancel()
+
+playbackRate
+currentTime
+startTime
+effect
+timeline
+playState
+finished
+onfinish
+oncancel
+```
+
+使用 CSS 动画，你可以通过`animation-name`、`animation-duration`和`animation-timing-function`等属性以声明式方式定义动画。你也可以使用 WAAPI 的`animate()`方法实现相同的效果。区别在于你可以更直接和动态地使用`animate()`方法控件你创建的动画，但使用 CSS 动画时，你需要通过定义自定义样式并在你的 JavaScript 文件中触发它们来完成更多操作。
+
+CSS 动画非常适合简单且声明式的自动运行动画。这些包括悬停效果、过渡或触发后不需要太多交互的动画。如果你的动画需要响应用户的点击、滚动等交互，或者你希望用户能够动态暂停、倒放或改变速度，WAAPI 是更好的选择。 
+
+#### Canvas
+`Canvas` API 是一个强大的工具，允许你直接在你的 JavaScript 文件中操作图形。一切都始于 HTML 中的`canvas`元素。该元素作为一个绘图表面，你可以使用`Canvas` API 的实例方法和属性来操作它。
+
+`Canvas` API 提供了创建惊人视觉效果所需的一切，包括形状、文本、动画，甚至复杂的游戏。它具有诸如`HTMLCanvasElement`、`CanvasRenderingContext2D`、`CanvasGradient`、`CanvasPattern`、`TextMetrics` 等接口，这些接口提供了你可以在 JavaScript 文件中使用的创建图形的方法和属性。
+
+#### 打开和关闭对话框元素
+当你想确保用户专注于模态的特定操作或消息时，可以使用`showModal()`方法打开模态对话框。这将为页面上的其他项添加一个背景并禁用它们。这对于显示形式、确认和需要用户操作的关键信息的模态非常理想。
+
+模态框在初始`Render`时是关闭的。可以通过使用`showModal()`方法自动打开模态框。最好将控件交给用户。为此可以为按钮添加点击事件监听器并使用 `showModal()`方法：
+```js
+const dialog = document.getElementById("modal");
+const openButton = document.getElementById("open-modal-btn");
+
+openButton.addEventListener("click", () => {
+  dialog.showModal();
+});
+```
+如果需要显示一个对话框，同时仍允许与对话框外的内容交互，那么可以使用`show()`方法：
+```js
+const dialog = document.getElementById("modal");
+const openButton = document.getElementById("open-modal-btn");
+
+openButton.addEventListener("click", () => {
+  dialog.show();
+});
+```
+要关闭模态窗口，你可以在`dialog`元素内为模态窗口添加一个按钮，并使用`close()`方法：
+```js
+const dialog = document.getElementById("modal");
+const openButton = document.getElementById("open-modal-btn");
+const closeButton = document.getElementById("close-modal-btn");
+
+openButton.addEventListener("click", () => {
+  dialog.show();
+});
+
+closeButton.addEventListener("click", () => {
+  dialog.close();
+});
+```
+
+### 事件对象与事件委托
+#### change事件
+`change`事件是一种特殊事件，当用户修改某些输入元素的值时触发。更具体地说：
+- 当复选框被选中或取消选中时。
+- 当单选按钮被选中时。
+- 当用户从类似日期选择器或下拉菜单的控件中进行选择时。
+- 当输入失去焦点（用户切换到下一个字段的标签（页），或点击表单外部）且用户已更改值时。
+- 当用户通过输入一些文本后按回车键等方式确认该值时。
+用户在输入时不会触发`change`事件。只有当他们聚焦到另一个元素后，才会触发`change`事件。`change`事件仍然会生成一个`Event`对象，但与大多数其他事件不同，它不会生成自定义实现——你只能访问基于`Event`对象的属性和方法。这与`input`事件不同，后者会生成一个专用的`InputEvent`对象。`change`事件在某些方面也有所不同。例如，当用户在字段中输入内容时，会触发`input`事件。
+
+#### 事件冒泡和事件委托
+事件冒泡，或传播，指的是当事件被触发时，事件如何“冒泡”到父对象。事件委托可以被视为相反的过程。它是将一个捕捉到的事件，委托给另一个元素的进程。
+
+## 无障碍
+### aria-expanded、aria-live与常见ARIA状态
+#### 使动态和交互式内容可访问
+在实际应用中，内容很少是静态的，页面通常通过 JavaScript 动态更新。当发生这种情况时，确保这些更改也反映在`HTML`中非常重要。这使得屏幕阅读器能够准确地向用户传达更新后的状态。否则，依赖辅助工具的人可能永远不会知道内容发生了变化，或者可能会收到过时或误导性的信息。
+
+#### aria-expanded属性
+`aria-expanded`属性用于无障碍目的，以指示控件是展开还是折叠。它与可折叠的小部件一起使用，如菜单、手风琴和其他控制内容可见性的信息披露小部件。如果控件是展开的，`aria-expanded`属性设置为`true`，如果是折叠的，则设置为`false`。`aria-expanded`提供的信息使使用屏幕阅读器的人能够理解控件的当前状态（是展开还是折叠）。`aria-expanded`属性应用于切换可折叠小部件可见性的交互元素。例如，如果按钮切换可展开菜单，则 `aria-expanded`属性放置在该按钮上。`aria-expanded`的值应随着用户与元素交互时使用 JavaScript 动态更新。
+
+属性`aria-controls`和`aria-owns`可以与`aria-expanded`结合使用，以建立控件元素与其控件元素之间的程序连接。当与`aria-expanded`一起使用时，`aria-controls`属性用于指定被控元素。例如，按钮可能会展开或折叠作为菜单的列表。`aria-controls`的值将是被控元素的`id`。
+
+对于像这样的可展开控件，最好让展开的内容在 DOM 中紧跟控制它的元素之后。这可以防止屏幕阅读器用户必须查找展开的内容，并使键盘用户更容易导航展开内容中的任何交互控件。如果无法将展开的内容立即放置在控件元素之后，`aria-owns`属性允许你在无障碍树中将其虚拟地移动到控件之后。这使得辅助技术如屏幕阅读器能够假装展开的内容直接放置在 DOM 中控件之后。
+
+使用`aria-owns`属性存在缺点。它会为屏幕阅读器用户造成不必要的冗长，因为大多数屏幕阅读器在首次展开时会自动朗读展开元素的全部内容。它也不会改变标签（页）顺序，可能会迫使键盘用户在到达展开内容之前，必须通过页面上的所有其他交互控件，除非你使用 JavaScript 管理标签（页）顺序。
+
+理想情况下，可展开内容应放置在控件元素之后，且只有在无法实现该情况的最坏情况下才应使用`aria-owns`属性。如果必须使用，你需要使用各种屏幕阅读器和浏览器进行彻底测试，以确保你的实现对所有人都是可访问的。
+
+当使用`aria-controls`或`aria-owns`时，`aria-expanded`的值必须在控件展开和折叠时持续更新。
+
+#### aria-live属性
+`aria-live`属性在你的页面上创建一个实时区域，可用于在动态内容发生变化时通知屏幕阅读器用户。实时区域的常见用途包括在执行操作后显示的消息（例如错误信息或确认消息）、定期更新的内容（例如跑马灯、走马灯或倒计时器），或通用的状态消息（例如关于进程的更新）。
+
+由于屏幕阅读器的阅读焦点一次只能位于一个位置，如果焦点在页面的其他部分，屏幕阅读器用户将不会注意到内容的变化。实时区域允许屏幕阅读器用户自动接收页面上实时发生的变化通知。没有实时区域，屏幕阅读器用户可能会错过视觉用户可见的重要内容更新，因为视觉用户能够扫描整个页面。
+
+根据信息的优先级，此属性有三种可能的值:
+- 如果将`aria-live`设置为值`assertive`，这意味着更新非常重要。它具有最高的优先级，因此应该立即通知用户。这意味着屏幕阅读器将中止它当前正在进行的任何公告，以宣布实时区域中的内容更改。此类中止可能会极其干扰，因此`assertive`值应仅用于时间敏感或关键通知。
+- 下一个优先级的值是`polite`。该值表示更新不是紧急的，因此屏幕读取器可以等待当前的任何公告完成或用户停止类型指派后再宣布更新。大多数实时区域将使用`polite`值。
+- `aria-live`的最低优先级值是`off`，这意味着除非内容位于当前具有键盘焦点的元素中，否则更新不会被宣布。实际上，这个值几乎从未被使用，因为使用场景非常狭窄，并且在屏幕阅读器中几乎没有一致地实现（如果有的话）。如果你需要实时区域，计划为除需要`assertive`的关键消息外的所有内容使用 `polite`。
+
+如果更新的信息包含在具有`alert`、`log`、`marquee`、`status`或`timer` ARIA 角色的元素中，则不需要 aria-live 属性，因为这些角色已经具有默认的 aria-live 值。但可以通过在元素上显式设置 aria-live 来更改默认值。
+
+选择合适的`aria-live`值取决于更新信息的优先级。如果更新很紧急，你应该立即使用`assertive`通知用户。但你应该仅在更新确实紧急时使用此方法，因为突然的中止可能会使用户迷失方向并影响用户体验。如果更新可以等到当前任务完成后再进行，你应该使用`polite`。
+
+#### 自定义控件元素上常用的 ARIA 状态
+`aria-selected`状态用于指示元素已被选中。可以在自定义控件中使用此状态，例如标签（页）接口、列表框或网格。标签（页）用于在有限空间内显示多个内容窗格。`aria-selected`状态用于指示当前选中的标签（页）。
+
+`aria-disabled`状态用于向使用辅助技术（例如屏幕阅读器）的人指示某个元素已被禁用。需要注意的是，`aria-disabled`并不会真正禁用该元素。由开发者负责使其看起来并表现得像一个禁用的元素。此属性也常用于本地的超文本标记语言元素，替代 `disabled`属性。选择哪一个取决于按钮所使用的上下文。
+
+`aria-haspopup`状态用于指示交互式元素在激活时将触发弹出元素。只有当弹出元素具有以下角色之一时才能使用`aria-haspopup`属性：`menu`、`listbox`、`tree`、`grid` 或 `dialog`。`aria-haspopup` 的值必须是这些角色之一或 `true`，后者默认为 `menu` 角色。
+
+`aria-required`属性用于指示在提交表单之前需要填写某个字段。如果标签已经包含单词`required`，那么你应该省略`aria-required`属性。这确保屏幕阅读器只会读取一次单词`required`。在大多数情况下可能会使用带有`required`属性的本地`label`和`form`元素。但如果你需要创建自定义表单控件，则在必要时添加`aria-required`属性非常重要。此外，`aria-required`属性也可以用于本地的表单输入，例如`input`、`textarea`和`select`元素。通常这比本地的`required`属性更受欢迎，因为`required`属性可能存在潜在的可用性和无障碍问题，特别是浏览器提供的默认误差处理。最终需要进行测试以确定哪种属性最适合。
+
+`aria-checked`属性用于指示元素是否处于选中状态。它最常用于创建自定义复选框、单选按钮、开关和列表框时。本地的复选框元素具有内置的`checked`状态，该状态会传达给辅助技术。但如果你正在创建自定义复选框控件，则需要使用`aria-checked`属性来指示其状态。当用户与自定义复选框控件交互时需要使用`aria-checked`状态来反映复选框的新状态。当复选框被选中时，`aria-checked`属性设置为`true`。当复选框未被选中时，设置为`false`。
+
+本地的元素通常具有更好的支持和内置无障碍特色。但是，如果你必须创建自定义控件，使用 ARIA 属性对于有效地向辅助技术传达这些控件的状态是必不可少的。
+
+#### aria-controls属性
+`aria-controls`属性用于创建一个程序化关系，连接控制页面上另一个元素存在的元素与它所控制的元素。此关系可以帮助屏幕阅读器用户更好地理解控件的工作方式。常见用法包括一组控制不同内容区域可见性的标签（页），或一个切换菜单可见性的按钮。
+
+## 调试
+### Debug技巧
+
