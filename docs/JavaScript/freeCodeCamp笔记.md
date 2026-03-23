@@ -1239,4 +1239,144 @@ closeButton.addEventListener("click", () => {
 
 ## 调试
 ### Debug技巧
+四种常见的错误信息类型是`SyntaxError`、`ReferenceError`、`TypeError`和`RangeError`。
+- 当代码中写错东西时，比如缺少一个括号或方括弧，就会发生`SyntaxError`。可以把它想象成句子中的语法错误。
+- `ReferenceError`有多种类型，由不同方式触发。第一种`ReferenceError`类型是未定义的变量。另一个`ReferenceError`的例子是尝试在用`let`或`const`声明的变量被定义之前访问该变量。
+- 第三种常见的误差是`TypeError`。当你尝试对错误的类型执行操作时，会发生这些误差。
+- 最后一个常见误差是`RangeError`。当代码尝试使用超出 JavaScript 可处理范围的值时，会发生`RangeError`。
+
+### 调试器语句
+当 JavaScript 执行你的代码并遇到`debugger`语句时，它会立即在该行暂停执行。然而这只有在浏览器开发者工具打开时才会发生。否则，`debugger`语句会被忽略，代码将照常运行。
+
+当使用`debugger`语句时，现代浏览器会在指定行暂停代码执行。它们还允许通过点击播放按钮恢复执行，但页面本身不会自动重新加载，除非手动触发。
+
+### 高级调试技术
+监视表达式允许你在代码运行时监控变量或表达式的值，即使它们不在当前作用域内。要添加监视表达式，请导航到开发者工具的 Sources 标签（页），在右侧查找监视窗格，然后点击加号`+`图标进行添加。
+
+`console.table()`在控制台中以表格形式显示表格数据。它接受一个必需的参数，该参数必须是数组或对象，以及一个选择性参数，用于指定要显示的属性或列。
+
+`console.dir()`允许你显示指定 JavaScript 对象属性的交互式列表。它输出一个可展开以查看所有嵌套属性的分层列表。
+
+## 基础正则表达式
+### 正则表达式
+#### 正则表达式与常见方法
+正则表达式，或称 regex，是一种特殊的语法，用于创建一个 "pattern"，你可以用它来查看 string、提取文本等。在 JavaScript 中通过在两个斜线（/）之间创建模式来定义正则表达式。基本的正则表达式：
+```js
+const regex = /freeCodeCamp/;
+```
+
+`test()`方法存在于`RegExp`对象上，`RegExp`对象是表现正则表达式（例如我们刚刚定义的那个）的对象。`test()`方法接受一个字串，该字串用于对正则表达式进行匹配测试。
+```js
+const regex = /freeCodeCamp/;
+const test = regex.test("e");
+console.log(test); // false
+```
+
+`match()`方法接受一个正则表达式，虽然也可以传入一个字串，它将被构造成一个正则表达式。`match()`返回该字串的匹配数组。不匹配时，返回 `null`而不是数组。
+```js
+const regex = /freeCodeCamp/;
+const match = "freeCodeCamp".match(regex);
+console.log(match);
+
+// [
+//   'freeCodeCamp',
+//   index: 0,
+//   input: 'freeCodeCamp',
+//   groups: undefined
+// ]
+```
+`groups`属性会显示任何捕捉的组。你将在以后的课程中了解这是什么意思。`index`属性告诉你在字串中的第几个字符找到了匹配。在我们的分支中，它是在字串的开头找到的。`input`属性告诉你`match()`方法被调用时的字串。
+
+`replace()`方法，它接受两个参数：用于匹配的正则表达式（或者字串，如果你不需要正则表达式的所有特色），以及用于替换匹配项的字串（或者对每个匹配项运行的函数）。
+
+#### 常见正则表达式修饰符
+`i`标记使正则表达式忽略分支。标记放在正则表达式的结束斜线后面：
+```js
+const regex = /freeCodeCamp/i;
+```
+```js
+const regex = /freeCodeCamp/i;
+
+console.log(regex.test("freeCodeCamp")); // true
+console.log(regex.test("freeCodeCamp is great")); // true
+console.log(regex.test("I love freeCodeCamp")); // true
+console.log(regex.test("freecodecamp")); // true
+console.log(regex.test("FREECODECAMP")); // true
+console.log(regex.test("free")); // false
+console.log(regex.test("code")); // false
+console.log(regex.test("camp")); // false
+```
+
+`g`标记，或全局修饰符，允许你的正则表达式匹配一个模式多次。当你需要从单个字串中获取多个匹配时，全局标记非常有用。但如果你用相同的正则表达式测试多个字串，最好关闭`g`标记。一个正则表达式可以使用多个标记（根据需要的数量）来实现你想要的行为：
+```js
+const regex = /freeCodeCamp/gi;
+```
+```js
+const regex = /freeCodeCamp/gi;
+
+console.log(regex.test("freeCodeCamp")); // true
+console.log(regex.test("freeCodeCamp is great")); // false
+console.log(regex.test("I love freeCodeCamp")); // true
+console.log(regex.test("freecodecamp")); // false
+console.log(regex.test("FREECODECAMP")); // true
+console.log(regex.test("free")); // false
+console.log(regex.test("code")); // false
+console.log(regex.test("camp")); // false
+```
+全局修饰符使你的正则表达式具有状态。这意味着它会跟踪之前匹配过模式的位置。所以当它匹配第一个`freeCodeCamp`字串时，它会记住在索引`0`处找到了匹配。
+
+当一个正则表达式是全局的时候，它会获得一个名为 lastIndex 的新建属性。
+```js
+const regex = /freeCodeCamp/gi;
+
+console.log(regex.lastIndex); // 0
+console.log(regex.test("freeCodeCamp")); // true
+console.log(regex.lastIndex); // 12
+console.log(regex.test("freeCodeCamp is great")); // false
+console.log(regex.lastIndex); // 0
+console.log(regex.test("I love freeCodeCamp")); // true
+console.log(regex.lastIndex); // 19
+console.log(regex.test("freecodecamp")); // false
+console.log(regex.lastIndex); // 0
+console.log(regex.test("FREECODECAMP")); // true
+console.log(regex.lastIndex); // 12
+console.log(regex.test("free")); // false
+console.log(regex.lastIndex); // 0
+console.log(regex.test("code")); // false
+console.log(regex.lastIndex); // 0
+console.log(regex.test("camp")); // false
+```
+
+入符号`^`锚点，位于正则表达式的开头，表示“匹配字串的开始”：
+```js
+const start = /^freecodecamp/i;
+```
+美元符号`$`锚点，位于正则表达式的末尾，表示“匹配字串的结尾”：
+```js
+const end = /freecodecamp$/i;
+```
+```js
+const start = /^freecodecamp/i;
+const end = /freecodecamp$/i;
+console.log(start.test("freecodecamp")); // true
+console.log(end.test("freecodecamp")); // true
+console.log(start.test("freecodecamp is great")); // true
+console.log(end.test("freecodecamp is great")); // false
+console.log(start.test("i love freecodecamp")); // false
+console.log(end.test("i love freecodecamp")); // true
+console.log(start.test("have met freecodecamp's founder")); // false
+console.log(end.test("have met freecodecamp's founder")); // false
+```
+
+可以使用`m`标记，或多行修饰符，使正则表达式处理多行。
+
+`d`标记扩展了你在匹配对象中获得的信息。匹配对象获得了一个新的`indices`属性！该属性是一个包含两个数字的数组，第一个数字是匹配在原始字串中开始的位置索引，第二个数字是匹配结束后的位置索引。该数组还有一个额外的`groups`属性，专门用于命名捕捉组。
+
+unicode 修饰符，或`u`标记。它扩展了正则表达式的功能性，使其能够匹配特殊的 unicode 字符。
+
+`v`标记，它进一步扩展了 unicode 匹配的功能性。
+
+粘性修饰符，或者说是`y`标记。粘性修饰符的行为与全局修饰符非常相似，但有一些例外。最大的问题是，全局的正则表达式将从`lastIndex`开始并在字串的剩余部分查找另一个匹配，但粘性正则表达式如果在之前的`lastIndex`处没有立即匹配，则会返回`null`并将`lastIndex`重置为`0`。
+
+单行修饰符，或称为`s`标记。请记住，多行修饰符允许起始和结束锚点匹配行的开始和结束，而不是整个字串。单行修饰符允许通配符字符，在正则表达式中由句点`.`表现，匹配换行符——有效地将字串视为单行文本。
 
