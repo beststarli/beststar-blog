@@ -1380,3 +1380,254 @@ unicode 修饰符，或`u`标记。它扩展了正则表达式的功能性，使
 
 单行修饰符，或称为`s`标记。请记住，多行修饰符允许起始和结束锚点匹配行的开始和结束，而不是整个字串。单行修饰符允许通配符字符，在正则表达式中由句点`.`表现，匹配换行符——有效地将字串视为单行文本。
 
+#### 字符串匹配和替换
+默认情况下，`match()`和`replace()`只针对第一个模式出现进行操作。
+```js
+const regex = /freecodecamp/;
+const str = "freecodecamp is the best we love freecodecamp";
+const matched = str.match(regex);
+const replaced = str.replace(regex, "freeCodeCamp");
+console.log(matched);
+console.log(replaced);
+
+// [
+//   'freecodecamp',
+//   index: 0,
+//   input: 'freecodecamp is the best we love freecodecamp',
+//   groups: undefined
+// ]
+// freeCodeCamp is the best we love freecodecamp
+```
+`match()`只返回了第一个匹配，`replace()`也只替换了第一个匹配。可以通过在正则表达式上使用全局的修饰符来避免这个问题。当在`match()`中使用全局修饰符时，会失去匹配数组中关于捕捉组和字串索引的额外信息。
+```js
+const regex = /freecodecamp/g;
+const str = "freecodecamp is the best we love freecodecamp";
+const matched = str.match(regex);
+const replaced = str.replace(regex, "freeCodeCamp");
+console.log(matched);
+console.log(replaced);
+
+// [ 'freecodecamp', 'freecodecamp' ]
+// freeCodeCamp is the best we love freeCodeCamp
+```
+2019 年的 ECMAScript 更新为我们带来了两个新方法：`matchAll()`和`replaceAll()`。像它们的单数对应方法一样，这些方法接受一个字串或正则表达式，而`replaceAll()`还接受第二个参数作为替换用的字串。但与之前的方法不同，如果你给`replaceAll()`和`matchAll()`传入没有全局修饰符的正则表达式，它们会抛出误差。
+```js
+const pattern = "freecodecamp";
+const str = "freecodecamp is the best we love freecodecamp";
+const matched = str.matchAll(pattern);
+const replaced = str.replaceAll(pattern, "freeCodeCamp");
+console.log(matched);
+console.log(replaced);
+
+// {}
+// freeCodeCamp is the best we love freeCodeCamp
+```
+那个空对象是什么？`matchAll()`返回一种称为`Iterator`的特殊类型对象，freeCodeCamp 控制台无法处理它。`Iterator`有一个`next()`方法，我们可以调用它来获取下一个值。`next()`给我们一个包含两个值的对象：`done`，当迭代器中还有更多元素时为`false`，以及`value`，它是我们刚刚迭代过的值。
+
+`matchAll()`迭代器是惰性的。它不会一次找到你所有的匹配项。只有当你通过调用`next()`告诉它时，它才会找到一个匹配项。只要找到匹配，它就不是`done`。一旦找不到匹配并返回`undefined`，它就是`done`。
+
+#### 字符类
+通配符由句点或点号`.`表现，匹配除换行符之外的任意单个字符。要允许通配符类匹配换行符，请记住需要使用`s`标记。
+```js
+const regex = /a./;
+```
+
+如果想匹配一个数字字符可能需要写出每个可能的数字，用或操作符`|`分隔它们：
+```js
+const regex = /0|1|2|3|4|5|6|7|8|9/;
+```
+存在一个字符类用于这个精确的模式，并提供了编写相同内容的简写语法。在这个分支中，字符类写作一个斜线（\）后跟一个 d 字符，此正则表达式将匹配与我们之前的表达式完全相同的模式：字串中任意位置的单个数字字符。：
+```js
+const regex = /\d/;
+```
+现在考虑一个正则表达式，它还需要匹配任何字母字符 a 到 z。可以写出每个单独的字符并用或操作符分隔。或者可以使用另一个字符类`\w`类，即一个斜线后跟一个`w`，表现为任何单词字符，单词字符被定义为从 a 到 z 的任何字母，或从 0 到 9 的数字，或下划线（_）字符：
+```js
+const regex = /\w/;
+```
+空白字符类`\s`，由一个反斜线后跟一个`s`表现。这个字符类将匹配任何空白字符，包括换行符、空格、标签（页）和特殊的 unicode 空白字符。
+
+这些特殊字符类可以被取反。要取反其中一个字符类，不要在斜线后使用小写字母，而是使用对应的大写字母。例如这个正则表达式不匹配数字字符。相反，它匹配任何不是数字字符的单个字符：
+```js
+const regex = /\D/;
+```
+对`\w`类取反将匹配任何不是`a`到`z`、`0`到`9`或下划线的字符，对`\s`字符类取反将匹配任何不是空白的字符。
+
+可以使用方括弧来构造你自己的字符类，此正则表达式将匹配列表中为`a`、`b`、`c`、`d`或`f`的单个字符：
+```js
+const regex = /[abcdf]/;
+```
+
+当有连续的字符时可以使用连字符创建一个范围。使用范围，我们可以将我们的正则表达式转换为更短的语法，同时匹配完全相同的模式:
+```js
+const regex = /[a-d]/;
+```
+
+正则表达式默认是区分分支的。这意味着我们的字符类只会匹配`a`、`b`、`c`和`d`的小写变体。可以使用`i`标记来实现这一点，但也可以通过包含大写变体将其直接内置到你的字符类中：
+```js
+const regex = /[a-zA-Z]/;
+```
+也可以在自己的字符类中混合数字和数字。例如如果想要`\w`类的行为但不包含下划线，可以构造：
+```js
+const regex = /[a-zA-Z0-9]/;
+```
+如果想让自己的字符类匹配字面连字符，需要将连字符放在类的开头或结尾：
+```js
+const regex = /[-a-zA-Z0-9]/;
+```
+
+#### Lookahead和Lookbehind断言
+前瞻和后顾断言允许你根据周围模式的存在或缺失来匹配特定的模式。这些断言有四种变体。
+
+正向前瞻断言是当一个模式后面跟着另一个模式时，该断言将匹配该模式。要构造一个正向前瞻，需要从想要匹配的`pattern`开始。然后，使用括号将想用作条件的`pattern`包裹起来。在开括号后，使用`?=`来定义该`pattern`为正向前瞻。此模式仅当`free`后面跟着`code`时才会匹配该单词：
+```js
+const regex = /free(?=code)/i;
+```
+```js
+const regex = /free(?=code)/i;
+console.log(regex.test("freeCodeCamp")); // true
+console.log(regex.test("free code camp")); // false
+console.log(
+  regex.test("I need someone for free to write code for me")
+); // false
+```
+
+如果想匹配`free`出现时后面不跟着`code`呢？可以将正向前瞻转换为负向前瞻以反转行为。为此，将`?=`改为`?!`：
+```js
+const regex = /free(?!code)/i;
+```
+```js
+const regex = /free(?!code)/i;
+console.log(regex.test("freeCodeCamp")); // false
+console.log(regex.test("free code camp")); // true
+console.log(
+  regex.test("I need someone for free to write code for me")
+); // true
+```
+回顾断言的功能类似于前瞻断言，不同之处在于它们不是基于后续的模式进行条件式匹配，而是基于前述的模式进行条件式匹配。让我们来看一个正向回顾。正向后行断言用`?<=`表示，而不是`?=`。让我们的正则表达式匹配前面带有`free`的`code`：
+```js
+const regex = /(?<=free)code/i;
+```
+```js
+const regex = /(?<=free)code/i;
+console.log(regex.test("freeCodeCamp")); // true
+console.log(regex.test("free code camp")); // false
+console.log(
+  regex.test("I need someone for free to write code for me")
+); // false
+```
+
+要匹配未被`free`之前的`code`，我们可以使用负向回顾。负向回顾是通过将`?<=`替换为`?<!`来定义的：
+```js
+const regex = /(?<!free)code/i;
+```
+
+#### 正则表达式量词
+量词由包含一个或两个数字的括弧状的花括弧定义。让我们在我们的模式中使用一个量词：
+```js
+// 两者等价
+const regex = /^\d{4}$/;
+
+const regex = /^\d\d\d\d$/;
+```
+七位数的标识符相当长。这些标识符的最大位数应为 6 位，最小位数应为 4 位。为实现此目的可以在逗号后为量词添加第二个数字。不能单独使用此语法来设置最大值——必须始终设置最小值。：
+```js
+const regex = /^\d{4,6}$/;
+console.log(regex.test("123")); // false
+console.log(regex.test("1234")); // true
+console.log(regex.test("12345")); // true
+console.log(regex.test("123456")); // true
+console.log(regex.test("1234567")); // false
+```
+实际上有一个针对单个可选字符的特殊简写量词——问号`?`。让我们用问号替换我们的量词：
+```js
+const regex = /^[a-zA-Z]?\d{4,6}$/;
+console.log(regex.test("123")); // false
+console.log(regex.test("a1234")); // true
+console.log(regex.test("12345")); // true
+console.log(regex.test("az12345")); // false
+console.log(regex.test("X123456")); // true
+console.log(regex.test("1234567")); // false
+```
+有另一种简写表示“匹配前一个字符零次或多次”——星号`*`符号。让我们用它替换模式中的量词，并进行测试：
+```js
+const regex = /^[a-zA-Z]*\d{4,6}$/;
+console.log(regex.test("123")); // false
+console.log(regex.test("a1234")); // true
+console.log(regex.test("12345")); // true
+console.log(regex.test("az12345")); // true
+console.log(regex.test("X123456")); // true
+console.log(regex.test("1234567")); // false
+```
+同样，我们可以使用一个最小值为 1 且没有定义最大值的量词，或者我们可以使用另一个特殊语法——加法`+`符号：
+```js
+const regex = /^[a-zA-Z]+\d{4,6}$/;
+console.log(regex.test("123")); // false
+console.log(regex.test("a1234")); // true
+console.log(regex.test("12345")); // false
+console.log(regex.test("az12345")); // true
+console.log(regex.test("X123456")); // true
+console.log(regex.test("1234567")); // false
+```
+
+#### 捕捉组和反向引用
+捕捉组允许你“捕捉”匹配字串的一部分，以便你根据需要使用。捕捉组由包含要捕捉的模式的括号定义，且没有像前瞻这样的前导字符。
+```js
+const regex = /free(code)camp/i;
+console.log(regex.test("freecodecamp")); // true
+```
+在 JavaScript 中，命名反向引用以斜线开头，后跟字母`k`。然后你添加名称，同样用小于号`<`和大于号`>`括起来。
+```js
+const regex = /free(?<code>co+de)camp.*free\k<code>camp/i;
+console.log(regex.test("freecooooodecamp is freecooooodecamp")); // true
+```
+
+## 表单验证
+### 理解表单验证
+#### 验证形式
+某些超文本标记语言元素，例如`textarea`和`input`元素，暴露了一个约束验证 API。该 API 允许你断言用户为该元素提供的值通过你编写的任何超文本标记语言级别的验证，例如最小长度或模式匹配。
+
+`checkValidity()`方法是约束验证 API 的一部分。`checkValidity()`方法在元素匹配所有基于其属性的超文本标记语言验证时返回`true`，否则返回`false`。
+
+`reportValidity()`方法会立即报告无效状态，而不是等待我们提交表单。但它仍然使用默认消息。这是因为`reportValidity()`方法只是告诉浏览器输入无效。浏览器仍然选择如何显示无效的原因。这就是`setCustomValidity()`方法的作用所在，此方法接受一个自定义错误信息，该信息会显示给用户。
+
+如果想进一步了解不同类型的有效性状态以及某个特定验证失败的原因，可以这样记录`validity`属性：
+```js
+const input = document.querySelector("input");
+
+input.addEventListener("input", (e) => {
+  console.log(e.target.validity);
+})
+```
+`validity`属性是`ValidityState`对象的一个实例。以下是该对象在浏览器中的示例：
+```js
+ValidityState {
+  badInput: false,
+  customError: false,
+  patternMismatch: true,
+  rangeOverflow: false,
+  rangeUnderflow: false,
+  stepMismatch: false,
+  tooLong: false,
+  tooShort: false,
+  typeMismatch: true,
+  valueMissing: false,
+  valid: true
+}
+```
+
+#### preventDefault()方法的目的
+每个在 DOM 中触发的事件都有某种默认行为。复选框上的`click`事件默认切换该复选框的状态。按下聚焦按钮上的空格键会激活该按钮。调用这些事件对象上的`preventDefault()`方法可以阻止该行为发生。
+
+当对`input`元素的`keydown`事件调用`preventDefault()`时，会阻止显示在输入字段中的字符。
+
+#### 提交事件与表单
+表单可以通过三种方式提交：
+- 当用户点击表单中`type`属性设置为`submit`的按钮时。
+- 当用户在表单中任何可编辑的输入字段上按下`Enter`键时。
+- 通过 JavaScript 调用表单元素的`requestSubmit()`或`submit()`方法。
+
+需要查看的第一个属性是`action`属性。`action`属性应包含一个 URL 或当前域的相对路径。该值决定了表单尝试发送数据的位置。如果没有设置`action`属性，表单将把数据发送到当前页面的 URL。
+
+第二个用于控制提交行为的属性是`method`属性。该属性接受标准的超文本传输协议方法，例如`GET`或`POST`，并在向`action` URL发起请求时使用该方法。当未设置方法时，表单将默认使用`GET`请求。`GET`请求用于从指定资源检索数据而不对其进行任何更改，参数通常以查询字串的形式追加到 URL 中。表单中的数据将作为`name=value`点对进行 URL 编码，并作为查询参数追加到`action` URL。
+
+也许不想将数据作为 URL 编码的表单负载发送？`form`元素接受一个`enctype`属性，该属性表现用于数据的编码类型。此属性仅接受三个值：`application/x-www-form-urlencoded`（这是默认值，将数据作为 URL 编码的表单体发送）、`text/plain`（以纯文本形式发送数据，使用换行符分隔的`name=value`点对），或`multipart/form-data`，专门用于处理带有文件上传的表单。
