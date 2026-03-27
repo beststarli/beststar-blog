@@ -1631,3 +1631,169 @@ ValidityState {
 第二个用于控制提交行为的属性是`method`属性。该属性接受标准的超文本传输协议方法，例如`GET`或`POST`，并在向`action` URL发起请求时使用该方法。当未设置方法时，表单将默认使用`GET`请求。`GET`请求用于从指定资源检索数据而不对其进行任何更改，参数通常以查询字串的形式追加到 URL 中。表单中的数据将作为`name=value`点对进行 URL 编码，并作为查询参数追加到`action` URL。
 
 也许不想将数据作为 URL 编码的表单负载发送？`form`元素接受一个`enctype`属性，该属性表现用于数据的编码类型。此属性仅接受三个值：`application/x-www-form-urlencoded`（这是默认值，将数据作为 URL 编码的表单体发送）、`text/plain`（以纯文本形式发送数据，使用换行符分隔的`name=value`点对），或`multipart/form-data`，专门用于处理带有文件上传的表单。
+
+## 日期
+### 了解日期
+#### Date对象
+Date对象时间使用的是 24 小时制格式，`GMT+0800`是时区偏移量，`中国标准时间`是时区名称。可以通过提供年、月、日、小时、分钟、秒和毫秒值作为参数，将特定的日期和时间传递给`Date`对象。
+```js
+const now = new Date();
+console.log(now);
+// Fri Mar 27 2026 15:52:15 GMT+0800 (中国标准时间)
+
+const specificDate = new Date("July 4, 1776 12:00:00");
+console.log(specificDate);
+// Thu Jul 04 1776 12:00:00 GMT+0805 (中国标准时间)
+```
+要获取当前日期和时间可以使用`Date.now()`方法，它返回自`January 1, 1970, 00:00:00 UTC`以来的毫秒数。这被称为 Unix 纪元时间。
+
+如果你需要根据当前日期获取一个月中的某一天，可以使用`getDate`方法。要获取月份可以使用`getMonth`方法，月份是从零开始的。如果需要获取完整的年份可以使用`getFullYear`方法：
+```js
+const now = new Date();
+const date = now.getDate();
+const month = now.getMonth();
+const year = now.getFullYear();
+console.log(date);  // 27
+console.log(month); // 2 (3月)
+console.log(year);  // 2026
+```
+`Date`对象上还有许多其他方法，包括`getHours`、`getMinutes`、`getSeconds`等。
+
+#### 日期格式的不同方式
+要以扩展的 ISO 格式（ISO 8601）格式化日期可以使用`toISOString()`方法，ISO 8601 是一个用于表现日期和时间的国际标准。格式为 `YYYY-MM-DDTHH:mm:ss.sssZ`。
+```js
+const date = new Date();
+console.log(date.toISOString());  // "2026-03-27T07:59:03.510Z"
+```
+另一种格式化日期的方法是使用 toLocaleDateString() 方法。此方法允许你根据用户的局部格式化日期。`toLocaleDateString()`方法接受两个可选的参数：`locales`和`options`。`locales`参数是一个表现要使用的区域设置的字串。如果不传入`locales`参数，则使用默认区域设置。第二个可选的参数是`options`参数。该参数是一个对象，允许你指定日期字串的形式。
+```js
+const date = new Date();
+console.log(date.toLocaleDateString()); // "2026/3/27"
+console.log(date.toLocaleDateString("fr-FR")); // "27/03/2026"
+
+const options = {
+  weekday: "long",
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+};
+console.log(date.toLocaleDateString("en-GB", options)); // "Friday, 27 March 2026"
+```
+
+## 音频与视频事件
+### 了解音频与视频事件
+#### 音频构造函数
+`Audio`构造函数，像其他构造函数一样，是一个使用`new`关键字调用的特殊函数。它返回一个`HTMLAudioElement`，你可以用它为用户播放音频，或将其追加到 DOM 中，让用户自行控制。当调用构造函数时，可以可选地传入一个 URL 作为（唯一）参数。该 URL 应指向想播放的音频文件的源。或者如果需要动态更改源，可以将 URL 赋值给返回的音频元素的`src`属性。
+
+返回的音频元素提供了多种用于控制音频的控件。你最有可能使用`play()`方法，它开始音频播放。还有`pause()`方法，它暂停音频播放但保留当前轨道位置，允许`play()`从该点继续播放。可能会期望有一个`stop()`方法，用于暂停音频播放并将轨道重置到开头。但实际上，你应该调用`pause()`并直接设置`currentTime`属性。
+
+`canPlayType()`方法可用于确定浏览器是否可能能够播放你特定的音频形式。
+
+#### 视频与音频的不同形式
+MIME 类型，全称为多用途互联网邮件扩展，是一种以编程方式标准化指示文件类型的方法。几乎每种文件格式都有一个 MIME 类型。例如，超文本标记语言 有类型`text/html`。一个 JSON 对象有类型`application/json`。甚至一个 Windows`.exe`安装程序也有 MIME 类型：`application/vnd.microsoft.portable-executable`。MIME 类型可以告诉应用程序，例如你的浏览器，如何处理特定的文件。在音频和视频的情况下，MIME 类型表示它是一种可以嵌入网页的多媒体格式。
+
+MP3 文件的 MIME 类型是`audio/mpeg`。然而，MP4 可以具有 MIME 类型`audio/mp4`或`video/mp4`，具体取决于它是视频文件还是仅音频。还有许多其他文件格式，例如波形格式 WAV、多用途的 OGG、用于 Windows 媒体播放器的 WMV、开源的 MKV，以及更多。
+
+有时无法知道用户的计算机会支持（或不支持）哪种格式。幸运的是`video`和`audio`元素都支持`source`元素。使用`source`元素，可以指定一个文件类型和`source`，并且可以通过使用多个`source`元素包含多种不同的类型。 当这样做时，浏览器将根据用户当前的环境确定最佳格式。
+
+#### Codec
+codec 是 “encoder/decoder” 的缩写，是一种可以在模拟和数字的音频与视频之间转换的算法或软件。编解码器可以作为 MIME 类型的一部分指定。定义编解码器的基本语法是在媒体类型后添加分号，然后是`codecs=`和编解码器。
+
+使用 Vorbis 编解码器的 OGG 音频文件的 MIME 类型可能是`audio/ogg; codecs=vorbis`。或者，如果一个文件支持多种编解码器，你可以将它们指定为逗号分隔，但必须用引号括起来：`video/webm; codecs="vp8, vorbis"`。但是某些文件类型的编解码器语法要复杂得多。例如，MP4 可能有一个`codecs="avc1.4d002a"`的编解码器，表示它是用 H.264 编码的。
+
+可以将它们包含在`source`元素的`type`属性中。这允许为相同的格式指定不同的编解码器，从而在确定为该用户环境使用哪种格式时，给浏览器提供更细粒度的选项。但也可以将它们用作传递给全局`MediaSource.isTypeSupported()`方法的 MIME 类型的一部分。该方法接受一个 MIME 类型，如果环境可能支持它，则返回`true`。或者更确切地说，如果无法为该文件类型实例化缓冲区，则返回`false`。
+
+#### HTMLMediaElement API
+`HTMLMediaElement` API 是一个强大的工具，用于控件页面上音频和视频元素的行为。它扩展了基础的`HTMLElement`接口，因此你可以访问基础属性以及这些有用的方法。
+
+`addTextTrack()`方法。此方法允许为媒体元素指定一个文本轨道，这对于为视频添加字幕尤其有帮助。或者`fastSeek()`方法，它允许将播放位置移动到媒体中的特定时间。
+
+当媒体播放结束时，会触发`ended`事件。当由于数据缓冲区而自动暂停播放时，会触发`waiting`事件。当媒体可以部分播放或完全播放时，会触发`canplay`和`canplaythrough`事件。
+
+#### 使用媒体流从局部设备捕捉视频和音频
+有时可能想捕捉音频或视频，而不是播放音频和视频。Media Capture and Streams API，或称 MediaStream API，允许这样做。为了使用该 API，需要创建`MediaStream`对象。可以使用构造函数来完成，但它不会绑定到用户的硬件。相反，全局的`navigator`对象的`mediaDevices`属性有一个供使用的`getUserMedia()`方法。此方法接受一个单一的`constraints`对象，该对象定义了你想接收的媒体类型。该对象具有`audio`和`video`属性，分别对应音频和视频流。如果你不想接收该类型的流，这些属性可以是`false`，如果想接收，则为 `true`，或者是定义了额外约束的对象。
+
+例如可以要求特定分辨率的视频输出：
+```js
+window.navigator.mediaDevices.getUserMedia({
+  audio: true,
+  video: {
+    width: {
+      min: 1280,
+      ideal: 1920,
+      max: 3840
+    },
+    height: {
+      min: 720,
+      ideal: 1080,
+      max: 2160
+    }
+  }
+});
+```
+此约束对象指定视频流的最小和最大分辨率。`ideal`属性指定最希望拥有的分辨率——流将提供最接近理想分辨率的分辨率。
+
+一旦创建了`MediaStream`（假设用户批准了自动`request`访问他们的`hardware`），就可以根据需要使用该`stream`数据。请注意，`getUserMedia()`返回一个 Promise，这意味着你要么需要一个回调函数来使用该流，要么使用异步的 async/await 语法。这是一个基本示例，将用户的摄像头视频流渲染到页面上。该 API 不提供对`screen capture`的访问。
+```js
+const video = document.querySelector("video");
+const stream =
+  await window.navigator.mediaDevices.getUserMedia({ video: true });
+video.srcObject = stream;
+await video.play();
+```
+
+#### 其他音视频API
+屏幕捕捉 API允许你记录用户的屏幕。通过调用`mediaDevices`对象的`getDisplayMedia()`方法并使用返回的媒体流即可访问此 API。
+
+MediaStream Recording API 与 MediaStreams API 协同工作，允许录制 MediaStream（甚至直接录制`HTMLMediaElement`）。然后它会触发带有 Blob 负载的`dataavailable`事件，你可以将其写入局部的文件存储。
+
+所有这些技术的基础是 Media Source Extensions API。Media Source Extensions API 允许你通过`srcObject`属性将用户的摄像头视频直接传递给视频元素。
+
+驱动网页上所有可听内容的 Web Audio API。该 API 包含重要的对象，如`AudioBuffer`（专门表现包含音频数据的缓冲区）或`AudioContext`。
+
+## 映射与集合
+### 了解映射与集合
+#### Set与WeakSet
+`Set`是一个用于管理数据集合的内置对象。它允许你保存任何类型的唯一值，无论是原语还是对象引用。`Set`确保其中的每个值只出现一次，使其在从数组中消除副本或处理不同值的集合时非常有用。
+
+`WeakSet`是一种具有较少特色的特殊`Set`类型，允许你保存弱引用的对象和符号。与`Set`不同，`WeakSet`不支持数字或字串等原语。与普通的`Set`不同，`WeakSet`只保存对象，并且对这些对象的引用是“弱引用”，这意味着如果没有其他引用指向这些对象，`WeakSet`不会阻止它们被垃圾回收。简单来说，如果对象在代码中没有被其他地方使用，它会被自动移除以释放内存。
+
+可以用来操作`Set`的其他方法有：
+- `delete()`
+- `clear()`
+- `has()`
+- `entries()`
+- `forEach()`
+- `keys()`
+- `values()`
+```js
+const treeSet = new Set();
+
+// Add items to the treeSet
+treeSet.add('Baobab');
+treeSet.add('Jackalberry');
+treeSet.add('Mopane Tree');
+treeSet.add('Breadfruit');
+
+treeSet.delete('Breadfruit');
+
+console.log(treeSet.size); // 3
+console.log(treeSet); // Set(3) {'Baobab', 'Jackalberry', 'Mopane Tree'}
+console.log(treeSet.has('Breadfruit')); // false
+console.log(treeSet.entries()); // SetIterator {'Baobab' => 'Baobab', 'Jackalberry' => 'Jackalberry', 'Mopane Tree' => 'Mopane Tree'}
+console.log('Keys: ', treeSet.keys()); // Keys: SetIterator {'Baobab', 'Jackalberry', 'Mopane Tree'}
+console.log('Values: ', treeSet.values()); // Values: SetIterator {'Baobab', 'Jackalberry', 'Mopane Tree'}
+treeSet.forEach((tree) => console.log(tree));
+/*
+Baobab
+Jackalberry
+Mopane Tree
+*/
+treeSet.clear();
+console.log(treeSet); // Set(0) {size: 0}
+```
+
+`Set`和`WeakSet`之间的关键区别在于`Set`可以保存任何值，而`WeakSet`只能保存对象。
+
+#### Map与WeakMap
+`Map`是一个内置对象，用于保存键值对，类似于对象。然而，它不同于标准的 JavaScript 对象，因为它允许任何类型的键，包括对象和函数。`WeakMap`是一个键值点对的集合，类似于`Map`，但它对键使用弱引用。键必须是对象，而值可以是任何类型。
