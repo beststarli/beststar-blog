@@ -157,7 +157,7 @@ console.log(result);  // true
 ```
 
 #### 提取子字符串
-`slice()`方法允许你提取字符串的一部分，并返回一个新的字符串，而不修改原始字符串。 它需要两个参数：开始索引和选填的结束索引。
+`slice()`方法允许提取字符串的一部分，并返回一个新的字符串，而不修改原始字符串。 它需要两个参数：开始索引和选填的结束索引。
 ```js
 string.slice(startIndex, endIndex);
 ```
@@ -193,7 +193,7 @@ console.log(language);  // JavaScript
 
 ### 处理字符串修改方法
 #### 用另一个字符串部分地替换字符串
-`replace()`方法允许你在字串中查找指定的值（例如单词或字符）并将其替换为另一个值。该方法返回一个带有替换的新字串，并且保持原字串不变，因为 JavaScript 字串是不可变的。
+`replace()`方法允许在字串中查找指定的值（例如单词或字符）并将其替换为另一个值。该方法返回一个带有替换的新字串，并且保持原字串不变，因为 JavaScript 字串是不可变的。
 ```js
 string.replace(searchValue, newValue);
 ```
@@ -216,11 +216,11 @@ console.log(updatedPhrase);  // "Hello, universe! Welcome to the world of coding
 ```
 
 #### 多次重复字符串
-`repeat()`方法是`JavaScript`中的一个内置函数，可让你重复指定次数的字符串。 这是基本语法：
+`repeat()`方法是`JavaScript`中的一个内置函数，可重复指定次数的字符串。 这是基本语法：
 ```js
 string.repeat(count);
 ```
-`string`是要重复的字符串，`count`是你希望字符串重复的次数。`count`参数必须是非负数。如果传递的是负数，JavaScript将抛出`RangeError`错误。`count`必须是一个有限的数字。 如果你尝试无限次重复一个字符串，或使用`Infinity`作为计数，也将得到`RangeError`。在 JavaScript 中，`Infinity`是一个表示无限量的特殊值。 它用来表示比任何有限数都大的数。如果计数不是整数（例如小数，如`2.5`），`repeat()`方法将四舍五入为最接近的整数。如果你传递`0`作为计数，`repeat()`方法将返回空字符串。
+`string`是要重复的字符串，`count`是希望字符串重复的次数。`count`参数必须是非负数。如果传递的是负数，JavaScript将抛出`RangeError`错误。`count`必须是一个有限的数字。 如果尝试无限次重复一个字符串，或使用`Infinity`作为计数，也将得到`RangeError`。在 JavaScript 中，`Infinity`是一个表示无限量的特殊值。 它用来表示比任何有限数都大的数。如果计数不是整数（例如小数，如`2.5`），`repeat()`方法将四舍五入为最接近的整数。如果传递`0`作为计数，`repeat()`方法将返回空字符串。
 ```js
 let word = "Test";
 console.log(word.repeat(-1));  // Throws RangeError: Invalid count value
@@ -507,7 +507,7 @@ array.splice(startIndex, itemsToRemove, item1, item2)
 ```
 
 #### 数组的浅拷贝
-数组的浅拷贝是一个新数组，具有与原数组相同的项。如果数组只包含像数字或字串这样的原语值，则新数组是完全独立的。但如果数组内部包含其他数组，原数组和拷贝都会引用相同的内部数组。这意味着如果你更改共享内部数组中的某些内容，你将在两个数组中看到该更改。
+数组的浅拷贝是一个新数组，具有与原数组相同的项。如果数组只包含像数字或字串这样的原语值，则新数组是完全独立的。但如果数组内部包含其他数组，原数组和拷贝都会引用相同的内部数组。这意味着如果更改共享内部数组中的某些内容，将在两个数组中看到该更改。
 
 `concat()`方法通过合并两个或多个数组来创建一个新数组。当与单个数组一起使用时，它可以有效地创建一个浅拷贝。
 ```js
@@ -575,7 +575,7 @@ const person = {
 console.log(person.hasOwnProperty("name")); // true
 console.log(person.hasOwnProperty("job")); // false
 ```
-`Object.hasOwn()`是检查对象是否拥有自身（非继承）属性的现代推荐方法。可以将其视为 `hasOwnProperty()`的升级版，更加安全。语法是`Object.hasOwn(object, propertyName)`——你将对象作为第一个参数，属性名作为第二个参数传入。
+`Object.hasOwn()`是检查对象是否拥有自身（非继承）属性的现代推荐方法。可以将其视为 `hasOwnProperty()`的升级版，更加安全。语法是`Object.hasOwn(object, propertyName)`——将对象作为第一个参数，属性名作为第二个参数传入。
 ```js
 const person = {
   name: "Alice",
@@ -670,7 +670,7 @@ console.log(typeof numObj); // "object"
 const newObj = new Object(undefined);
 console.log(newObj); // {}
 ```
-`Object()`构造函数的另一个使用场景是当你处理一个未知类型的值并且需要确保它是一个对象时。
+`Object()`构造函数的另一个使用场景是当处理一个未知类型的值并且需要确保它是一个对象时。
 ```js
 function toObject(value) {
     if (value === null || value === undefined) {
@@ -703,7 +703,7 @@ const developerObj = {
 // result: {"firstName":"Jessica","country":"USA"}
 console.log(JSON.stringify(developerObj, ["firstName", "country"]));
 ```
-`JSON.stringify()`方法的另一个可选参数是`spacer`参数。它允许你控制字符串化结果的间距：
+`JSON.stringify()`方法的另一个可选参数是`spacer`参数。它允许控制字符串化结果的间距：
 ```js
 const developerObj = {
   firstName: "Jessica",
@@ -723,7 +723,7 @@ console.log(JSON.stringify(developerObj, null, 2));
 }
 */
 ```
-`JSON.parse()`将 JSON 字串转换回 JavaScript 对象。当你从网络服务器或`localStorage`获取 JSON 数据并且需要在你的应用中操作这些数据时，这非常有用。
+`JSON.parse()`将 JSON 字串转换回 JavaScript 对象。当从网络服务器或`localStorage`获取 JSON 数据并且需要在应用中操作这些数据时，这非常有用。
 ```js
 const jsonString = '{"name":"John","age":30,"isAdmin":true}';
 const userObject = JSON.parse(jsonString);
@@ -735,7 +735,7 @@ console.log(userObject);
 
 ## 循环
 ### 学习循环
-`for...in`循环：当你需要循环遍历一个对象的属性时，这种类型的循环是最合适的。此循环将迭代对象的所有可枚举属性，包括继承的属性和非数字属性。
+`for...in`循环：当需要循环遍历一个对象的属性时，这种类型的循环是最合适的。此循环将迭代对象的所有可枚举属性，包括继承的属性和非数字属性。
 ```js
 const fruit = {
   name: 'apple',
@@ -813,9 +813,9 @@ increment(); // 2
 
 ### var关键字与提升
 #### var关键字
-当使用`var`声明一个变量时，它会变成函数作用域或全局作用域。这意味着如果你在函数内部使用`var`声明一个变量，它只能在该函数内访问。然而，如果你在任何函数外部声明它，它会变成一个全局变量，可以在整个脚本中访问。
+当使用`var`声明一个变量时，它会变成函数作用域或全局作用域。这意味着如果在函数内部使用`var`声明一个变量，它只能在该函数内访问。然而，如果在任何函数外部声明它，它会变成一个全局变量，可以在整个脚本中访问。
 
-`var`的一个问题是它允许你多次重新声明同一个变量而不会抛出错误。这可能导致意外覆盖并使调试更加困难。
+`var`的一个问题是它允许多次重新声明同一个变量而不会抛出错误。这可能导致意外覆盖并使调试更加困难。
 ```js
 var num = 5;
 console.log(num); // 5
@@ -834,14 +834,14 @@ console.log(num); // 5
 ```
 
 #### 提升
-让我们从变量提升开始，当你使用`var`关键字声明一个变量时，JavaScript 会将声明提升到其作用域的顶部。然而，关键的是要注意，只有声明被提升，初始化不会被提升。这意味着你可以在声明变量之前在代码中使用它，但它的值将是`undefined`，直到你实际为它赋值。
+让我们从变量提升开始，当使用`var`关键字声明一个变量时，JavaScript 会将声明提升到其作用域的顶部。然而，关键的是要注意，只有声明被提升，初始化不会被提升。这意味着可以在声明变量之前在代码中使用它，但它的值将是`undefined`，直到实际为它赋值。
 ```js
 console.log(x); // undefined
 var x = 5;
 console.log(x); // 5
 ```
 
-函数提升的工作方式有些不同。当你使用`function`声明语法声明一个函数时，函数名和函数体都会被提升。这意味着你可以在代码中声明函数之前调用它。
+函数提升的工作方式有些不同。当使用`function`声明语法声明一个函数时，函数名和函数体都会被提升。这意味着可以在代码中声明函数之前调用它。
 ```js
 sayHello(); // "Hello, World!"
 
@@ -891,9 +891,9 @@ console.log(triple(5)); // 15
 JavaScript 中许多内置数组方法，如`map()`、`filter()`和`reduce()`，都是高阶函数。这些方法将函数作为参数，并以各种方式将其应用到数组的元素上。
 
 #### Reduce方法
-`reduce`方法是 JavaScript 中的一个函数，允许你处理一个数组并将其压缩为单个值。这个单个值可以是数字、字串、对象，甚至是另一个数组。`reduce`的核心工作原理是按顺序将一个函数应用到数组中的每个元素，将每次计算的结果传递给下一个。这个函数通常被称为`reducer`函数。
+`reduce`方法是 JavaScript 中的一个函数，允许处理一个数组并将其压缩为单个值。这个单个值可以是数字、字串、对象，甚至是另一个数组。`reduce`的核心工作原理是按顺序将一个函数应用到数组中的每个元素，将每次计算的结果传递给下一个。这个函数通常被称为`reducer`函数。
 
-`reducer`函数接受两个主要参数：累加器和当前值。累加器是你保存操作运行结果的地方，当前值是正在处理的数组元素。
+`reducer`函数接受两个主要参数：累加器和当前值。累加器是保存操作运行结果的地方，当前值是正在处理的数组元素。
 ```js
 const numbers = [1, 2, 3, 4, 5];
 const sum = numbers.reduce(
@@ -965,7 +965,7 @@ HTML 文档是 DOM 层次结构中的根节点。它有一个子节点，即`htm
 const container = document.getElementById("container");
 ```
 
-`querySelector()`比`getElementById()`更广泛。使用`querySelector()`，你可以获取 HTML 文档中第一个匹配作为参数传入的 CSS 选择器的元素。如果想使用`querySelector()`通过类名选择一个元素，需要在类名前加上点号`.`。
+`querySelector()`比`getElementById()`更广泛。使用`querySelector()`，可以获取 HTML 文档中第一个匹配作为参数传入的 CSS 选择器的元素。如果想使用`querySelector()`通过类名选择一个元素，需要在类名前加上点号`.`。
 
 #### querySelectorAll()方法
 `querySelectorAll()`方法可以获取匹配特定 CSS 选择器的所有 DOM 元素的列表。
@@ -975,9 +975,9 @@ document.querySelectorAll(selectors);
 在`document`对象上调用它，并传入包含 CSS 选择器的字串作为参数。该参数必须是有效的 CSS 选择器字串。否则，将抛出`SyntaxError`异常。`querySelectorAll()`返回一个`NodeList`对象，该对象是匹配指定 CSS 选择器的节点集合。该列表将包含每个匹配 CSS 选择器的`Element`对象。如果未找到匹配项，列表将为空。这些元素将按照它们在 HTML 文档中出现的顺序排列。
 
 #### 使用innerHTML和createElement()创建新节点
-`innerHTML`是`Element`对象的一个属性，你可以用它来设置它们的超文本标记语言结构。通过`innerHTML`，你可以用字串设置现有元素的超文本标记语言结构，从而创建所有必要的节点。
+`innerHTML`是`Element`对象的一个属性，可以用它来设置它们的超文本标记语言结构。通过`innerHTML`，可以用字串设置现有元素的超文本标记语言结构，从而创建所有必要的节点。
 
-如果字串将由用户输入，不应该使用`innerHTML`，因为用户可能会将恶意内容插入到你的网站中。因此，通常建议使用`textContent`来插入纯文本。
+如果字串将由用户输入，不应该使用`innerHTML`，因为用户可能会将恶意内容插入到网站中。因此，通常建议使用`textContent`来插入纯文本。
 
 另一种创建新节点的方法是使用`createElement()`方法。通过这个新方法可以通过指定它的标签名称来创建一个新元素。如果文档是`HTMLDocument`，则 `createElement()`方法返回一个新建的`HTMLElement`对象。否则，它返回一个`Element`对象。
 
@@ -986,7 +986,7 @@ document.querySelectorAll(selectors);
 #### innerText、textContent和innerHTML的区别
 `innerText`表现 HTML 元素及其子元素的可见文本内容。此属性不包括隐藏文本或 HTML 标签，仅包含渲染的文本。由于`innerText`会考虑可见性，获取其值会触发一个称为 "reflow" 的进程，该进程会重新计算网站上某些元素的位置。此进程可能计算量很大，因此如果可能，应该避免触发它。
 
-`textContent`返回一个元素的纯文本内容，包括其所有子孙中的文本。`innerText`和`textContent`之间最重要的区别是，`textContent`始终返回一个超文本标记语言元素及其子元素的完整文本内容，无论其是可见还是隐藏。`textContent`也将包含像`script`和`style`这样的元素的内容。如果你尝试替换节点上的`textContent`的值，它将删除所有子节点，并用包含新字串的单个文本节点替换它们.
+`textContent`返回一个元素的纯文本内容，包括其所有子孙中的文本。`innerText`和`textContent`之间最重要的区别是，`textContent`始终返回一个超文本标记语言元素及其子元素的完整文本内容，无论其是可见还是隐藏。`textContent`也将包含像`script`和`style`这样的元素的内容。如果尝试替换节点上的`textContent`的值，它将删除所有子节点，并用包含新字串的单个文本节点替换它们.
 
 #### appendChild()和removeChild()
 `appendChild()`方法用于将节点添加到指定父节点的子节点列表末尾。
@@ -1023,14 +1023,14 @@ setAttribute(attribute, value);
 ```
 
 #### 事件对象
-`Event`对象是一个负载，当用户以某种方式与你的网页交互时触发。所有`Event`对象都将具有`type`属性。该属性显示触发负载的事件类型，例如 "keydown" 或 "click"。
+`Event`对象是一个负载，当用户以某种方式与网页交互时触发。所有`Event`对象都将具有`type`属性。该属性显示触发负载的事件类型，例如 "keydown" 或 "click"。
 
 `Event`对象将始终具有`target`属性。`target`属性是对触发该事件的对象的引用。最常见的是某种`HTMLElement`对象，或者是`Document`或 `Window`对象。但它也可以是更具体的东西，比如`AudioContext`。
 
 事件也有方法，这些方法是作为属性暴露在对象上的函数。一个常用的方法是`preventDefault()`，调用它可以阻止事件的默认行为。`stopPropagation()`方法阻止事件向上冒泡或传播到父元素。
 
 #### addEventListener()
-`addEventListener()`方法用于监听事件。它接受两个参数：你想监听的事件和事件发生时将被调用的函数。
+`addEventListener()`方法用于监听事件。它接受两个参数：想监听的事件和事件发生时将被调用的函数。
 ```js
 element.addEventListener("event", listener);
 ```
@@ -1046,7 +1046,7 @@ element.removeEventListener("event", listener);
 #### 内联事件处理器
 内联事件处理器是超文本标记语言元素上的特殊属性，用于在事件发生时执行 JavaScript 代码。
 
-内联事件处理器只能用于为一个元素添加一个事件监听器。如果你想为同一个元素添加多个事件监听器，你需要使用`addEventListener()`。另一个原因是内联事件处理器将超文本标记语言和 JavaScript 代码混合在一起，这会使你的代码更难读取和维护。最好通过使用`addEventListener()`将事件监听器添加到元素，从而将超文本标记语言代码和 JavaScript 代码分开。
+内联事件处理器只能用于为一个元素添加一个事件监听器。如果想为同一个元素添加多个事件监听器，需要使用`addEventListener()`。另一个原因是内联事件处理器将超文本标记语言和 JavaScript 代码混合在一起，这会使代码更难读取和维护。最好通过使用`addEventListener()`将事件监听器添加到元素，从而将超文本标记语言代码和 JavaScript 代码分开。
 
 内联事件处理器不推荐在现代 JavaScript 中使用。因此，在处理 JavaScript 中的事件时，最好坚持使用`addEventListener()`方法。
 
@@ -1056,12 +1056,12 @@ element.removeEventListener("event", listener);
 操作样式的另一种方法是使用`Element.classList`属性。`classList`属性是一个只读属性，可用于为元素添加、移除或切换类。让我们来看几个示例。
 
 #### DOMContentLoaded事件
-当 HTML 文档中的所有内容都已装载并解析时，会触发`DOMContentLoaded`事件。如果你有外部样式表或图像，`DOMContentLoaded`事件不会等待它们装载。它只会等待 HTML 装载完成。与`load`事件不同，后者等待所有内容装载完成，包括外部样式表、图像等。
+当 HTML 文档中的所有内容都已装载并解析时，会触发`DOMContentLoaded`事件。如果有外部样式表或图像，`DOMContentLoaded`事件不会等待它们装载。它只会等待 HTML 装载完成。与`load`事件不同，后者等待所有内容装载完成，包括外部样式表、图像等。
 
 #### setTimeout和setInterval 
 setTimeout()和setInterval()都接受两个参数：一个函数和一个延迟。
 
-由于`setInterval()`会在指定的间隔内持续执行提供的函数，可能想要停止它。为此必须使用`clearInterval()`方法。`clearInterval()`需要你想停止的`setInterval()`的 ID。这可以是你为该间隔赋值的变量。停止间隔的一种方法是在`setTimeout()`内部，因为这将在一定时间后停止间隔:
+由于`setInterval()`会在指定的间隔内持续执行提供的函数，可能想要停止它。为此必须使用`clearInterval()`方法。`clearInterval()`需要想停止的`setInterval()`的 ID。这可以是为该间隔赋值的变量。停止间隔的一种方法是在`setTimeout()`内部，因为这将在一定时间后停止间隔:
 ```js
 const intervalID = setInterval(() => {
  console.log("This will stop after 5 seconds");
@@ -1081,7 +1081,7 @@ clearTimeout(timeoutID);
 ```
 
 #### requestAnimationFrame()
-`requestAnimationFrame()`是一种方法，允许你在下一次屏幕重绘之前调度动画的下一步，从而实现流畅且视觉上吸引人的体验。下一次屏幕重绘是指浏览器刷新网页视觉显示的时刻。这通常每秒发生多次，在大多数显示器上大约为 60 次（或每秒 60 帧）。要使用`requestAnimationFrame()`方法，只需调用它并传入一个回调函数：
+`requestAnimationFrame()`是一种方法，允许在下一次屏幕重绘之前调度动画的下一步，从而实现流畅且视觉上吸引人的体验。下一次屏幕重绘是指浏览器刷新网页视觉显示的时刻。这通常每秒发生多次，在大多数显示器上大约为 60 次（或每秒 60 帧）。要使用`requestAnimationFrame()`方法，只需调用它并传入一个回调函数：
 ```js
 requestAnimationFrame(callback);
 ```
@@ -1095,7 +1095,7 @@ function animate() {
   requestAnimationFrame(animate);
 }
 ```
-`update()`函数是魔法发生的地方。在其中，你可以更改任何你想要动画化的内容。例如，更新样式或更改元素的位置：
+`update()`函数是魔法发生的地方。在其中，可以更改任何想要动画化的内容。例如，更新样式或更改元素的位置：
 ```js
 function update() {
   element.style.transform = `translateX(${position}px)`;
@@ -1108,7 +1108,7 @@ requestAnimationFrame(animate);
 ```
 
 #### Web Animations与CSS动画属性
-`Web Animations`API（WAAPI）允许你直接在 JavaScript 中创建和控件动画。使用 WAAPI，你可以更动态地处理动画，使操作更加简便。WAAPI 的核心是`Animation`构造函数，它提供了多个实例方法和属性，允许你动态地为元素制作动画。`Animation`构造函数中的一个重要方法是`animate()`。它允许你通过指定关键帧和持续时间、方向、缓动和迭代等选项来创建动画。以下是`animate()`方法的基本语法：
+`Web Animations`API（WAAPI）允许直接在 JavaScript 中创建和控件动画。使用 WAAPI，可以更动态地处理动画，使操作更加简便。WAAPI 的核心是`Animation`构造函数，它提供了多个实例方法和属性，允许动态地为元素制作动画。`Animation`构造函数中的一个重要方法是`animate()`。它允许通过指定关键帧和持续时间、方向、缓动和迭代等选项来创建动画。以下是`animate()`方法的基本语法：
 ```js
 element.animate(keyframes, options);
 ```
@@ -1131,17 +1131,17 @@ onfinish
 oncancel
 ```
 
-使用 CSS 动画，你可以通过`animation-name`、`animation-duration`和`animation-timing-function`等属性以声明式方式定义动画。你也可以使用 WAAPI 的`animate()`方法实现相同的效果。区别在于你可以更直接和动态地使用`animate()`方法控件你创建的动画，但使用 CSS 动画时，你需要通过定义自定义样式并在你的 JavaScript 文件中触发它们来完成更多操作。
+使用 CSS 动画，可以通过`animation-name`、`animation-duration`和`animation-timing-function`等属性以声明式方式定义动画。也可以使用 WAAPI 的`animate()`方法实现相同的效果。区别在于可以更直接和动态地使用`animate()`方法控件创建的动画，但使用 CSS 动画时，需要通过定义自定义样式并在 JavaScript 文件中触发它们来完成更多操作。
 
-CSS 动画非常适合简单且声明式的自动运行动画。这些包括悬停效果、过渡或触发后不需要太多交互的动画。如果你的动画需要响应用户的点击、滚动等交互，或者你希望用户能够动态暂停、倒放或改变速度，WAAPI 是更好的选择。 
+CSS 动画非常适合简单且声明式的自动运行动画。这些包括悬停效果、过渡或触发后不需要太多交互的动画。如果动画需要响应用户的点击、滚动等交互，或者希望用户能够动态暂停、倒放或改变速度，WAAPI 是更好的选择。 
 
 #### Canvas
-`Canvas` API 是一个强大的工具，允许你直接在你的 JavaScript 文件中操作图形。一切都始于 HTML 中的`canvas`元素。该元素作为一个绘图表面，你可以使用`Canvas` API 的实例方法和属性来操作它。
+`Canvas` API 是一个强大的工具，允许直接在 JavaScript 文件中操作图形。一切都始于 HTML 中的`canvas`元素。该元素作为一个绘图表面，可以使用`Canvas` API 的实例方法和属性来操作它。
 
-`Canvas` API 提供了创建惊人视觉效果所需的一切，包括形状、文本、动画，甚至复杂的游戏。它具有诸如`HTMLCanvasElement`、`CanvasRenderingContext2D`、`CanvasGradient`、`CanvasPattern`、`TextMetrics` 等接口，这些接口提供了你可以在 JavaScript 文件中使用的创建图形的方法和属性。
+`Canvas` API 提供了创建惊人视觉效果所需的一切，包括形状、文本、动画，甚至复杂的游戏。它具有诸如`HTMLCanvasElement`、`CanvasRenderingContext2D`、`CanvasGradient`、`CanvasPattern`、`TextMetrics` 等接口，这些接口提供了可以在 JavaScript 文件中使用的创建图形的方法和属性。
 
 #### 打开和关闭对话框元素
-当你想确保用户专注于模态的特定操作或消息时，可以使用`showModal()`方法打开模态对话框。这将为页面上的其他项添加一个背景并禁用它们。这对于显示形式、确认和需要用户操作的关键信息的模态非常理想。
+当想确保用户专注于模态的特定操作或消息时，可以使用`showModal()`方法打开模态对话框。这将为页面上的其他项添加一个背景并禁用它们。这对于显示形式、确认和需要用户操作的关键信息的模态非常理想。
 
 模态框在初始`Render`时是关闭的。可以通过使用`showModal()`方法自动打开模态框。最好将控件交给用户。为此可以为按钮添加点击事件监听器并使用 `showModal()`方法：
 ```js
@@ -1161,7 +1161,7 @@ openButton.addEventListener("click", () => {
   dialog.show();
 });
 ```
-要关闭模态窗口，你可以在`dialog`元素内为模态窗口添加一个按钮，并使用`close()`方法：
+要关闭模态窗口，可以在`dialog`元素内为模态窗口添加一个按钮，并使用`close()`方法：
 ```js
 const dialog = document.getElementById("modal");
 const openButton = document.getElementById("open-modal-btn");
@@ -1184,7 +1184,7 @@ closeButton.addEventListener("click", () => {
 - 当用户从类似日期选择器或下拉菜单的控件中进行选择时。
 - 当输入失去焦点（用户切换到下一个字段的标签（页），或点击表单外部）且用户已更改值时。
 - 当用户通过输入一些文本后按回车键等方式确认该值时。
-用户在输入时不会触发`change`事件。只有当他们聚焦到另一个元素后，才会触发`change`事件。`change`事件仍然会生成一个`Event`对象，但与大多数其他事件不同，它不会生成自定义实现——你只能访问基于`Event`对象的属性和方法。这与`input`事件不同，后者会生成一个专用的`InputEvent`对象。`change`事件在某些方面也有所不同。例如，当用户在字段中输入内容时，会触发`input`事件。
+用户在输入时不会触发`change`事件。只有当他们聚焦到另一个元素后，才会触发`change`事件。`change`事件仍然会生成一个`Event`对象，但与大多数其他事件不同，它不会生成自定义实现——只能访问基于`Event`对象的属性和方法。这与`input`事件不同，后者会生成一个专用的`InputEvent`对象。`change`事件在某些方面也有所不同。例如，当用户在字段中输入内容时，会触发`input`事件。
 
 #### 事件冒泡和事件委托
 事件冒泡，或传播，指的是当事件被触发时，事件如何“冒泡”到父对象。事件委托可以被视为相反的过程。它是将一个捕捉到的事件，委托给另一个元素的进程。
@@ -1199,27 +1199,27 @@ closeButton.addEventListener("click", () => {
 
 属性`aria-controls`和`aria-owns`可以与`aria-expanded`结合使用，以建立控件元素与其控件元素之间的程序连接。当与`aria-expanded`一起使用时，`aria-controls`属性用于指定被控元素。例如，按钮可能会展开或折叠作为菜单的列表。`aria-controls`的值将是被控元素的`id`。
 
-对于像这样的可展开控件，最好让展开的内容在 DOM 中紧跟控制它的元素之后。这可以防止屏幕阅读器用户必须查找展开的内容，并使键盘用户更容易导航展开内容中的任何交互控件。如果无法将展开的内容立即放置在控件元素之后，`aria-owns`属性允许你在无障碍树中将其虚拟地移动到控件之后。这使得辅助技术如屏幕阅读器能够假装展开的内容直接放置在 DOM 中控件之后。
+对于像这样的可展开控件，最好让展开的内容在 DOM 中紧跟控制它的元素之后。这可以防止屏幕阅读器用户必须查找展开的内容，并使键盘用户更容易导航展开内容中的任何交互控件。如果无法将展开的内容立即放置在控件元素之后，`aria-owns`属性允许在无障碍树中将其虚拟地移动到控件之后。这使得辅助技术如屏幕阅读器能够假装展开的内容直接放置在 DOM 中控件之后。
 
-使用`aria-owns`属性存在缺点。它会为屏幕阅读器用户造成不必要的冗长，因为大多数屏幕阅读器在首次展开时会自动朗读展开元素的全部内容。它也不会改变标签（页）顺序，可能会迫使键盘用户在到达展开内容之前，必须通过页面上的所有其他交互控件，除非你使用 JavaScript 管理标签（页）顺序。
+使用`aria-owns`属性存在缺点。它会为屏幕阅读器用户造成不必要的冗长，因为大多数屏幕阅读器在首次展开时会自动朗读展开元素的全部内容。它也不会改变标签（页）顺序，可能会迫使键盘用户在到达展开内容之前，必须通过页面上的所有其他交互控件，除非使用 JavaScript 管理标签（页）顺序。
 
-理想情况下，可展开内容应放置在控件元素之后，且只有在无法实现该情况的最坏情况下才应使用`aria-owns`属性。如果必须使用，你需要使用各种屏幕阅读器和浏览器进行彻底测试，以确保你的实现对所有人都是可访问的。
+理想情况下，可展开内容应放置在控件元素之后，且只有在无法实现该情况的最坏情况下才应使用`aria-owns`属性。如果必须使用，需要使用各种屏幕阅读器和浏览器进行彻底测试，以确保实现对所有人都是可访问的。
 
 当使用`aria-controls`或`aria-owns`时，`aria-expanded`的值必须在控件展开和折叠时持续更新。
 
 #### aria-live属性
-`aria-live`属性在你的页面上创建一个实时区域，可用于在动态内容发生变化时通知屏幕阅读器用户。实时区域的常见用途包括在执行操作后显示的消息（例如错误信息或确认消息）、定期更新的内容（例如跑马灯、走马灯或倒计时器），或通用的状态消息（例如关于进程的更新）。
+`aria-live`属性在页面上创建一个实时区域，可用于在动态内容发生变化时通知屏幕阅读器用户。实时区域的常见用途包括在执行操作后显示的消息（例如错误信息或确认消息）、定期更新的内容（例如跑马灯、走马灯或倒计时器），或通用的状态消息（例如关于进程的更新）。
 
 由于屏幕阅读器的阅读焦点一次只能位于一个位置，如果焦点在页面的其他部分，屏幕阅读器用户将不会注意到内容的变化。实时区域允许屏幕阅读器用户自动接收页面上实时发生的变化通知。没有实时区域，屏幕阅读器用户可能会错过视觉用户可见的重要内容更新，因为视觉用户能够扫描整个页面。
 
 根据信息的优先级，此属性有三种可能的值:
 - 如果将`aria-live`设置为值`assertive`，这意味着更新非常重要。它具有最高的优先级，因此应该立即通知用户。这意味着屏幕阅读器将中止它当前正在进行的任何公告，以宣布实时区域中的内容更改。此类中止可能会极其干扰，因此`assertive`值应仅用于时间敏感或关键通知。
 - 下一个优先级的值是`polite`。该值表示更新不是紧急的，因此屏幕读取器可以等待当前的任何公告完成或用户停止类型指派后再宣布更新。大多数实时区域将使用`polite`值。
-- `aria-live`的最低优先级值是`off`，这意味着除非内容位于当前具有键盘焦点的元素中，否则更新不会被宣布。实际上，这个值几乎从未被使用，因为使用场景非常狭窄，并且在屏幕阅读器中几乎没有一致地实现（如果有的话）。如果你需要实时区域，计划为除需要`assertive`的关键消息外的所有内容使用 `polite`。
+- `aria-live`的最低优先级值是`off`，这意味着除非内容位于当前具有键盘焦点的元素中，否则更新不会被宣布。实际上，这个值几乎从未被使用，因为使用场景非常狭窄，并且在屏幕阅读器中几乎没有一致地实现（如果有的话）。如果需要实时区域，计划为除需要`assertive`的关键消息外的所有内容使用 `polite`。
 
 如果更新的信息包含在具有`alert`、`log`、`marquee`、`status`或`timer` ARIA 角色的元素中，则不需要 aria-live 属性，因为这些角色已经具有默认的 aria-live 值。但可以通过在元素上显式设置 aria-live 来更改默认值。
 
-选择合适的`aria-live`值取决于更新信息的优先级。如果更新很紧急，你应该立即使用`assertive`通知用户。但你应该仅在更新确实紧急时使用此方法，因为突然的中止可能会使用户迷失方向并影响用户体验。如果更新可以等到当前任务完成后再进行，你应该使用`polite`。
+选择合适的`aria-live`值取决于更新信息的优先级。如果更新很紧急，应该立即使用`assertive`通知用户。但应该仅在更新确实紧急时使用此方法，因为突然的中止可能会使用户迷失方向并影响用户体验。如果更新可以等到当前任务完成后再进行，应该使用`polite`。
 
 #### 自定义控件元素上常用的 ARIA 状态
 `aria-selected`状态用于指示元素已被选中。可以在自定义控件中使用此状态，例如标签（页）接口、列表框或网格。标签（页）用于在有限空间内显示多个内容窗格。`aria-selected`状态用于指示当前选中的标签（页）。
@@ -1228,11 +1228,11 @@ closeButton.addEventListener("click", () => {
 
 `aria-haspopup`状态用于指示交互式元素在激活时将触发弹出元素。只有当弹出元素具有以下角色之一时才能使用`aria-haspopup`属性：`menu`、`listbox`、`tree`、`grid` 或 `dialog`。`aria-haspopup` 的值必须是这些角色之一或 `true`，后者默认为 `menu` 角色。
 
-`aria-required`属性用于指示在提交表单之前需要填写某个字段。如果标签已经包含单词`required`，那么你应该省略`aria-required`属性。这确保屏幕阅读器只会读取一次单词`required`。在大多数情况下可能会使用带有`required`属性的本地`label`和`form`元素。但如果你需要创建自定义表单控件，则在必要时添加`aria-required`属性非常重要。此外，`aria-required`属性也可以用于本地的表单输入，例如`input`、`textarea`和`select`元素。通常这比本地的`required`属性更受欢迎，因为`required`属性可能存在潜在的可用性和无障碍问题，特别是浏览器提供的默认误差处理。最终需要进行测试以确定哪种属性最适合。
+`aria-required`属性用于指示在提交表单之前需要填写某个字段。如果标签已经包含单词`required`，那么应该省略`aria-required`属性。这确保屏幕阅读器只会读取一次单词`required`。在大多数情况下可能会使用带有`required`属性的本地`label`和`form`元素。但如果需要创建自定义表单控件，则在必要时添加`aria-required`属性非常重要。此外，`aria-required`属性也可以用于本地的表单输入，例如`input`、`textarea`和`select`元素。通常这比本地的`required`属性更受欢迎，因为`required`属性可能存在潜在的可用性和无障碍问题，特别是浏览器提供的默认误差处理。最终需要进行测试以确定哪种属性最适合。
 
-`aria-checked`属性用于指示元素是否处于选中状态。它最常用于创建自定义复选框、单选按钮、开关和列表框时。本地的复选框元素具有内置的`checked`状态，该状态会传达给辅助技术。但如果你正在创建自定义复选框控件，则需要使用`aria-checked`属性来指示其状态。当用户与自定义复选框控件交互时需要使用`aria-checked`状态来反映复选框的新状态。当复选框被选中时，`aria-checked`属性设置为`true`。当复选框未被选中时，设置为`false`。
+`aria-checked`属性用于指示元素是否处于选中状态。它最常用于创建自定义复选框、单选按钮、开关和列表框时。本地的复选框元素具有内置的`checked`状态，该状态会传达给辅助技术。但如果正在创建自定义复选框控件，则需要使用`aria-checked`属性来指示其状态。当用户与自定义复选框控件交互时需要使用`aria-checked`状态来反映复选框的新状态。当复选框被选中时，`aria-checked`属性设置为`true`。当复选框未被选中时，设置为`false`。
 
-本地的元素通常具有更好的支持和内置无障碍特色。但是，如果你必须创建自定义控件，使用 ARIA 属性对于有效地向辅助技术传达这些控件的状态是必不可少的。
+本地的元素通常具有更好的支持和内置无障碍特色。但是，如果必须创建自定义控件，使用 ARIA 属性对于有效地向辅助技术传达这些控件的状态是必不可少的。
 
 #### aria-controls属性
 `aria-controls`属性用于创建一个程序化关系，连接控制页面上另一个元素存在的元素与它所控制的元素。此关系可以帮助屏幕阅读器用户更好地理解控件的工作方式。常见用法包括一组控制不同内容区域可见性的标签（页），或一个切换菜单可见性的按钮。
@@ -1242,25 +1242,25 @@ closeButton.addEventListener("click", () => {
 四种常见的错误信息类型是`SyntaxError`、`ReferenceError`、`TypeError`和`RangeError`。
 - 当代码中写错东西时，比如缺少一个括号或方括弧，就会发生`SyntaxError`。可以把它想象成句子中的语法错误。
 - `ReferenceError`有多种类型，由不同方式触发。第一种`ReferenceError`类型是未定义的变量。另一个`ReferenceError`的例子是尝试在用`let`或`const`声明的变量被定义之前访问该变量。
-- 第三种常见的误差是`TypeError`。当你尝试对错误的类型执行操作时，会发生这些误差。
+- 第三种常见的误差是`TypeError`。当尝试对错误的类型执行操作时，会发生这些误差。
 - 最后一个常见误差是`RangeError`。当代码尝试使用超出 JavaScript 可处理范围的值时，会发生`RangeError`。
 
 ### 调试器语句
-当 JavaScript 执行你的代码并遇到`debugger`语句时，它会立即在该行暂停执行。然而这只有在浏览器开发者工具打开时才会发生。否则，`debugger`语句会被忽略，代码将照常运行。
+当 JavaScript 执行代码并遇到`debugger`语句时，它会立即在该行暂停执行。然而这只有在浏览器开发者工具打开时才会发生。否则，`debugger`语句会被忽略，代码将照常运行。
 
 当使用`debugger`语句时，现代浏览器会在指定行暂停代码执行。它们还允许通过点击播放按钮恢复执行，但页面本身不会自动重新加载，除非手动触发。
 
 ### 高级调试技术
-监视表达式允许你在代码运行时监控变量或表达式的值，即使它们不在当前作用域内。要添加监视表达式，请导航到开发者工具的 Sources 标签（页），在右侧查找监视窗格，然后点击加号`+`图标进行添加。
+监视表达式允许在代码运行时监控变量或表达式的值，即使它们不在当前作用域内。要添加监视表达式，请导航到开发者工具的 Sources 标签（页），在右侧查找监视窗格，然后点击加号`+`图标进行添加。
 
 `console.table()`在控制台中以表格形式显示表格数据。它接受一个必需的参数，该参数必须是数组或对象，以及一个选择性参数，用于指定要显示的属性或列。
 
-`console.dir()`允许你显示指定 JavaScript 对象属性的交互式列表。它输出一个可展开以查看所有嵌套属性的分层列表。
+`console.dir()`允许显示指定 JavaScript 对象属性的交互式列表。它输出一个可展开以查看所有嵌套属性的分层列表。
 
 ## 基础正则表达式
 ### 正则表达式
 #### 正则表达式与常见方法
-正则表达式，或称 regex，是一种特殊的语法，用于创建一个 "pattern"，你可以用它来查看 string、提取文本等。在 JavaScript 中通过在两个斜线（/）之间创建模式来定义正则表达式。基本的正则表达式：
+正则表达式，或称 regex，是一种特殊的语法，用于创建一个 "pattern"，可以用它来查看 string、提取文本等。在 JavaScript 中通过在两个斜线（/）之间创建模式来定义正则表达式。基本的正则表达式：
 ```js
 const regex = /freeCodeCamp/;
 ```
@@ -1285,9 +1285,9 @@ console.log(match);
 //   groups: undefined
 // ]
 ```
-`groups`属性会显示任何捕捉的组。你将在以后的课程中了解这是什么意思。`index`属性告诉你在字串中的第几个字符找到了匹配。在我们的分支中，它是在字串的开头找到的。`input`属性告诉你`match()`方法被调用时的字串。
+`groups`属性会显示任何捕捉的组。`index`属性告诉在字串中的第几个字符找到了匹配。在我们的分支中，它是在字串的开头找到的。`input`属性告诉`match()`方法被调用时的字串。
 
-`replace()`方法，它接受两个参数：用于匹配的正则表达式（或者字串，如果你不需要正则表达式的所有特色），以及用于替换匹配项的字串（或者对每个匹配项运行的函数）。
+`replace()`方法，它接受两个参数：用于匹配的正则表达式（或者字串，如果不需要正则表达式的所有特色），以及用于替换匹配项的字串（或者对每个匹配项运行的函数）。
 
 #### 常见正则表达式修饰符
 `i`标记使正则表达式忽略分支。标记放在正则表达式的结束斜线后面：
@@ -1307,7 +1307,7 @@ console.log(regex.test("code")); // false
 console.log(regex.test("camp")); // false
 ```
 
-`g`标记，或全局修饰符，允许你的正则表达式匹配一个模式多次。当你需要从单个字串中获取多个匹配时，全局标记非常有用。但如果你用相同的正则表达式测试多个字串，最好关闭`g`标记。一个正则表达式可以使用多个标记（根据需要的数量）来实现你想要的行为：
+`g`标记，或全局修饰符，允许正则表达式匹配一个模式多次。当需要从单个字串中获取多个匹配时，全局标记非常有用。但如果用相同的正则表达式测试多个字串，最好关闭`g`标记。一个正则表达式可以使用多个标记（根据需要的数量）来实现想要的行为：
 ```js
 const regex = /freeCodeCamp/gi;
 ```
@@ -1323,7 +1323,7 @@ console.log(regex.test("free")); // false
 console.log(regex.test("code")); // false
 console.log(regex.test("camp")); // false
 ```
-全局修饰符使你的正则表达式具有状态。这意味着它会跟踪之前匹配过模式的位置。所以当它匹配第一个`freeCodeCamp`字串时，它会记住在索引`0`处找到了匹配。
+全局修饰符使正则表达式具有状态。这意味着它会跟踪之前匹配过模式的位置。所以当它匹配第一个`freeCodeCamp`字串时，它会记住在索引`0`处找到了匹配。
 
 当一个正则表达式是全局的时候，它会获得一个名为 lastIndex 的新建属性。
 ```js
@@ -1792,8 +1792,355 @@ Mopane Tree
 treeSet.clear();
 console.log(treeSet); // Set(0) {size: 0}
 ```
-
-`Set`和`WeakSet`之间的关键区别在于`Set`可以保存任何值，而`WeakSet`只能保存对象。
+`WeakSet`也有`add()`、`delete()`和`has()`方法，`Set`和`WeakSet`之间的关键区别在于`Set`可以保存任何值，而`WeakSet`只能保存对象。
 
 #### Map与WeakMap
 `Map`是一个内置对象，用于保存键值对，类似于对象。然而，它不同于标准的 JavaScript 对象，因为它允许任何类型的键，包括对象和函数。`WeakMap`是一个键值点对的集合，类似于`Map`，但它对键使用弱引用。键必须是对象，而值可以是任何类型。
+
+可以用值初始化`Map`，如果没有用值初始化`Map`，你可以使用`set()`方法为它们添加值:
+```js
+const myTreesMap = new Map([
+ [{ type: 'deciduous' }, 'Maple tree'],
+ [['forest', 'grove'], 'Pine tree'],
+ [42, 'Oak tree'],
+ [true, 'Birch tree'],
+ [function() { return 'I am a function key'; }, 'Willow tree'],
+]);
+
+const myTreesMap = new Map();
+myTreesMap.set({ type: 'deciduous' }, 'Maple tree');
+myTreesMap.set([1, 2], 'Pine tree');
+myTreesMap.set(42, 'Oak tree');
+myTreesMap.set(true, 'Birch tree');
+myTreesMap.set(function() { return "I'm a function key"; }, 'Willow tree');
+
+console.log(myTreesMap);
+```
+可以用来操作`Map`的其他方法有：
+- 使用`get(key)`来检索与指定`key`关联的值。
+- 使用`has(key)`来查看`Map`中是否存在某个`key`。
+- `delete(key)`用于从`Map`中移除一个键值点对。
+- `clear()`用于移除所有密钥-值点对。
+- 使用`entries()`查看`Map`的条目（它返回一个`MapIterator`中的条目）。
+- 使用`forEach()`循环遍历`Map`的条目。
+- `size`表示`Map`中的键值点对数量。
+
+`set()`、`get()`、`has()`和`delete()`方法也都可以用于`WeakMap`。
+
+## localStorage和CRUD操作
+### 客户端存储与CRUD操作
+#### CRUD是什么
+CRUD 是一个缩写，代表`Create`、`Read`、`Update`和`Delete`。这四个是持久存储的四种操作。持久存储是指以一种即使断电或设备重启后仍能使用的方式保存数据。
+- 创建是指创建新数据的过程。例如，在一个网页应用中，这可能是当用户为博客添加新帖子时。
+- 读取是从数据库中检索数据的操作。例如，当你访问博客文章或查看你的网站评测时，你正在执行读取操作以获取并显示存储在数据库中的数据。
+- 更新涉及修改数据库中现有的数据。一个例子是编辑博客文章或更新你的评测信息。
+- 删除是从数据库中移除数据的操作。例如，当你删除一篇博客文章或账户时，你正在执行删除操作。
+CRUD 用于处理数据库、用户界面和 RESTful API。RESTful API 是一套用于创建网络服务的约定，允许客户通过标准的超文本传输协议方法执行 CRUD 操作，从而与数据库或后端系统交互。
+ 
+HTTP 代表超文本传输协议，它是网络上数据通信的基础。存在 HTTP 方法，用于定义可以在网络资源上执行的操作。常见的方法有`GET`、`POST`、`PUT`、`PATCH`、`DELETE`。
+- `POST`用于创建一个新资源。
+- `GET`用于检索或读取数据。
+- `PUT`用于通过完全替换来更新资源。
+- `PATCH`用于部分更新资源。
+- `DELETE`用于删除资源。
+
+#### localStorage
+Web Storage API 为浏览器提供了一种机制，可以在浏览器内直接保存键值点对，允许开发者保存可跨不同页面重载和会话使用的信息。Web Storage API 中的两个主要组件是`localStorage`和`sessionStorage`。
+
+`localStorage`是 Web Storage API 的一部分，允许数据即使在浏览器窗口关闭或页面刷新后仍然保持持久。该数据将一直可用，直到被应用或用户显式移除。`localStorage`的常见使用分支包括存储用户设置，如主题或语言偏好，跨浏览器会话记住表单数据，以及缓存小块信息以提升网页应用的性能。缓存是指将频繁访问的数据存储在称为缓存的临时存储位置中，以便后续对该数据的请求可以更快地响应，而无需重新计算或从较慢的数据源（例如数据库或外部服务器）获取。一些常见的 localStorage 方法包括 setItem、getItem、removeItem 和 clear 方法。
+
+使用`setItem()`方法将密钥-值点对保存到`localStorage`。如果想从`localStorage`中检索给定密钥的值，可以使用`getItem()`方法。要使用其密钥从`localStorage`中删除一项，可以使用`removeItem()`方法。要清除`localStorage`中的所有数据可以使用`clear()`方法。
+```js
+// Store the user's theme preference
+localStorage.setItem('theme', 'dark');
+
+// Retrieve the stored theme preference
+const userTheme = localStorage.getItem('theme');
+console.log(userTheme); // 'dark'
+
+// Remove the theme preference
+localStorage.removeItem('theme');
+
+// Clear all localStorage data
+localStorage.clear();
+```
+
+`sessionStorage`是 Web Storage API 的另一部分，用于在页面会话期间保存数据，这意味着只要浏览器标签（页）或窗口打开，数据就可用。然而，与`localStorage`不同，`sessionStorage`中的数据在标签（页）或窗口关闭时会被清除。
+
+#### sessionStorage
+`sessionStorage`是指当用户关闭运行该网页应用的标签（页）或窗口时，数据即被清除。它非常适合数据只需在单个会话期间保持的情况，例如在导航过程中维护表单数据或在结账过程中存储临时状态信息。与`localStorage`类似，`sessionStorage`使用点对来保存和检索数据。`sessionStorage`使用的方法也与`localStorage`相同，唯一真正的区别在于数据保存的时长。
+```js
+// Store data in sessionStorage
+sessionStorage.setItem('currentUser', 'JohnDoe');
+
+// Retrieve the stored data
+const user = sessionStorage.getItem('currentUser');
+console.log(user); // 'JohnDoe'
+
+// Remove a specific key from sessionStorage
+sessionStorage.removeItem('currentUser');
+
+// Clear all sessionStorage data
+sessionStorage.clear();
+```
+`sessionStorage`在以下场景中特别有用：
+- 在多页表单进程中存储临时数据，例如表单条目。
+- 存储不需要跨`Session`持久化的临时选择或偏好。
+- 在不需要在标签（页）关闭后记住状态的单页应用中维护状态。
+`sessionStorage`确保一旦用户离开页面，会话数据就会被清除，这对于你不想在当前会话之外保留信息的场景非常有用。
+
+#### Cookies
+Cookies，也称为网页Cookies或浏览器Cookies，是服务器发送到用户网页浏览器的小块数据。这些Cookies存储在用户设备上，并随后续的`request`一起发送回服务器。Cookie对于帮助网页应用维护状态和记住用户信息至关重要，这一点尤其重要，因为超文本传输协议是无状态协议。Cookies可以保存各种信息，例如用户偏好、会话数据或跟踪信息。Cookie总是以名称-值点对的形式保存。这意味着每个cookie都有一个名称（密钥）和一个关联的值。
+
+当用户访问网站时，服务器可以通过在 HTTP 响应中包含`Set-Cookie`头部向用户的浏览器发送一个或多个 cookie。头部是一个提供有关 HTTP 请求或响应的附加信息的键值点对。一旦设置了 cookie，浏览器会保存它们，并在每次对同一域的后续请求中自动将它们包含在 Cookie 头部中。这允许服务器访问保存的 cookie，并将其用于维护用户会话或跟踪偏好等用途。以下是如何在超文本传输协议响应中设置 cookie 的示例：
+```json
+Set-Cookie: sessionId=abc123; Expires=Wed, 21 Oct 2021 07:28:00 GMT; Secure; HttpOnly
+```
+浏览器会保存 cookie，并且在以后对同一服务器的请求中，会在 Cookie 头部中包含该 cookie：
+```json
+Cookie: sessionId=abc123
+```
+服务器随后可以读取 cookie 并使用保存的会话 ID 来检索有关用户的信息，例如他们是否已登录。
+
+以下是不同类型 cookie 的详细说明:
+- 会话 Cookie 仅在用户在网站上的会话期间有效。一旦用户关闭浏览器或标签（页），会话 Cookie 就会被删除。这些 Cookie 通常用于在用户访问期间保持登录状态等任务。
+- 持久性 Cookie 有一个过期日期，并且会一直保存在用户设备上，直到达到该日期。持久性 Cookie 通常用于跨会话记住用户偏好或登录信息。
+- 安全 Cookie 仅通过 HTTPS 发送，确保它们在传输过程中不会被攻击者拦截。
+- HttpOnly Cookie 无法被浏览器中运行的 JavaScript 访问或修改，使其在防范跨站脚本（XSS）攻击方面更为安全。跨站脚本（XSS）攻击发生在攻击者将恶意脚本注入到其他用户查看的网页时。这些脚本随后可以在受害者浏览器的上下文中执行，可能窃取 Cookie、会话数据，或在用户不知情或未同意的情况下执行其他恶意操作。通过将 Cookie 标记为 HttpOnly，可以防止其被 JavaScript 访问，从而降低此类攻击的风险。
+
+可以通过使用`Set-Cookie`头部的服务器响应或通过 JavaScript 使用`document.cookie`来创建 cookies。下面是使用 JavaScript 设置 cookie 的示例，此命令设置一个名为`username`的 cookie，值为`"JohnDoe"`，将在 2021 年底过期。可以通过再次设置新值来更新现有的 cookie。：
+```js
+document.cookie = "username=JohnDoe; expires=Fri, 31 Dec 2021 23:59:59 GMT; path=/";
+```
+要删除 cookie，需要将其过期日期设置为过去时间,这将从浏览器中移除`username` cookie。：
+```js
+document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+```
+
+#### Cache API
+`Cache` API 用于保存网络请求和响应，使网页应用运行更高效，甚至可以离线工作。它是更广泛的 Service Worker API 的一部分，对于创建能够在不可靠或缓慢网络条件下运行的渐进式网页应用（PWA）至关重要。
+
+网络请求是由网页浏览器或应用向服务器发出的请求，用于通过互联网检索数据或资源。例如，当访问一个网站时，浏览器会向网络服务器发送网络请求，以获取显示页面所需的文件（例如`HTML`、图像或视频）。
+
+`Service Worker`是一种特殊类型的 JavaScript `file`，在网页`application`的后台运行，独立于主浏览器`thread`。它充当网页和`network`之间的中间人，允许开发者拦截`network` request、缓存资源，并处理推送通知或后台同步等功能。
+
+PWA，或渐进式网页应用，是一种使用现代网页技术在网页上提供类似本地应用体验的网页应用类型。PWA 设计为能够在任何设备上可靠运行，无论网络状况如何，都可以通过浏览器访问或像传统应用一样安装到用户设备上。
+
+`Cache` API 是一种存储机制，用于保存`Request`和`Response`对象。当向服务器发出请求时，应用可以储存响应，之后从缓存中检索它，而不是发起新的网络请求。这减少了装载时间，节省了带宽，并提升了整体用户体验。
+
+浏览器提供了一个称为`CacheStorage`的存储区域，开发者可以在其中储存网络请求及其对应响应的键值对。通过`Cache-Control`头部，开发者可以指定缓存资源应保存多长时间，以及是否应重新验证或直接从缓存中提供。通过使用`Cache` API，开发者可以构建离线优先的网页应用，例如允许 PWA 在用户断开网络连接时提供缓存的资源。
+
+#### 与客户端存储关联的负面模式
+网站使用 cookie 来跟踪用户与 web 应用的交互，创建他们数字活动的历史记录。这是为了目标广告，但可能引起重大隐私问题。cookie 会随每个对网站的请求一起发送，从而允许网站跟踪用户的行为。虽然这看起来无害，但想象一下数百个网站共享这些信息——这可能会形成用户在线生活和选择的非常详细的画像。
+
+另一个令人担忧的做法是浏览器指纹识别。该技术使用客户端信息来创建用户浏览器的唯一“指纹”。网站能够收集有关用户浏览器版本、已安装插件、屏幕分辨率及其他数据的信息，以唯一识别用户。
+
+#### 使用Cookie来保存由HTTP头部控件的任意数据
+实际上可以在 cookie 中保存更复杂的数据结构。一种常见的方法是使用 JSON 来保存对象或数组。下面是一个示例：
+```js
+const userData = {
+  name: "John Doe",
+  age: 30,
+  role: "admin"
+};
+
+document.cookie = "userInfo=" + JSON.stringify(userData) + "; path=/";
+```
+在此示例中，我们创建了一个包含用户数据的对象，将其转换为 JSON 字串，然后将其存储在 cookie 中。当我们想要检索这些数据时，可以使用`JSON.parse()`将 JSON 字串解析为对象。
+
+通常，cookie 是由服务器通过`HTTP headers`设置的。例如，服务器可能会发送这样的头部，这个头部告诉浏览器设置一个 cookie。：
+```js
+Set-Cookie: username=John Doe; expires=Thu, 31 Dec 2024 6:00:00 IST; path=/
+```
+
+可以使用 JavaScript 直接在浏览器中设置 cookie。这对于存储不需要立即发送到服务器的数据非常有用。cookie 的大小限制约为 4KB，在其中存储过多数据可能会降低网页应用的速度。在 cookie 中存储大量数据会增加网络流量，因为 cookie 会随每个超文本传输协议请求一起发送。
+
+#### IndexDB
+`IndexedDB`是一个在浏览器中保存结构化数据的工具。它内置于现代网页浏览器中，允许网页应用高效地保存和获取 JavaScript 对象。与其他存储机制如`localStorage`（仅限于存储字串）不同，`IndexedDB`可以存储 JavaScript 对象、文件以及几乎任何其他类型的数据。这使得需要处理大型且复杂数据结构的网页应用变得更加容易。
+```js
+let request = indexedDB.open("Sample DB", 1);
+
+request.onerror = function(event) {
+  console.log("Error opening database");
+};
+
+request.onsuccess = function(event) {
+  let db = event.target.result;
+  console.log("Database opened successfully");
+};
+```
+在这段代码中，正在打开一个名为`"Sample DB"`、版本为 1 的数据库。我们提供了两个回调函数：一个用于处理误差，另一个用于数据库成功打开时。在成功回调中获得的`db`对象就是我们用来与数据库交互的对象。
+
+IndexedDB 中的对象存储类似于传统数据库中的表格。它们保存想要存储的实际数据。这段代码创建了一个名为`"customers"`的对象存储，其`"id"`作为其密钥路径。密钥路径类似于传统数据库中的主键——用于唯一标识每条记录。：
+```js
+let request = indexedDB.open("Sample DB", 1);
+
+request.onupgradeneeded = function(event) {
+  let db = event.target.result;
+  let objectStore = db.createObjectStore("customers", { keyPath: "id" });
+};
+```
+要为对象保存添加数据，为`"customers"`对象存储添加了一个新客户。启动一个事务（这是分组数据库操作的方式），获取对对象存储的引用，然后添加数据。
+```js
+let transaction = db.transaction(["customers"], "readwrite");
+let objectStore = transaction.objectStore("customers");
+let request = objectStore.add({ id: 1, name: "John Doe", email: "john@example.com" });
+
+request.onerror = function(event) {
+  console.log("Error adding data");
+};
+
+request.onsuccess = function(event) {
+  console.log("Data added successfully");
+};
+```
+检索数据的方式类似。启动一个事务，获取对象保存，然后使用诸如`get`之类的方法来检索数据：
+```js
+let transaction = db.transaction(["customers"]);
+let objectStore = transaction.objectStore("customers");
+let request = objectStore.get(1);
+
+request.onerror = function(event) {
+  console.log("Error retrieving data");
+};
+
+request.onsuccess = function(event) {
+  console.log("Customer:", request.result);
+};
+```
+`IndexedDB`的一个关键特色是它是异步的。这意味着当与`IndexedDB`交互时，操作不会阻塞网页应用的主线程。这确保了即使处理大量数据，网页应用仍保持响应。
+
+#### 缓存和Service Workers
+缓存是将文件副本存储在临时存储位置的过程，以便可以更快地访问。当访问一个网站时，浏览器可以将某些文件（例如图像、CSS 和 JavaScript）储存在本地。这意味着下次访问同一网站时，它可以从设备装载这些文件，而不是再次从服务器获取，从而使网站加载更快。
+
+Service Workers是一个在后台运行的`Script`，与网页分离。它可以拦截`network`请求、访问`cache`，并启用网页应用离线工作。它是渐进式网页应用的关键`component`。
+
+PWA 是可以提供类似应用体验的网页应用。它们可以离线工作、发送推送通知，甚至可以安装到移动设备或计算机的主屏幕上。当用户首次访问 PWA 时，service worker 可以缓存重要的文件。用户可以继续离线使用该应用，当他们重新在线时，任何即将发生的更改都可以与服务器同步。
+
+## 类
+### 了解类
+#### 什么是类
+class 就像蓝图，可以在 code 中定义它来创建多个相同类型的 object。例如，如果正在为库存系统建模，需要为每种产品类型创建多个对象。每个单独的产品都会有它自己的属性和动作，但同一类的产品可以从相同的 blueprint 创建。这就是 class 的用途。类可以定义为类表达式或类声明。下面是一个类表达式的样子：
+```js
+const Dog = class {
+  constructor(name) {
+    this.name = name;
+  }
+
+  bark() {
+    console.log(`${this.name} says woof!`);
+  }
+};
+```
+
+#### This关键字
+`class`像蓝图，可以用来创建`object`。这些蓝图需要一种通用的方式来引用在代码中被创建、访问或修改的特定对象。这正是`this`关键字的用途。它引用代码应运行的上下文。如果你在方法中使用它，`this`的值将是对关联该方法的对象的引用。通过这种方式，你可以访问类中对象的属性和方法，并在不同对象上重用该方法。
+```js
+class Dessert {
+  constructor(name, price) {
+    this.name = name;
+    this.price = price;
+  }
+
+  showPrice() {
+    console.log(`The price of ${this.name} is $${this.price}.`);
+  }
+}
+
+const brownie = new Dessert("Brownie", 5.99);
+brownie.showPrice();
+console.log(brownie);
+```
+当前对象（`brownie`）的名称和价格被替换到字串中。这都要归功于 this 关键字，它提供了一种通用的方式来在类中引用当前对象。这能够在不同对象上重用该方法。
+
+这是在对象方法的上下文中，但`this`密钥在独立函数和箭头函数中也会有值。它在独立函数中的值通常参考全局对象（在非严格模式下）或`undefined`（在严格模式下）。
+
+`this`关键字的值在箭头函数中有些不同。箭头函数继承定义它们的外层作用域中的`this`值。它们不会创建自己的`this`绑定。这意味着`this`的值取决于箭头函数定义的上下文，而不是箭头函数被调用的位置或方式。这使得箭头函数对于回调或保持上下文非常有用。但是，因为这个原因，`this`的值在对象方法中不会指向当前对象。同样适用于在其他函数内定义的箭头函数。它们将从其父作用域继承 this 的值。
+
+#### 类继承
+父类是作为其他类蓝图的类。它定义了被其他类继承的属性和方法。子类是继承另一个类的属性和方法的类。子类还可以通过添加新属性和方法来扩展其父类的功能性。一个父类可以有多个子类。使用`extends`关键字来实现继承。该关键字表示一个类是另一个类的子类。
+```js
+class Vehicle {
+  constructor(brand, year) {
+    this.brand = brand;
+    this.year = year;
+  }
+}
+
+class Car extends Vehicle {
+  honk() {
+    console.log("Honk! Honk!");
+  }
+}
+
+let myCar = new Car("freeCodeCamp Motors", 2019);
+console.log(myCar.brand); // "freeCodeCamp Motors"
+console.log(myCar.year);  // 2019
+myCar.honk(); // "Honk! Honk!"
+```
+如果确实需要添加额外的属性，需要定义一个构造函数。
+```js
+class Vehicle {
+  constructor(brand, year) {
+    this.brand = brand;
+    this.year = year;
+  }
+}
+
+class Car extends Vehicle {
+  constructor(brand, year, numDoors) {
+    super(brand, year);
+    this.numDoors = numDoors;
+  }
+}
+```
+在构造函数内，有一个对`super()`的调用，`super()`调用基类的构造函数，所以通过使用`super()`，实际上是在子类中定义基类的属性。这是可以使用的另一种术语——基类是父类，子类是子类。
+
+继承的主要优点是代码重用、模块性、可扩展性和改进的代码结构。通过实现层次结构，可以在子类中重用已经为父类编写的代码，避免重复。继承还通过将层次结构中的复杂系统分解为更简单的组件来促进模块性。此外，能够扩展父类的功能性使得更容易适应不断变化的需求，并在开发进程后期添加新建特色。最后，层级结构可以使代码更易于理解和维护。
+
+#### 类中的静态属性和方法
+静态属性和方法属于类本身，而不属于类的各个实例。可以直接通过类名访问它们，而无需创建类的实例。它们在类中定义，以封装相关的功能性。
+```js
+class MyClass {
+  static staticMethod() { ... }
+}
+```
+通过在方法名称前写`static`关键字来定义静态方法。可以直接在类上使用点符号调用静态方法，并传递任何必要的参数。可以在不创建该类的实例的情况下调用该方法。这是静态方法的一个关键特征：
+```js
+MyClass.staticMethod();
+```
+
+静态方法对于实现“工厂”方法也很有帮助。工厂方法是在构造函数之外定义的一个方法，用于根据特定条件创建对象。这是一个带有`Pizza`类的示例。静态方法`createMargherita`是一个工厂方法，可以调用它来创建一个类型和价格已设置好的 Margherita 披萨实例。
+```js
+class Pizza {
+  constructor(type, price) {
+    this.type = type;
+    this.price = price;
+  }
+
+  static createMargherita() {
+    return new this("Margherita", 6.99);
+  }
+}
+```
+这也引出了关于静态方法的一个非常重要的问题。静态方法中`this`关键字的值是类本身，因为静态方法属于该类。这就是为什么我们可以使用`this`来创建`Pizza`类的新实例。
+
+除了方法，还可以使用`static`关键字定义静态属性。要访问静态属性的值，只需对类本身使用点表示法，因为该属性属于类。
+```js
+class Pizza {
+  static numberOfPizzasSold = 0;
+
+  constructor(type) {
+    this.type = type;
+    Pizza.numberOfPizzasSold++;
+  }
+}
+
+let pizza1 = new Pizza("Margherita");
+let pizza2 = new Pizza("Neapolitan");
+
+console.log(Pizza.numberOfPizzasSold);
+```
+
+## 递归
+### 了解递归
