@@ -423,6 +423,8 @@ console.log(undefined == 0); // false
 ```
 
 ## 函数
+### 处理函数
+#### 函数的目的
 默认情况下，函数的返回值为`undefined`。对于箭头函数，如果函数体只有一个表达式，则可以省略大括号和`return`关键字。
 
 ## 数组
@@ -2142,5 +2144,139 @@ let pizza2 = new Pizza("Neapolitan");
 console.log(Pizza.numberOfPizzasSold);
 ```
 
-## 递归
-### 了解递归
+## 函数式编程
+### 柯里化
+柯里化是一种技术，我们将一个接受多个参数的函数转换为一系列函数，每个函数只接受一个参数。
+```js
+function curriedAdd(a) {
+  return function(b) {
+    return a + b;
+  }
+}
+
+console.log(curriedAdd(3)(4)); // 7
+```
+在这个柯里转换的代码中，我们不是一次接受两个参数，而是有一个函数接受第一个参数并返回另一个函数。这个返回的函数随后接受第二个参数并执行加法。柯里化使我们能够轻松创建一些特殊的函数。
+
+## 异步JavaScript
+### 异步编程
+#### 异步的JavaScript
+在软件开发的上下文中，"asynchronous" 指的是在后台运行、独立于程序主流程的任务。异步进程的主要优点是它们不会阻塞主程序的执行。
+
+线程是进程内的一个执行单元。它就像程序内的一个独立控件流。在同步的编程中，线程依次循序执行。如果线程被阻塞，比如等待用户输入，整个进程将被阻塞，直到该线程完成。在异步的编程中，线程可以并发执行，同时运行多个线程。这样，程序可以继续同时运行多个任务，即使其中一个线程被阻塞，也不会使主程序无响应。异步的编程通常涉及回调、promise 或 async/await 来处理非阻塞操作。
+
+目前，在 JavaScript 中实现异步的编程最常用的技术是 promise。`Promise`是一个对象，表现为异步进程最终完成（或失败）及其值。当创建`promise`时，其值是未知的。只有当异步进程完成时，值才会被知道。
+
+#### async与defer
+当HTML file 中包含一个`script`时，当浏览器查找此 script 标签时，它会停止解析超文本标记语言，下载脚本，执行脚本，然后继续解析超文本标记语言。如果脚本很大，这可能会减慢网页装载速度，这就是`async`和`defer`属性的作用。它们提供了更高效的装载脚本的方法。：
+```html
+<script src="example.js"></script>
+```
+
+通过为`script`标签添加`async`属性，浏览器将在脚本下载时继续解析超文本标记语言。一旦脚本完全下载，浏览器将暂停超文本标记语言解析，执行脚本，然后恢复解析超文本标记语言。这可以显著加快页面装载速度。重要的是要注意，异步脚本在下载完成后会立即执行，这意味着它们可能不会按我们期望的顺序运行。
+```html
+<script src="example.js" async></script>
+```
+
+`defer`属性类似于`async`属性。然而，推迟脚本不会在下载完成后立即执行。相反，它们会等待超文本标记语言解析完成后再执行。此外，推迟脚本按照它们在超文本标记语言代码中出现的顺序执行。
+```html
+<script src="example.js" defer></script>
+```
+
+简而言之，对于执行顺序无关紧要的脚本，使用`async`，而当需要确保脚本按正确顺序运行时，使用`defer`。这两个属性都能显著提升页面装载时间，因为它们允许浏览器在后台下载脚本的同时继续解析超文本标记语言。
+
+#### Fetch API与常见的超文本传输协议方法和res.json()
+在这段代码中，来自 Fetch API 的响应是一个 promise，我们使用`.then`处理器将响应转换为 JSON 格式。Promise 的值在创建时未知。只有当异步进程完成时才知道。当我们将两个`.then`处理器链接到 fetch 调用时，这称为 promise 链式调用，
+```js
+fetch('https://api.example.com/data')
+  .then(response => response.json())
+  .then(data => console.log(data))
+```
+在此示例中，我们发送一个`POST`请求以创建一个新用户。我们将方法指定为`POST`，设置适当的头部，并包含带有我们想要发送的数据的`body`。body 需要是一个字串，因此我们使用`JSON.stringify()`将我们的对象转换为 JSON 字串。
+```js
+fetch('https://api.example.com/users', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'John Doe',
+    email: 'john@example.com'
+  })
+})
+```
+
+#### Promise与Promise链
+`Promise`是一个对象，表现异步操作的最终完成或失败。它最初处于等待状态。然后，当操作成功时，它可以转变为已完成状态；当操作失败时，它可以转变为已拒绝状态。以下是创建`Promise`的示例：
+```js
+const aPromise = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve("Operation successful!");
+  }, 1000);
+});
+```
+在此示例中，我们创建一个使用`setTimeout`模拟异步的操作的 promise。经过 1 秒后，promise 会以消息`Operation successful!`解析。
+
+另一种处理 promises 的方法是使用`.then`和`.catch`方法。`.then()`方法用于 promise 中指定当 promise 完成时应发生的操作，而`.catch()`用于处理任何发生的误差。在这段代码中，或者在承诺完成时要执行的指令中，传递给`.then()`的函数将使用承诺解析后的值被调用。如果发生误差，则会调用传递给`.catch()`的函数。
+```js
+aPromise.then((result) => {
+  console.log(result);  // Outputs: "Operation successful!"
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+promise 的一个强大特色是我们可以将多个异步的操作串联在一起。每个`.then()`都可以返回一个新的 promise，使你能够依次执行一系列异步的操作。在这个示例中，我们按序列进行两个 API 调用。第一个`.then()`将响应解析为 JSON。第二个`.then()`记录数据并进行另一个 API 调用。第三个`.then()`解析第二个 API 调用的响应，第四个`.then()`记录该数据。如果在此链中的任何点发生误差，它将被最后的`.catch()`捕获。重要的是要注意`.catch()`会捕获链中任何前面步骤的误差。这意味着你不需要为每个单独的步骤添加误差处理，这可以大大简化你的代码。
+```js
+fetch('https://api.example.com/data')
+  .then(response => response.json())
+  .then(data => {
+    console.log(data);
+    return fetch('https://api.example.com/data2');
+  })
+  .then(response => response.json())
+  .then(data2 => console.log(data2))
+  .catch(error => console.error('Error:', error));
+```
+
+#### Async与Await
+async/await，基于 promises，使编写和读取异步的代码更容易。当你在函数前加上 async 关键字时，表示该函数总是返回一个 Promise。只有在 async 函数内部，你才能使用 await 关键字，它允许你等待一个 Promise 解析后再执行下一行代码。下面是一个示例来说明 async/await 的工作原理：
+```js
+async function delayedGreeting(name) {
+  console.log("A Messenger entered the chat...");
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  console.log(`Hello, ${name}!`);
+}
+
+delayedGreeting("Alice");
+console.log("First Printed Message!");
+
+// "A Messenger entered the chat..."
+// "First Printed Message!"
+// "Hello, Alice!"
+```
+
+#### JavaScript引擎
+最著名的 JavaScript 引擎之一是由谷歌开发的`V8`，用于`Chrome`和`Node.js`。JavaScript 引擎的工作分为几个步骤。首先，它解析代码，逐行读取以确保 JavaScript 代码没有错误。然后，它将这段代码转换成字节码，这是一种更简单的、中间版本的代码，更容易被计算机理解和执行。最后，它运行这段字节码以执行程序指令。
+```js
+const greeting = "Hello, World!";
+console.log(greeting);
+```
+当运行这段代码时，JavaScript 引擎首先会解析它以查看是否有任何语法误差。解析意味着引擎读取代码并将其分解成它能理解的结构，同时检查过程中是否有错误。然后，它将代码编译成过渡形式（通常是字节码或机器码，取决于引擎）。编译是将人类可读的代码转换为计算机可以更快执行的更高效形式的过程。最后，引擎执行代码，将`Hello, World!`打印到控制台。
+
+JavaScript 运行期是执行 JavaScript 代码的环境。它包括 JavaScript 引擎（例如 Chrome 中的 V8 或 Firefox 中的 SpiderMonkey），负责处理和执行代码，以及环境提供的额外特色（例如网页浏览器或 Node.js）。虽然核心 JavaScript 语言处理诸如变量、循环和函数等内容，但运行期提供了额外的工具，使 JavaScript 能够与语言本身之外的事物交互，例如 DOM（用于网页）或 Fetch API（用于发起网络请求）。简而言之，运行期使 JavaScript 不仅能完成基本的编程任务，还能通过提供语言本身之外的这些额外特色来与网页交互或处理基于时间的操作。
+
+#### Geolocation API
+`getCurrentPosition`方法用于收集设备的地理位置。在这段代码中，我们调用了 getCurrentPosition 并传入一个函数，该函数将在成功获取位置时被调用。这个位置对象包含各种信息，但我们只关注 latitude 和 longitude。
+```js
+navigator.geolocation.getCurrentPosition(
+  (position) => {
+    console.log("Latitude: " + position.coords.latitude);
+    console.log("Longitude: " + position.coords.longitude);
+  },
+  (error) => {
+    console.log("Error: " + error.message);
+  }
+);
+```
+`getCurrentPosition`方法根据设备及其`Settings`使用 GPS、Wi-Fi `network`或 IP `address`定位。一旦找到位置，将调用带有位置`object`的成功`callback`函数。位置对象包含各种属性，其中最常用的是`latitude`和`longitude`，但它也可以包括`altitude`、`accuracy`、`speed`和`heading`等。

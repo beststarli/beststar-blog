@@ -27,9 +27,9 @@ export const Friends: Friend[] = [
     avatar: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/friend/zxuqian.png',
   },
   {
-    title: 'YcSoku',
-    description: 'GISer ❎ Toy Maker ✅ Toy Factory',
-    website: 'https://github.com/YcSoku',
+    title: 'Dsssyc',
+    description: 'GISer ❎ Toy Maker ✅',
+    website: 'https://github.com/Dsssyc',
     avatar: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/friend/YcSoku.png',
   },
   {
