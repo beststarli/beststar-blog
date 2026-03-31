@@ -11,7 +11,7 @@ interface Props {
   children: React.ReactElement
 }
 
-export default function Tooltip({ children, id, anchorEl, text, delay }: Props): JSX.Element {
+export default function Tooltip({ children, id, anchorEl, text, delay }: Props): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const [referenceElement, setReferenceElement] = useState<HTMLElement | null>(null)
   const [popperElement, setPopperElement] = useState<HTMLElement | null>(null)
