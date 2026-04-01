@@ -3,6 +3,8 @@ import type { Config } from '@docusaurus/types'
 import { themes } from 'prism-react-renderer'
 import social from './data/social'
 import type { GiscusConfig } from './src/components/Comment'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 
 const beian = '冀ICP备2026007642号-1'
 const beian1 = '冀公网安备13040202001096号'
@@ -255,6 +257,9 @@ const config: Config = {
             {
                 path: 'docs',
                 sidebarPath: './sidebars.ts',
+                // 启用数学公式解析
+                remarkPlugins: [remarkMath],
+                rehypePlugins: [rehypeKatex],
             },
         ],
 
@@ -285,6 +290,9 @@ const config: Config = {
                     title: '嘉星的博客',
                     description: '记录技术成长和生活感悟',
                 },
+                // 启用数学公式解析
+                remarkPlugins: [remarkMath],
+                rehypePlugins: [rehypeKatex],
             },
         ],
         // Tailwind CSS 插件
@@ -316,6 +324,7 @@ const config: Config = {
         'https://cdn.jsdelivr.net/npm/misans@4.0.0/lib/Normal/MiSans-Normal.min.css',
         'https://cdn.jsdelivr.net/npm/misans@4.0.0/lib/Normal/MiSans-Medium.min.css',
         'https://cdn.jsdelivr.net/npm/misans@4.0.0/lib/Normal/MiSans-Semibold.min.css',
+        'https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css',
     ],
 
     // 国际化配置
