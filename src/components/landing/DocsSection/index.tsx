@@ -92,7 +92,7 @@ function CategoryTimeline({ categoryData, index }: { categoryData: CategoryDocs,
             </div>
 
             {/* 时间线列表 */}
-            <div className="space-y-2 md:space-y-3">
+            <div className="space-y-2 md:space-y-2">
                 {categoryData.docs.map((doc, i) => (
                     <motion.div
                         key={doc.id}
@@ -150,7 +150,7 @@ export default function DocsSection() {
         const categoryMap = new Map<string, DocItem[]>()
 
         // 定义要显示的分类和顺序
-        const targetCategories = ['JavaScript', 'TypeScript', 'React', 'Web开发与安全', '计算机网络', '跨端开发', '前端工程化', '情景题', '算法']
+        const targetCategories = ['JavaScript', 'TypeScript', 'React', 'Vue', 'Web开发与安全', '计算机网络', '跨端开发', '前端工程化', 'AI', '情景题', '算法']
         const categoryConfig = {
             JavaScript: {
                 icon: 'logos:javascript',
@@ -163,6 +163,10 @@ export default function DocsSection() {
             React: {
                 icon: 'logos:react',
                 color: '#61DAFB',
+            },
+            Vue: {
+                icon: 'logos:vue',
+                color: '#42b883',
             },
             Web开发与安全: {
                 icon: 'mdi:shield-check',
@@ -179,6 +183,10 @@ export default function DocsSection() {
             前端工程化: {
                 icon: 'logos:webpack',
                 color: '#6E4BDB',
+            },
+            AI: {
+                icon: 'mdi:robot',
+                color: '#8B5CF6',
             },
             情景题: {
                 icon: 'mdi:lightbulb-on-outline',
@@ -247,7 +255,7 @@ export default function DocsSection() {
     return (
         <Section title={<Translate id="homepage.docs.title">近期文档</Translate>} icon="ri:book-2-line" href="/docs/intro">
             <div className="mx-auto w-full">
-                <div className="grid gap-4 md:grid-cols-2 md:gap-6">
+                <div className="grid gap-4 md:grid-cols-4 md:gap-6">
                     {docsByCategory.map((categoryData, index) => (
                         <CategoryTimeline key={categoryData.category} categoryData={categoryData} index={index} />
                     ))}
