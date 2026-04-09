@@ -7,8 +7,8 @@ date: 2026-04-08
 ---
 
 # Attention is All You Need
-原文链接：[Attention is All You Need](https://arxiv.org/pdf/1706.03762)。
-图解链接：[The Illustrated Transformer【译】](https://blog.csdn.net/yujianmin1990/article/details/85221271)。
+- 原文链接：[Attention is All You Need](https://arxiv.org/pdf/1706.03762)
+- 图解链接：[The Illustrated Transformer【译】](https://blog.csdn.net/yujianmin1990/article/details/85221271)
 
 ## 介绍
 主流的序列转换模型基于复杂的递归或卷积神经网络，其中包含编码器和解码器。表现最佳的模型还通过注意力机制将编码器和解码器连接起来。而Transformer完全基于注意力机制，彻底摒弃了递归和卷积结构。
