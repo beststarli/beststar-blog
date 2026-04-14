@@ -67,7 +67,7 @@ function CategoryTimeline({ categoryData, index }: { categoryData: CategoryDocs,
             custom={index}
             variants={variants}
             whileHover={{ y: -10, transition: { duration: 0.3 } }}
-            className="relative rounded-2xl border border-solid border-gray-200 bg-white p-4 shadow-blog md:p-6 dark:border-gray-700 dark:bg-gray-800"
+            className="relative rounded-2xl border border-solid border-gray-200 bg-white p-4 shadow-blog md:p-4 dark:border-gray-700 dark:bg-gray-800"
         >
             {/* 分类标题 */}
             <div className="mb-3 flex items-center gap-3 md:mb-5">
@@ -255,7 +255,7 @@ export default function DocsSection() {
     return (
         <Section title={<Translate id="homepage.docs.title">近期文档</Translate>} icon="ri:book-2-line" href="/docs/intro">
             <div className="mx-auto w-full">
-                <div className="grid gap-4 md:grid-cols-4 md:gap-6">
+                <div className="grid gap-4 md:grid-cols-4 md:gap-4">
                     {docsByCategory.map((categoryData, index) => (
                         <CategoryTimeline key={categoryData.category} categoryData={categoryData} index={index} />
                     ))}
