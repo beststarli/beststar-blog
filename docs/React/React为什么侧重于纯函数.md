@@ -2,7 +2,7 @@
 title: React为什么侧重于纯函数
 description: 编写纯函数需要遵循一些习惯和规程。
 sidebar_position: 7
-tags: [React]
+tags: [React,描述UI]
 date: 2025-11-17
 ---
 

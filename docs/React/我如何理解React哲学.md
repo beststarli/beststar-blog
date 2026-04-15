@@ -2,7 +2,7 @@
 title: 我如何理解React哲学
 description: 我对React哲学的看法
 sidebar_position: 3
-tags: [React, 思考]
+tags: [React,快速入门]
 date: 2025-11-10
 ---
 

@@ -1,7 +1,8 @@
 ---
 title: JSX规则
+description: 使用JSX书写标签语言。
 sidebar_position: 5
-tags: [React]
+tags: [React,描述UI]
 date: 2025-11-11
 ---
 ## 使用JSX书写标签语言
