@@ -158,6 +158,15 @@ export const projects: Project[] = [
         tags: ['opensource', 'personal', 'favorite'],
         type: 'app',
     },
+    {
+        title: '天气查询Agent',
+        description: '基于自编写的ReAct最小可实现架构构建的天气查询Agent',
+        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/weather.png',
+        website: 'https://github.com/beststarli/weather-agent',
+        source: 'https://github.com/beststarli/weather-agent',
+        tags: ['opensource', 'personal'],
+        type: 'personal',
+    },
 ]
 
 export const groupByProjects = projects.reduce(
