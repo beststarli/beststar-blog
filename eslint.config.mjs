@@ -32,6 +32,8 @@ export default [
   {
     rules: {
       '@stylistic/no-trailing-spaces': 'off',
+      '@stylistic/object-curly-spacing': 'off',
+
     },
   },
 ]

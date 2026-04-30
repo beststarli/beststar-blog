@@ -2,8 +2,8 @@
   "extends": "@docusaurus/tsconfig",
   "compilerOptions": {
     "lib": ["DOM", "ESNext"],
-    "baseUrl": ".",
     "resolveJsonModule": true,
+    "ignoreDeprecations": "6.0",
     "allowUnreachableCode": false,
     "exactOptionalPropertyTypes": false,
     "noFallthroughCasesInSwitch": true,
