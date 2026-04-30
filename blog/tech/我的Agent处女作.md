@@ -356,11 +356,146 @@ async function AgentLoop(question: string) {
 ![UI](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/agent/cover.png)
 
 #### 联网搜索工具
-编写创建联网搜索工具函数
+编写创建联网搜索工具函数`createSearchTool`，该函数接受一个Tavily API作为参数，返回一个工具对象，工具对象包含工具描述、输入格式标准以及执行函数。执行函数会根据输入的搜索关键词调用Tavily的搜索API，并返回搜索结果。
 
+<details>
+<summary>📝点击展开查看完整`createSearchTool`完整代码</summary>
 
+```ts
+export function createSearchTool(tavilyApiKey?: string) {
+    return tool({
+        description: '搜索互联网以获取最新的新闻、实时信息或详细的百科知识。',
+        inputSchema: jsonSchema<{ query: string }>({
+            type: 'object',
+            properties: {
+                query: {
+                    type: 'string',
+                    description: '搜索关键词',
+                },
+            },
+            required: ['query'],
+            additionalProperties: false,
+        }),
+        execute: async ({ query }) => {
+            console.log(`正在为用户搜索: ${query}...`);
 
-## 项目实现
+            if (!tavilyApiKey) {
+                throw new Error('TAVILY_API_KEY 未配置');
+            }
+
+            const response = await fetch('https://api.tavily.com/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    api_key: tavilyApiKey,
+                    query,
+                    search_depth: 'basic',
+                    max_results: 5,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Tavily 请求失败: ${response.status}`);
+            }
+
+            const data = (await response.json()) as {
+                results?: Array<{
+                    title?: string;
+                    url?: string;
+                    content?: string;
+                }>;
+            };
+
+            return (data.results ?? []).map((item) => ({
+                title: item.title,
+                url: item.url,
+                content: item.content,
+            }));
+        },
+    });
+}
+```
+
+</details>
+
+#### Agent核心逻辑
+利用Next.js的App Router Handler功能，在文件即路由中实现`POST`请求，它首先调取OpenAI SDK创建一个DeepSeek API的客户端实例，然后从请求体中获取用户输入的消息，创建一个联网搜索工具，并将工具注册到Agent中。接着调用`streamText`函数来执行Agent的ReAct循环，生成LLM的输出，并将结果以流式响应的形式返回给前端。
+
+<details>
+<summary>📝点击展开查看完整`POST`完整代码</summary>
+
+```ts
+export async function POST(req: Request) {
+    const deepseekApiKey = process.env.DEEPSEEK_API_KEY;
+    const tavilyApiKey = process.env.TAVILY_API_KEY;
+
+    if (!deepseekApiKey) {
+        return new Response('DEEPSEEK_API_KEY 未配置', { status: 500 });
+    }
+
+    const deepseek = createOpenAI({
+        baseURL: 'https://api.deepseek.com/v1',
+        apiKey: deepseekApiKey,
+    });
+
+    const { messages }: { messages: UIMessage[] } = await req.json();
+    const searchTool = createSearchTool(tavilyApiKey);
+
+    const tools = {
+        getWeather: weatherTool,
+        webSearch: searchTool,
+    };
+
+    const result = streamText({
+        model: deepseek.chat('deepseek-chat'),
+        messages: await convertToModelMessages(messages, { tools }),
+        tools,
+        stopWhen: stepCountIs(5),
+    });
+
+    return result.toUIMessageStreamResponse();
+}
+```
+
+</details>
+
+#### 前端与Agent交互
+在前端主要实现消息发送的handleSubmit函数，当用户提交消息时，首先阻止默认的表单提交行为，然后获取输入框中的文本内容，如果文本不为空，则清空输入框，并调用Vercel AI SDK的`useChat`中的`sendMessage`函数将用户输入的消息发送给后端Agent进行处理。同时，使用`useEffect`钩子来监听消息列表的变化，每当有新消息添加时，自动将滚动容器滚动到底部，以确保用户始终看到最新的消息。
+
+```ts
+const { messages, sendMessage } = useChat();
+const [input, setInput] = useState('');
+const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    container.scrollTop = container.scrollHeight;
+}, [messages]);
+
+const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const text = input.trim();
+    if (!text) return;
+
+    setInput('');
+    await sendMessage({ text });
+};
+```
+
+至此就大功告成了，一个快速简单的个人Agent主体就搭建完成了。
+
+### Agent应用部署
+由于框架本身使用的就是Vercel官方的Next.js，所以部署也非常简单，直接将代码push到GitHub仓库，并在Vercel平台上连接该仓库进行部署即可。部署完成后，就可以通过访问Vercel提供的URL来使用这个Agent了。然后仿照我的[博客搭建教程](/blog/how-to-build-my-blog)中[域名代理](/blog/how-to-build-my-blog#域名代理)的教程，来实现国内ip访问。
+
+## 思考与展望
+事实上以上完成的两个 Agent 应用只是非常简单的Demo，本质还是只是在和大模型本身进行对话，对 Agent 的能力扩展十分有限，还局限于类似 ChatBot 的交互形式。
+
+但是要做到生产级别的 Agent 应用，就必须明确有一个具体的开发需求，现在都在传言Saas时代即将结束，但是软件工程的整体开发范式理念似乎得到了更深的强调，尤其是在 Vibe Coding 的过程中，开发者需要更好地理解用户需求、软件架构设计，才能更清晰地知道如何利用 Agent 来实现这些需求。总之，目前我自己思考的问题是：
+
+> ***我该如何正确地搭建并使用 Agent 为我的工作赋能增效？***
+
+自己仍需继续学习探索，来回答这个问题。
 
 ## 参考与鸣谢
 - [**ai-agent-interview-guide**](https://github.com/bcefghj/ai-agent-interview-guide)
@@ -368,6 +503,4 @@ async function AgentLoop(question: string) {
 - [**AI Skills：前端新的效率神器！**](https://juejin.cn/post/7598807837868539930)
 - [**从零构建一个 Mini Claude Code：面向初学者的 Agent 开发实战指南**](https://juejin.cn/post/7612129754633633819)
 - [**Harness Engineering：2026 年 AI 编程的核心战场**](https://juejin.cn/post/7628448241537597476)
-
-（***未完待续***）
 
