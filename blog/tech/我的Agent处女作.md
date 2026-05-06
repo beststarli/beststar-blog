@@ -15,7 +15,12 @@ image: https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/agent/cov
 ## 写在最前
 欢迎访问并使用我的[AI Agent](https://www.agentstar.online/)。
 
-![我的处女作](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/agent/cover.png)
+![我的处女作1](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/agent/cover.png)
+> BestStar AI Agent V1.0
+
+目前经过迭代已接入[DeepSeek-V4](https://platform.deepseek.com/)，支持切换使用flash和pro模型，UI界面也进行了更新，暂不适配移动端显示效果，后续会继续完善。
+![我的处女作2](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/agent/agent2.png)
+> BestStar AI Agent V2.0
 
 AI发展的速度超乎了我们的想象，在读研刚进组时24年中旬，我们还在用着网页版的KIMI复制粘贴代码来写Python脚本，在这不到两年的时间里，我个人经历了KIMI、Grok、Copilot、Claude Code、Gemini、Cursor等等一些列AI相关产品，目睹着AI对产业的一次次产生的革命性影响，对它的看法也从悄然改变，从原本的抵触（本科时我从未使用过ChatGPT，当时还是3.5版本，只在做毕设写论文时用过文心一言降重）到现在的共生。
 
