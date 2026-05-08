@@ -18,7 +18,7 @@ image: https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/agent/cov
 ![我的处女作1](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/agent/cover.png)
 > BestStar AI Agent V1.0
 
-目前经过迭代已接入[DeepSeek-V4](https://platform.deepseek.com/)，支持切换使用flash和pro模型，UI界面也进行了更新，暂不适配移动端显示效果，后续会继续完善。
+目前经过迭代已接入[DeepSeek-V4](https://platform.deepseek.com/)，支持切换使用flash和pro模型，UI界面也进行了更新，移动端显示也已适配，不过还需要完善。
 ![我的处女作2](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/agent/agent2.png)
 > BestStar AI Agent V2.0
 
