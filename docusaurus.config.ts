@@ -257,6 +257,30 @@ const config: Config = {
             {
                 path: 'docs',
                 sidebarPath: './sidebars.ts',
+                // 临时隐藏不想在文档侧边栏展示的分类
+                sidebarItemsGenerator: async ({ defaultSidebarItemsGenerator, ...args }) => {
+                    const sidebarItems = await defaultSidebarItemsGenerator(args)
+                    const hiddenCategories = new Set(['来时路'])
+
+                    const filterItems = items => items
+                        .map((item) => {
+                            if (item.type === 'category') {
+                                if (hiddenCategories.has(item.label)) {
+                                    return null
+                                }
+
+                                return {
+                                    ...item,
+                                    items: filterItems(item.items),
+                                }
+                            }
+
+                            return item
+                        })
+                        .filter(Boolean)
+
+                    return filterItems(sidebarItems)
+                },
                 // 启用数学公式解析
                 remarkPlugins: [remarkMath],
                 rehypePlugins: [rehypeKatex],
