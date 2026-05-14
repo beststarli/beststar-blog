@@ -6,6 +6,7 @@ date: 2026-05-12
 ---
 
 # HTML八股
+![路线图](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/HTML.png)
 ## DOCTYPE文档类型
 是html5中一种标准通用标记语言的文档类型声明，告诉浏览器应以html或xhtml的文档类型定义来解析文档，必须声明在html第一行。
 
@@ -180,7 +181,7 @@ date: 2026-05-12
 <div draggable="true">可拖动的元素</div>
 ```
 
-#### 画布<canvas>
+#### 画布`<canvas>`
 canvas元素使用javascript绘制图形，画布是一个矩形区域，可以控制其中每一个像素。
 ```html
 <canvas id="myCanvas" width="200" height="100"></canvas>
