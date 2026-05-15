@@ -87,6 +87,15 @@ export const projects: Project[] = [
         type: 'web',
     },
     {
+        title: '港口水环境与生态动力学精细化模拟平台',
+        description: '水动力、水质与生态多模型耦合的港口水环境仿真系统',
+        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/condition.png',
+        website: 'https://github.com/beststarli/water-condition-v2',
+        source: 'https://github.com/beststarli/water-condition-v2',
+        tags: ['opensource', 'large', 'product', 'favorite'],
+        type: 'web',
+    },
+    {
         title: 'AutoWater洪水管网可视化演示系统',
         description: '结合洪水演进、三维地图瓦片、管道管网的可视化演示系统',
         preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/autowater.png',

@@ -6,6 +6,7 @@ date: 2026-05-12
 ---
 
 # HTML八股
+## HTML路线图
 ![路线图](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/HTML.png)
 ## DOCTYPE文档类型
 是html5中一种标准通用标记语言的文档类型声明，告诉浏览器应以html或xhtml的文档类型定义来解析文档，必须声明在html第一行。
@@ -63,7 +64,8 @@ date: 2026-05-12
 - `<footer>`：定义文档的页脚，通常包含版权信息、联系信息等
 
 ### 媒体标签
-#### `<audio>`：定义音频内容
+#### `<audio>`
+定义音频内容。
 ```html
 <audio src='' controls autoplay loop></audio>
 ```
@@ -72,7 +74,8 @@ date: 2026-05-12
 - `autoplay`：页面加载后自动播放音频
 - `loop`：音频播放结束后重新开始
 
-#### `<video>`：定义视频内容
+#### `<video>`
+定义视频内容。
 ```html
 <video src='' poster controls autoplay loop></video>
 ```
@@ -82,8 +85,8 @@ date: 2026-05-12
 - `autoplay`：页面加载后自动播放视频
 - `loop`：视频播放结束后重新开始
 
-#### `<source>`：定义媒体资源的多个备选项
-浏览器对视频格式支持程度不一致，使用`<source>`标签提供多个视频资源，浏览器会选择第一个支持的资源进行播放：
+#### `<source>`
+定义媒体资源的多个备选项。浏览器对视频格式支持程度不一致，使用`<source>`标签提供多个视频资源，浏览器会选择第一个支持的资源进行播放：
 ```html
 <video>
     <source src='a.mp4' type='video/mp4'>
