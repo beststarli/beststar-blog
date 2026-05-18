@@ -2,7 +2,6 @@ import Link from '@docusaurus/Link'
 import Translate from '@docusaurus/Translate'
 import { usePluginData } from '@docusaurus/useGlobalData'
 import { Icon } from '@iconify/react'
-import { cn } from '@site/src/lib/utils'
 import { type Variants, motion } from 'framer-motion'
 import React from 'react'
 import { Section } from '../Section'
@@ -150,7 +149,7 @@ export default function DocsSection() {
         const categoryMap = new Map<string, DocItem[]>()
 
         // 定义要显示的分类和顺序
-        const targetCategories = ['JavaScript', 'TypeScript', 'React', 'Vue', 'Web开发与安全', '计算机网络', '跨端开发', '前端工程化', 'AI', '情景题', '算法']
+        const targetCategories = ['JavaScript', 'TypeScript', 'React', 'Vue', 'Web开发与安全', '计算机网络', '跨端开发', '前端工程化', 'AI', '情景与手撕题', '算法']
         const categoryConfig = {
             JavaScript: {
                 icon: 'logos:javascript',
@@ -188,7 +187,7 @@ export default function DocsSection() {
                 icon: 'mdi:robot',
                 color: '#8B5CF6',
             },
-            情景题: {
+            情景与手撕题: {
                 icon: 'mdi:lightbulb-on-outline',
                 color: '#F59E0B',
             },

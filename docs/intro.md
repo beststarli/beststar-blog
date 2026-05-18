@@ -18,7 +18,7 @@ date: 2025-11-03
 - [跨端开发](/docs/category/跨端开发)
 - [计算机网络](/docs/category/计算机网络)
 - [前端工程化](/docs/category/前端工程化)
-- [情景题](/docs/category/情景题)
+- [情景与手撕题](/docs/category/情景与手撕题)
 - [算法](/docs/category/算法)
 - [AI](/docs/category/AI)
 - [未分类文档](/docs/category/未分类文档)
