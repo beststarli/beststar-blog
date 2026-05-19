@@ -245,3 +245,48 @@ b.valueOf()     // ToPrimitive默认type为number，所以先调用valueOf方法
 b.toString()    // "{age: 18}"，转换为字符串
 console.log(a + b) // "{name: 'Jack'}{age: 18}"
 ```
+
+## `+`字符串拼接
+如果某个操作数是字符串，另一个操作数不是字符串，则会将另一个操作数转换为字符串进行拼接；如果两个操作数都是字符串，则直接进行拼接；如果两个操作数都不是字符串，则将它们都转换为数字进行加法运算。
+
+## Object.assign()与展开运算符
+二者都是浅拷贝
+
+- 展开运算符`...`：使用时，数组或对象的每个值都会被拷贝到一个新的数组或对象中，它不复制继承的属性或类的属性，但是会复制ES6的Symbols属性。
+```js
+let outObj = {
+    inObj: {
+        a: 1,
+        b: 2
+    }
+}
+let newObj = {...outObj}
+newObj.inObj.a = 2
+console.log(outObj) // {inObj: {a: 2, b: 2}}   
+```
+- Object.assign()：接收的第一个参数作为目标对象，后面的所有参数作为源对象，然后把所有的源对象合并到目标对象中，它会修改一个对象，因此会触发ES6 setter。
+```js
+let outObj = {
+    inObj: {
+        a: 1,
+        b: 2
+    }
+}
+let newObj = Object.assign({}, outObj)
+newObj.inObj.a = 2
+console.log(outObj) // {inObj: {a: 1, b: 2}}   
+```
+
+## 如何判断一个对象为空对象
+- 使用JSON自带的.stringify方法：
+```js
+if (JSON.stringify(obj) === '{}') {
+    console.log('obj是一个空对象')
+}
+```
+- 使用ES6新增的Object.keys()方法：
+```js
+if (Object.keys(obj).length === 0) {
+    console.log('obj是一个空对象')
+}
+```
