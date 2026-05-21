@@ -573,3 +573,117 @@ Array.from(arrayLike)
 - `values()`：返回值迭代器。
 - `entries()`：返回键值对迭代器。
 - `[Symbol.iterator]()`：默认是`values()`方法。
+
+### 为什么函数的arguments参数是类数组而不是数组，如何遍历数组
+arguments是一个对象，它的属性是从0开始依次递增的数字，还有callee和length等属性，与数组类似；但是它没有数组常见的方法属性，如forEach、reduce等，所以叫类数组。
+
+要遍历数组有三种方法：
+- 将数组的方法应用到类数组上，这时候就可以使用call和apply方法了：
+```js
+function foo() {
+    Array.prototype.forEach.call(arguments, a => console.log(a))
+}
+```
+- 使用Array.from方法将类数组转换为数组：
+```js
+function foo() {
+    const arrArgs = Array.from(arguments)
+    arrArgs.forEach(a => console.log(a))
+}
+```
+- 使用展开运算符将类数组转换为数组：
+```js
+function foo() {
+    const arrArgs = [...arguments]
+    arrArgs.forEach(a => console.log(a))
+}
+```
+
+### 类数组对象转化为数组
+一个拥有length属性和若干索引属性的对象就可以被称为类数组对象，类数组对象和数组类似，但是不能调用数组的方法，常见的类数组对象有arguments和DOM方法的返回结果，函数参数也可以被看作是类数组对象，因为它含有length属性值，代表可接收的参数个数。
+- 通过call调用数组的slice方法来实现转换：
+```js
+Array.prototype.slice.call(arrayLike)
+```
+- 通过call调用数组的splice方法来实现转换：
+```js
+Array.prototype.splice.call(arrayLike, 0)
+```
+- 通过call调用数组的concat方法来实现转换：
+```js
+Array.prototype.concat.apply([], arrayLike)
+```
+- 通过Array.from()方法来实现转换：
+```js
+Array.from(arrayLike)
+```
+
+### 对AJAX的理解
+AJAX是Asynchronous JavaScript and XML的缩写，指的是通过JavaScript的异步通信，从服务器获取XML文档从中提取数据，再更新当前网页的对应部分，而不再刷新整个网页。
+
+创建AJAX请求的步骤：
+- 创建一个XMLHttpRequest对象。
+- 在这个对象上使用open()方法来指定Http请求，open()方法所需要的参数是请求的方法、请求的地址、是否异步和用户的认证信息。
+- 在发起请求前，可以为这个对象添加一些信息和监听函数。可以通过setRequestHeader()方法来为请求添加头信息。还可以为这个对象添加一个状态监听函数。一个XMLHttpRequest对象一共有5个状态，当它的状态变化会触发onreadystatechange事件，可以通过设置监听函数来处理请求成功后的结果。当对象的readyState变为4的时候，代表服务器返回的数据接收完成，这个时候可以通过判断请求的状态码来确定请求是否成功，如果是2xx或者304则代表返回正常，这个时候可以通过response中的数据对页面进行更新了。
+- 当对象的属性和监听函数设置完成后，最后调用sent方法来像服务器发起请求，可以传入参数作为发送的数据体。
+```js
+const SERVER_URL = '/server'
+let xhr = new XMLHttpRequest()
+// 创建Http请求
+xhr.open('GET', url, true)
+// 设置状态监听函数
+xhr.onreadystatechange = function() {
+    if (this.readyState !== 4) {
+        return
+    }
+    // 当请求成功时
+    if (this.status === 200) {
+        handle(this.response)
+    } else {
+        console.error(this.statusText)
+    }
+}
+// 设置请求失败时的监听函数
+xhr.onerror = function() {
+    console.error(this.statusText)
+}
+// 设置请求头信息
+xhr.responseType = 'json'
+xhr.setRequestHeader('Accept', 'application/json')
+// 发送Http请求
+xhr.send(null)
+```
+使用Promise封装AJAX：
+```js
+// Promise封装实现
+function getJSON(url) {
+    // 创建一个Promise对象
+    let promise = new Promise(function(resolve, reject) {
+        let xhr = new XMLHttpRequest()
+        // 新建一个Http请求
+        xhr.open('GET', url, true)
+        // 设置状态监听函数
+        xhr.onreadystatechange = function() {
+            if (this.readyState !== 4) {
+                return 
+            }
+            // 当请求成功或失败时，改变Promise的状态
+            if (this.status === 200) {
+                resolve(this.response)
+            } else {
+                reject(new Error(this.statusText))
+            }
+        }
+        // 设置错误监听函数
+        xhr.onerror = function() {
+            reject(new Error(this.statusText))
+        }
+        // 设置响应的数据类型
+        xhr.responseType = 'json'
+        // 设置请求头信息
+        xhr.setRequestHeader('Accept', 'application/json')
+        // 发送Http请求
+        xhr.send(null)
+    })
+    return promise
+}
