@@ -521,3 +521,55 @@ Array.prototype.concat.apply([], arrayLike)
 Array.from(arrayLike)
 ```
 
+### 数组的原生方法
+#### 静态方法
+- `Array.from()`：将类数组对象或可迭代对象转换为数组。
+- `Array.fromAsync()`：将类数组对象或可迭代对象转换为数组，并返回一个Promise对象。
+- `Array.isArray()`：判断一个值是否为数组。
+- `Array.of()`：将一组值转换为数组。
+#### 实例方法
+##### 修改原数组
+- `push()`：向数组末尾添加一个或多个元素，并返回新的长度。
+- `pop()`：删除数组末尾的元素，并返回被删除的元素。
+- `shift()`：删除数组开头的元素，并返回被删除的元素。
+- `unshift()`：向数组开头添加一个或多个元素，并返回新的长度。
+- `splice(start, deleteCount, item1, item2, ...)`：从数组中添加或删除元素，并返回被删除的元素。
+- `sort(compareFunction)`：对数组元素进行排序，并返回排序后的数组。
+- `reverse()`：反转数组元素的顺序，并返回反转后的数组。
+- `fill(value, start, end)`：用一个固定值填充数组中从start到end位置的元素，并返回被填充的数组。
+- `copyWithin(target, start, end)`：从数组的start位置复制元素到target位置，并返回被修改的数组。
+##### 不修改原数组
+- `concat()`：合并两个或多个数组，并返回一个新数组。
+- `slice(start, end)`：返回数组中从start到end位置的元素，并返回一个新数组。
+- `toReversed()`：反转后返回一个新数组，原数组不变。
+- `toSorted(compareFunction)`：排序后返回一个新数组，原数组不变。
+- `toSpliced(start, deleteCount, item1, item2, ...)`：从数组中添加或删除元素，并返回被删除的元素，原数组不变。
+- `with(index, value)`：返回一个新数组，替换指定index位置的元素为value，原数组不变。
+- `falt(depth)`：将嵌套的数组展开为一维数组，并返回一个新数组。
+- `flatMap(callback)`：对数组中的每个元素执行一个函数，并将结果展开为一个新数组返回。
+##### 迭代/高阶方法
+- `forEach(callback)`：对数组中的每个元素执行一个函数。
+- `map(callback)`：对数组中的每个元素执行一个函数，并返回一个新数组。
+- `filter(callback)`：对数组中的每个元素执行一个函数，并返回一个新数组，包含所有通过测试的元素。
+- `reduce(callback, initialValue)`：对数组中的每个元素执行一个函数，并返回一个单一的值。
+- `reduceRight(callback, initialValue)`：对数组中的每个元素执行一个函数，从右到左，并返回一个单一的值。
+- `some(callback)`：对数组中的每个元素执行一个函数，并返回一个布尔值，表示是否至少有一个元素通过测试。
+- `every(callback)`：对数组中的每个元素执行一个函数，并返回一个布尔值，表示是否所有元素都通过测试。
+- `find(callback)`：对数组中的每个元素执行一个函数，并返回第一个通过测试的元素的值。
+- `findIndex(callback)`：对数组中的每个元素执行一个函数，并返回第一个通过测试的元素的索引。
+- `findLast(callback)`：对数组中的每个元素执行一个函数，并返回最后一个通过测试的元素的值。
+- `findLastIndex(callback)`：对数组中的每个元素执行一个函数，并返回最后一个通过测试的元素的索引。
+##### 搜索与检查
+- `indexOf(searchElement, fromIndex)`：返回数组中第一个匹配元素的索引，如果没有找到则返回-1。
+- `lastIndexOf(searchElement, fromIndex)`：返回数组中最后一个匹配元素的索引，如果没有找到则返回-1。
+- `includes(searchElement, fromIndex)`：判断数组是否包含一个指定的元素，并返回一个布尔值。
+- `at(index)`：返回数组中指定位置的元素，支持负数索引。
+##### 转换/字符串
+- `join(separator)`：将数组中的所有元素转换为一个字符串，并返回这个字符串。
+- `toString()`：将数组中的所有元素转换为一个字符串，并返回这个字符串。
+- `toLocaleString()`：将数组中的所有元素转换为一个字符串，并返回这个字符串，使用本地化的格式。
+##### 迭代器方法
+- `keys()`：返回索引迭代器。
+- `values()`：返回值迭代器。
+- `entries()`：返回键值对迭代器。
+- `[Symbol.iterator]()`：默认是`values()`方法。
