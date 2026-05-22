@@ -713,3 +713,243 @@ JavaScript拿到一个变量或函数会有解析和执行两步操作：
 - CommonJS和ES6 Module都可以对引入的对象进行赋值，即对对象内部属性进行修改。
 
 ### 常见的DOM操作
+#### 获取DOM节点
+- getElementById()：通过元素的id属性值获取一个元素节点。
+- getElementsByTagName()：通过元素的标签名获取一个元素节点列表。
+- getElementsByClassName()：通过元素的class属性值获取一个元素节点列表。
+- querySelectorAll()：通过CSS选择器获取一个元素节点列表。
+```js
+// 按照id查询
+var imooc = document.getElementById('imooc')    // 查询到id为imooc的元素
+// 按照标签名查询
+var pList = document.getElementsByTagName('p')     // 查询到所有的p元素，返回一个HTMLCollection对象
+console.log(pList.length) // 3
+console.log(pList[0]) // <p>...</p>
+// 按照类名查询
+var moocList = document.getElementsByClassName('mooc')     // 查询到所有class为mooc的元素，返回一个HTMLCollection对象
+// 按照CSS选择器查询
+var pList = document.querySelectorAll('.mooc')  // 查询到类名为mooc的集合
+```
+
+#### 创建DOM节点
+```html
+<html>
+    <head>
+        <title>DEMO</title>
+    </head>
+    <body>
+        <div id="container">
+            <h1 id="title">这是一个标题</h1>
+        </div>
+    </body>
+</html>
+```
+```js
+// 首先获取父节点
+var container = document.getElementById('container')
+// 创建一个新的元素节点
+var targetSpan = document.createElement('span')
+// 设置span节点的内容
+targetSpan.innerHTML = '这是一个span元素'
+// 把新创建的元素塞进父节点中
+container.appendChild(targetSpan)
+```
+
+#### 删除DOM节点
+```html
+<html>
+    <head>
+        <title>DEMO</title>
+    </head>
+    <body>
+        <div id="container">
+            <h1 id="title">这是一个标题</h1>
+        </div>
+    </body>
+</html>
+```
+```js
+// 获取目标元素的父元素
+var container = document.getElementById('container')
+// 获取目标元素
+var targetNode = document.getElementById('title')
+// 删除目标元素
+container.removeChild(targetNode)
+```
+或者通过子节点数组来完成删除：
+```js
+// 获取目标元素的父元素
+var container = document.getElementById('container')
+// 获取目标元素
+var targetNode = container.childNodes[i]
+// 删除目标元素
+container.removeChild(targetNode)
+```
+
+#### 修改DOM节点
+```html
+<html>
+    <head>
+        <title>DEMO</title>
+    </head>
+    <body>
+        <div id="container">
+            <h1 id="title">这是一个标题</h1>
+            <p id="content">这是一个内容</p>
+        </div>
+    </body>
+</html>
+```
+##### 交换位置
+```js
+// 获取父元素
+var container = document.getElementById('container')
+// 获取两个需要被交换的元素
+var title = docunment.getElementById('title')
+var content = document.getElementById('content')
+// 交换两个元素，把content置于title前面
+container.insertBefore(content, title)
+```
+
+### use Strict
+use Strict是ECMAScript 5引入的严格模式，这种运行模式使得JavaScript在更严格的条件下运行，目的是：
+- 消除JavaScript语法的一些不合理、不严谨之处，减少一些怪异行为。
+- 消除代码运行的不安全之处，保证代码运行的安全。
+- 提高编译器效率，增加运行速度。
+- 为未来新版本的JavaScript做好铺垫。
+
+与正常模式的区别在于：
+- 禁止使用with语句。
+- 禁止this关键字指向全局对象。
+- 对象不能有重名的属性。
+
+### 判断对象是否属于某个类
+- 使用instanceof()运算符来判断函数的prototype属性是否出现在对象的原型链中的任何位置。
+- 通过对象的constructor属性来判断对象是否属于某个类，对象的constructor属性指向创建该对象的函数，但是这种方式不安全，因为constructor属性可以被改写。
+- 如果需要判断的是某个内置的引用类型的话，可以使用Object.prototype.toString()方法来打印对象的`[[Class]]`属性来进行判断。
+
+### for of和for in的区别
+for of是ES6新增的遍历方式，允许遍历一个含有iterator接口的数据结构（数组、对象等）并返回各项的值，与for in的区别如下：
+- for of遍历获取的是对象的键值，for in获取的是对象的键名。
+- for in会遍历对象的整个原型链，性能非常差，而for of只会遍历对象本身的属性。
+- 对于数组的遍历，for in会返回数组中所有可枚举的属性，包括原型链上的属性和数组的length属性，而for of只会返回数组中的元素值。
+
+总结：for in循环主要为遍历对象而生，不适合遍历数组；for of循环可以用来遍历数组、类数组对象，字符串、Set、Map以及Generator对象等可迭代对象，不适合遍历对象。
+
+#### 使用for of遍历对象
+for of允许遍历一个含有iterator接口的数据结构（数组、对象等）并返回各项的值，普通的对象用for of遍历是会报错的。
+- 如果遍历的对象是类数组对象，用Array.from()转成数组即可：
+```js   
+var obj = {
+    0: 'one',
+    1: 'two',
+    length: 2
+}
+obj = Array.from(obj)
+for (var k of obj) {
+    console.log(k)
+}
+```
+- 如果遍历的对象不是类数组对象，就给对象添加一个[Symbol.iterator]属性，并指向一个迭代器即可：
+```js
+// 方法一
+var obj = {
+    a: 1,
+    b: 2,
+    c: 3
+}
+
+obj[Symbol.iterator] = function*() {
+    var keys = Object.keys(this)
+    var count = 0
+    return {
+        next() {
+            if (count < keys.length) {
+                return {
+                    value: obj[keys[count++]],
+                    done: false
+                }
+            } else {
+                return {
+                    value: undefined,
+                    done: true
+                }
+            }
+        }
+    }
+}
+
+for (var k of obj) {
+    console.log(k) 
+}
+
+// 方法二
+var obj = {
+    a: 1,
+    b: 2,
+    c: 3
+}
+
+obj[Symbol.iterator] = function*() {
+    var keys = Object.keys(obj)
+    for (var k of keys) {
+        yield [k, obj[k]]
+    }
+}
+
+for (var [k, v] of obj) {
+    console.log(k, v)
+}
+```
+
+### AJAX、fetch、axios
+#### AJAX
+AJAX即Asynchronus JavaScript and XML的缩写，是指一种创建交互式网页应用的网页开发技术，它是一种在无需重新加载整个网页的情况下，能够更新部分网页的技术。通过在后台与服务器进行少量数据交换，AJAX可以是网页实现异步更新。这意味着可以在不更新加载整个网页的情况下，对网页的某部分进行更新。传统的不使用AJAX的网页如果需要更新内容，必须重载整个网页页面。其缺点如下：
+- 本身是针对MVC编程，不符合前端MVVC的开发模式。
+- 基于原生XHR开发，XHR本身的架构不清晰。
+- 不符合关注分离的原则，数据请求和数据处理耦合在一起。
+- 配置和调用方式非常混乱， 而且基于事件的异步模型不友好。
+
+#### fetch
+fetch号称是AJAX的替代品，是在ES6出现的，使用了ES6的Promise对象。fetch是基于Promise设计的，fetch代码结构比AJAX简单的多，fetch不是AJAX的进一步封装，而是原生JavaScript，没有使用XMLHttpRequest对象。
+
+fetch的优点：
+- 语法简洁，更加语义化
+- 基于标准Promise实现，支持async/await语法
+- 更加底层，提供的API丰富（request，response，headers等对象）
+- 脱离了XHR，是ES规范里新的实现方式。
+
+fetch的缺点：
+- fetch只对网络请求报错，对400和500等HTTP错误状态码不报错，服务器返回400或500等错误状态码时并不会reject，只有网络错误这些导致请求不能完成时才会reject，所以需要手动检查response.ok属性来判断请求是否成功。
+- fetch默认不会带cookie，需要添加配置项：`fetch(url, {credentials: 'include'})`
+- fetch不支持abort，不支持超时控制，使用setTimeout及Promise.reject的实现的超时控制并不能阻止请求过程继续在后台运行，造成了流量的浪费。
+- fetch没有办法原生监测请求的进度，而XHR可以。
+
+#### axios
+axios是一个基于Promise的HTTP客户端，特点如下：
+- 浏览器端发起XMLHttpRequest请求，Node端发起http请求。
+- 支持Promise API。
+- 监听请求和响应。
+- 对请求和响应数据进行转换。
+- 取消请求。
+- 自动转换JSON数据。
+- 客户端支持防止CSRF/XSRF攻击。
+
+### addEventListener()方法的参数和使用
+EventTarget.addEventListener()方法将指定的监听器注册到EventTarget上，当该对象触发指定的事件时，指定的回调函数就会被执行。事件目标可以是一个文档上的元素Element、Document和Window或者任何其他支持事件的对象。
+
+addEventListener()的工作原理是将实现EventListener的函数或对象添加到调用它的EventTarget上的指定事件类型的事件监听器列表上。使用语法：
+```js
+target.addEventListener(type, listener, options)
+target.addEventListener(type, listener, useCapture)
+target.addEventListener(type, listener, useCapture, wantsUntrusted)
+```
+- type：表示监听事件类型的字符串
+- listener：当监听的事件类型触发时，会接收一个事件通知对象（实现了Event接口的对象）。listener必须是一个实现可EventListener接口的对象，或者是一个函数。
+- option：可选，一个指定有关listener属性的可选参数对象。可用的选项：
+    - capture：Boolean，表示listener会在该类型的事件捕获阶段传播到该EventTarget触发。
+    - once：Boolean，表示listener在添加之后最多只调用一次。如果是true，listener会在其被调用之后自动移除。
+    - passive：Boolean，设置为true时，表示listener永远不会调用preventDefault()。如果listener仍然调用了这个函数，客户端将会忽略它并抛出一个控制台警告。
+    - signal：AbortSignal，该AbortSignal的abort()方法被调用时，监听器会被移除。
+- useCapture：可选，在DOM树中，注册了listener的元素，是否要先于它下面的EventTarget调用该listener。当useCapture为true时，沿着DOM树向上冒泡的事件不会触发listener。当一个元素嵌套了另一个元素，并且两个元素都对同一事件注册了一个处理函数时，所发生的事件冒泡和事件捕获时两种不同的事件传播方式。事件传播模式决定了元素从哪个顺序接收事件。如果没有指定，useCapture默认为false。
+- wantsUntrusted：如果为true，则事件处理程序会接收网页自定义的事件。此参数只适用于Gecko（chrome的默认值为true，其他常规网页的默认值为false），主要用于附和组件的代码和浏览器本身。
