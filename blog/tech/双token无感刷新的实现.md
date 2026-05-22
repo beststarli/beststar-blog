@@ -10,7 +10,7 @@ image: https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/tech/doubleTok
 
 前几天的一个深夜躺在床上玩手机玩到了一点半，在困意的逼迫下才终于按下息屏键准备入睡，突然一个念头闪过，想到现在做的系统其实还没有真正引入用户的概念，当然也就没做用户登录功能，之前经常听劳达和橙子哥提起双token无感刷新，感觉有点意思，我想在这个系统里实现一下，结果带着这个想法睡着了。
 
-<!-- truncate -->
+{/* truncate */}
 ## 写在最前
 经过探索-构思-实现-修改-优化，本项目**双token无感刷新验证Demo**采用**前后端分离架构**，所使用的技术栈如下：
 - **前端**：React、React Router、Vite、TypeScript、Tailwind CSS。

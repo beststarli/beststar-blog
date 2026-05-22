@@ -18,7 +18,7 @@ async function blogPluginEnhanced(context, options) {
       }))
 
       // Update paginated blog list
-      content.blogListPaginated.forEach((page, i) => {
+      content.blogListPaginated?.forEach((page, i) => {
         page.items = groupedPosts[i] ? groupedPosts[i].items : []
       })
 
