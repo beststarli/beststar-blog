@@ -959,3 +959,185 @@ target.addEventListener(type, listener, useCapture, wantsUntrusted)
 在JavaScript中使用构造函数新建对象时，每个构造函数内部都带有一个prototype属性，这个属性值是一个对象，这个对象包含了该构造函数所有的实例共享的属性和方法。当这个构造函数新建一个对象后，这个对象内部将包含一个指针，这个指针指向构造函数的prototype属性对应的值，在ES5中称为对象的原型。一般来说不应能获取到这个值，但是浏览器中都实现了proto属性来访问这个属性，ES5中新增了Object.getPrototypeOf()方法来获取对象的原型。
 
 当访问一个对象的属性时，如果这个对象内部不存在这个属性，那么它就会去它的原型对象里找这个属性，这个原型对象又会有自己的原型，于是就这样一直找下去，也就是原型链。原型链的尽头一般都是Object.prototype，所以新建的对象能够使用toString()等方法。
+
+特点：JavaScript对象是通过引用来传递的，创建的每个新对象实体中并没有一份属于自己的原型副本。当修改原型时，与之相关的对象也会集成这一改变。
+![原型链](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/prototype.png)
+
+### 原型修改与重写
+```js
+function Person(name) {
+    this.name = name
+}
+// 修改原型
+Person.prototype.getName = function() {}
+var p = new Person('hello')
+console.log(p.__proto__ === Person.prototype) // true
+console.log(p.__proto__ === p.constructror.prototype) // true
+// 重写原型
+Person.prototype = {
+    getName: function() {}
+}
+var p = new Person('hello')
+console.log(p.__proto__ === Person.prototype) // true
+console.log(p.__proto__ === p.constructror.prototype) // false
+```
+可以看到修改原型的时候p的构造函数不是指向Person了，因为直接给Person的原型对象直接用对象赋值时，它的构造函数指向了跟构造函数Obejct，所以这时候p.constructor === Object，而不是p.constructor === Person了。要想成立就要用constructor指回来：
+```js
+Person.prototype = {
+    getName: function() {}
+}
+var p = new Person('hello')
+p.constructor = Person
+console.log(p.__proto__ === Person.prototype) // true
+console.log(p.__proto__ === p.constructor.prototype) // true
+```
+
+### 原型链指向
+```js
+p.__proto__    // Person.prototype
+Person.prototype.__proto__    // Object.prototype
+p.__proto__.__proto__    // Object.prototype
+p.__proto__.constructor.prototype.__proto__    // Object.prototype
+Person.prototype.constructor.prototype.__proto__    // Object.prototype
+p1.__proto__.constructor    // Person
+Person.prototype.constructor    // Person
+```
+
+### 原型链的终点
+由于Object是构造函数，原型链终点是`Object.prototype.__proto__`，而`Object.prototype.__proto__ === null`为true，所以原型链的终点是null。原型链上的所有原型都是对象，所有的对象最终都是由Object构造的，而Object.prototype的下一级是`Object.prototype.__proto__`，它的值为null，所以原型链的终点是null。
+
+### 获取对象非原型链上的属性
+使用hasOwnProperty()方法来判断属性是否属于原型链的属性：
+```js
+function iterate(obj) {
+    var res = []
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            res.push(key + ': ' + obj[key])
+        }
+    }
+    return res
+}
+```
+
+## 执行上下文/作用域链/闭包
+### 对闭包的理解
+闭包是指有权访问另一个函数作用域中变量的函数，创建闭包的最常见的方式就是在一个函数内创建另一个函数，创建的函数可以访问到当前函数的局部变量。
+
+闭包的两种常见用途：
+- 使我们在函数外部能够访问函数内部的变量，通过使用闭包，可以在外部调用闭包函数，从而在外部访问到函数内部的变量，可以使用这种方法来创建私有变量。
+- 使已经运行结束的函数上下文中的变量对象继续留在内存中，因为闭包保留了这个变量对象的引用，所以这个变量对象不会回收。
+
+比如函数A内部有一个函数B，函数B可以访问到函数A中的变量，那么函数B就是闭包。
+```js
+function A() {
+    let a = 1
+    window.B = function() {
+        console.log(a)
+    }
+}
+A()
+B()
+```
+在JavaScript中闭包存在的意义就是让我们可以间接访问函数内部的变量，经典面试题：循环中使用闭包解决var定义函数的问题，比如下方这段函数：
+```js
+for (var i = 1; i <= 5; i++) {
+    setTimeout(function timer() {
+        console.log(i)
+    }, 1000 * i) 
+}
+```
+首先因为setTimeout是个异步函数，所以先把循环全部执行完，这时i为6，所以会输出一堆6，解决方法有三种：
+1. 使用闭包：
+```js
+for (var i = 1; i <= 5; i++) {
+    ;(function(j) {
+        setTimeout(function timer() {
+            console.log(j)
+        }, j * 1000)
+    })(i)
+}
+```
+上述代码首先使用了立即执行函数将i传入函数内部，这个时候值被固定在了参数j上不会改变，当下次执行timer这个闭包时，就可以使用外部函数的变量j，从而达到目的。
+2. 使用setTimeout的第三个参数，这个参数会被当成timer函数的参数传入。
+```js
+for (var i = 1; i <= 5; i++) {
+    setTimeout(
+        function timer(j) {
+            console.log(j)
+        },
+        i * 1000,
+        i
+    )
+}
+```
+3. 使用let定义i来解决问题：
+```js
+for (let i = 1; i <= 5; i++) {
+    setTimeout(function timer() {
+        console.log(i)
+    }, i * 1000) 
+}
+```
+
+### 对作用域、作用域链的理解
+#### 全局作用域
+- 最外层函数和最外层函数外层定义的变量拥有全局作用域
+- 所有未定义直接赋值的变量自动声明为全局作用域
+- 所有window对象的属性拥有全局作用域
+- 全局作用域有很大的弊端，过多的全局作用域变量会污染全局命名空间，容易引起命名冲突
+#### 函数作用域
+- 函数作用域声明在函数内部的变量，一般只有固定的代码片段能访问到
+- 作用域是分层的，内层作用域可以访问外层作用域，反之不行
+#### 作用链域
+在当前作用域中查找所需的变量，但是该作用域没有这个变量，那这个变量就是自由变量。如果在自己作用域找不到该变量就去父级作用域查找，依次向上级作用域查找，直到访问到window对象才终止，这一层层的关系就是作用域链。
+
+作用域的作用是：保证对执行环境有权访问的所有变量和函数的有序访问，通过作用域链，可以访问到外层环境的变量和函数。
+
+作用域链本质上是一个指向变量对象的指针列表。变量对象是一个包含了执行环境中所有变量和函数的对象。作用域链的前端始终都是当前执行上下文的变量对象。全局执行上下文的变量对象（也就是全局对象）始终是作用域链的最后一个对象。
+
+当查找一个变量时，如果当前执行环境中没有找到，可以沿着作用域链向后查找。
+
+### 对执行上下文的理解
+#### 执行上下文类型
+- 全局执行上下文：任何不在函数内部的都是全局执行上下文，它首先会创建一个全局的window对象，并且设置this的值等于这个全局对象，一个程序中只会有一个全局执行上下文。
+- 函数执行上下文：当一个函数被调用时，就会为该函数创建一个新的执行上下文，函数的上下文可以有任意多个。
+- eval函数执行上下文：执行在eval函数中的代码会有属于他自己的执行上下文，不过eval函数不常使用。
+#### 执行上下文栈
+- JavaScript引擎使用执行上下文栈来管理执行上下文
+- JavaScript执行代码时，首先遇到全局代码会创建一个全局执行上下文并压入执行栈中，每当遇到一个函数调用，就会为该函数创建一个新的执行上下文并压入栈顶，引擎会执行位于执行上下文栈顶的函数，当函数执行完成之后，执行上下文从栈中弹出，继续执行下一个上下文，当所有的代码都执行完毕后，从栈中弹出全局执行上下文。
+```js
+let a = 'Hello World'
+function first() {
+    console.log('Inside first function')
+    second()
+    console.log('Again inside first function')
+}
+
+function second() {
+    console.log('Inside second function')
+}
+
+first()
+// 先出栈second()，再出栈first()
+```
+#### 创建执行上下文
+创建执行上下文有两个阶段：创建阶段和执行阶段。
+##### 创建阶段
+- this绑定：
+    - 全局执行上下文：this指向全局对象window。
+    - 函数执行上下文：this的值取决于函数的调用方式，如果它被一个引用对象调用，那么this会被设置成那个对象，默认指向全局对象window或undefined。
+- 创建词法环境组件：
+    - 词法环境是一种有标识符——变量映射的数据结构，标识符是指变量或函数名，变量是对实际对象或原始数据的引用。
+    - 词法环境的内部有两个组件：
+        - 环境记录器：用来储存变量和函数声明的实际位置。
+        - 外部环境引用：可以访问父级作用域。
+- 创建变量环境组件：变量环境也是一个词法环境，其环境记录器持有变量声明语句在执行上下文中创建的绑定关系。
+##### 执行阶段
+此阶段会变成对变量的分配，最后执行完代码。
+
+执行上下文指：在一个函数执行之前，也会创建一个函数执行上下文环境，跟全局执行上下文类似，不过函数执行上下文会多出this、arguments和函数的参数。
+- 全局上下文：变量定义，函数声明。
+- 函数上下文：变量定义，函数声明，this，arguments。
+
+## this/call/apply/bind
