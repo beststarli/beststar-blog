@@ -953,3 +953,9 @@ target.addEventListener(type, listener, useCapture, wantsUntrusted)
     - signal：AbortSignal，该AbortSignal的abort()方法被调用时，监听器会被移除。
 - useCapture：可选，在DOM树中，注册了listener的元素，是否要先于它下面的EventTarget调用该listener。当useCapture为true时，沿着DOM树向上冒泡的事件不会触发listener。当一个元素嵌套了另一个元素，并且两个元素都对同一事件注册了一个处理函数时，所发生的事件冒泡和事件捕获时两种不同的事件传播方式。事件传播模式决定了元素从哪个顺序接收事件。如果没有指定，useCapture默认为false。
 - wantsUntrusted：如果为true，则事件处理程序会接收网页自定义的事件。此参数只适用于Gecko（chrome的默认值为true，其他常规网页的默认值为false），主要用于附和组件的代码和浏览器本身。
+
+## 原型与原型链
+### 对原型与原型链的理解
+在JavaScript中使用构造函数新建对象时，每个构造函数内部都带有一个prototype属性，这个属性值是一个对象，这个对象包含了该构造函数所有的实例共享的属性和方法。当这个构造函数新建一个对象后，这个对象内部将包含一个指针，这个指针指向构造函数的prototype属性对应的值，在ES5中称为对象的原型。一般来说不应能获取到这个值，但是浏览器中都实现了proto属性来访问这个属性，ES5中新增了Object.getPrototypeOf()方法来获取对象的原型。
+
+当访问一个对象的属性时，如果这个对象内部不存在这个属性，那么它就会去它的原型对象里找这个属性，这个原型对象又会有自己的原型，于是就这样一直找下去，也就是原型链。原型链的尽头一般都是Object.prototype，所以新建的对象能够使用toString()等方法。
