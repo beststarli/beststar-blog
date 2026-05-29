@@ -1,8 +1,8 @@
 ---
 title: 在没有mutation的前提下更新数组
 description: 在 JavaScript 中，数组只是另一种对象。同对象一样，需要将 React state 中的数组视为只读的。
-sidebar_position: 14
-tags: [React,添加交互]
+sidebar_position: 15
+tags: [React,状态管理]
 date: 2026-05-26
 ---
 
