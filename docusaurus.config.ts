@@ -195,6 +195,9 @@ const config: Config = {
     // Markdown 配置
     markdown: {
         mermaid: true,
+        mdx1Compat: {
+            admonitions: true,
+        },
     },
 
     // 主题配置
