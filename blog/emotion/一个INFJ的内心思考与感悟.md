@@ -79,6 +79,8 @@ image: https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/emotion/infj/i
 
 人生的走向如同一棵n叉树，我会在无数选择前递归出那条深度最大的路径。
 
+星，我又把你打败了，下一次我还会赢。
+
 ## 致谢
 特别感谢任何时刻都没有选择放弃的自己。
 
