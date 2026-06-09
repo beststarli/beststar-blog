@@ -533,5 +533,47 @@ em和rem相对px更具灵活性，他们都是相对长度单位，区别在于e
 - 对于只需要适配少部分移动设备且分辨率对页面影响不大的，使用px即可
 - 对于需要适配各种移动设备，使用rem，例如iphone和ipad等分辨率差别较大的设备
 
+## 移动端适配
+移动端适配主要有两个维度：
+- 适配不同的像素密度：针对不同的像素密度，使用CSS媒体查询，选择不同精度的图片，以保证图片不会失真。
+- 适配不同屏幕大小：由于不同的屏幕有着不同的逻辑像素大小，所以如果直接使用px作为开发单位，会使得开发的页面在同一款手机上可以准确显示，但是在另一款手机上就会失真，为了适配不同屏幕的大小，应按照比例来还原设计稿的内容。
 
+为了能让页面的尺寸自适应，可以使用rem、em、vw、vh等相对单位。
+
+## 对flex布局的理解及使用场景
+设为flex布局后，子元素的float、clear和vertical-align属性将失效。采用flex布局的元素称为flex容器，他的所有子元素自动成为容器成员，称为flex项目。容器默认有两根轴：水平主轴和垂直交叉轴，项目默认沿水平主轴排列。
+
+### 设置在容器上的属性
+- flex-direction：定义主轴的方向，决定了项目的排列方式（水平或垂直）。默认值为row，即水平排列。
+- flex-wrap：定义如果一行排不下，如何换行。默认值为nowrap，即不换行。
+- flex-flow：flex-direction和flex-wrap的简写形式，默认值为row nowrap。
+- justify-content：定义了项目在主轴上的对齐方式，默认值为flex-start，即从主轴的起点开始排列。
+- align-items：定义了项目在交叉轴上的对齐方式，默认值为stretch，即如果项目未设置高度或设为auto，将占满整个交叉轴。
+- align-content：定义了多行项目的对齐方式。默认值为stretch，即如果项目未设置高度或设为auto，将占满整个交叉轴。
+
+### 设置在项目上的属性
+- order：定义项目的排列顺序，数值越小，排列越靠前，默认为0。
+- flex-grow：定义项目的放大比例，默认为0，即如果存在剩余空间，也不放大。
+- flex-shrink：定义了项目的缩小比例，默认为1，即如果空间不足，该项目将缩小。
+- flex-basis：定义了在分配多余空间之前，项目占据的主轴空间。浏览器根据这个属性，计算主轴是否有多余空间。默认值为auto，即项目的本来大小。
+- flex：flex-grow、flex-shrink和flex-basis的简写，默认值为0 1 auto。建议使用这个属性，而不是单独写三个分离的属性，因为浏览器会推算其他两个属性的默认值。
+- align-self：允许单个项目有与其他项目不一样的对齐方式，可覆盖align-items属性，默认值为auto，即继承父元素的align-items属性，如果没有父元素，则等同于stretch。
+
+### flex:1表示什么
+flex属性是flex-grow、flex-shrink和flex-basis的简写，默认值为0 1 auto。flex:1表示flex: 1 1 0:
+- 第一个参数表示flex-grow，值为1表示如果存在剩余空间，该项目将占据剩余空间的全部。
+- 第二个参数表示flex-shrink，值为1表示如果空间不足，该项目将缩小。
+- 第三个参数表示flex-basis，值为0表示在分配多余空间之前，项目占据的主轴空间为0。
+
+flex:1的效果是让项目占满剩余空间，并且在空间不足时缩小。flex:1是一个常用的设置，可以让项目在主轴上占据剩余空间，同时保持其原有的大小和比例。
+
+### flex-shrink计算公式
+flex-shrink 决定了当 flex 容器空间不足时，每个 flex 项目的缩小比例。
+![flex-shrink](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/flex-shrink.png)
+
+## 响应式设计
+响应式网站设计是一个网站能够兼容多个终端，而不是为每一个终端做一个特定的版本。基本原理是通过媒体查询@media查询检测不同的设备屏幕尺寸做处理，页面头部必须有meta标签声明viewport，告诉浏览器如何控制页面的尺寸和缩放。
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+```
 
