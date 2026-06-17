@@ -889,6 +889,98 @@ React声明组件有三种方式：
 - 无法控制组件的重渲染，因为无法使用shouldComponentUpdate方法，当组件接收到新的属性时则会重渲染
 
 ### 总结
-组件内部状态且与外部无关的组件，可以考虑用状态组件，这样状态树就不会过于复杂，易于理解和管理。当一个组件不需要管理自身状态时，也就是无状态组件，应该优先设计为函数组件，比如自定义的<Button />、<Input />等组件。
+组件内部状态且与外部无关的组件，可以考虑用状态组件，这样状态树就不会过于复杂，易于理解和管理。当一个组件不需要管理自身状态时，也就是无状态组件，应该优先设计为函数组件，比如自定义的`<Button />`、`<Input />`等组件。
 
+## 对React中Fragment的理解
+在React中组件返回的元素只能有一个根元素，为了不添加多余的DOM节点，可以使用Fragment标签来包裹所有的元素，Fragment标签不会渲染出任何元素。官方对Fragment的解释是：React中的一个常见模式是一个组件返回多个元素，Fragment允许将子列表分组，而无需向DOM添加额外节点。
+```jsx
+import React, { Component, Fragment } from 'react'
 
+// 一般形式
+render() {
+    return (
+        <React.Fragment>
+            <ChildA />
+            <ChildB />
+            <ChildC />
+        </React.Fragment>
+    )
+}
+// 简写形式
+render() {
+    return (
+        <>
+            <ChildA />
+            <ChildB />
+            <ChildC />
+        </>
+    )
+}
+```
+
+## React获取组件对应的DOM元素
+可以用ref来获取某个子节点的实例，然后通过当前class组件实例的一些特定属性来直接获取子节点实例。ref有三种实现方法：
+- 字符串格式：React 16版本之前用的最多，如：
+```jsx
+<input ref="myInput" />
+```
+- 函数格式：ref对应一个方法，该方法有一个参数，也就是对应的节点实例，如：
+```jsx
+<input ref={input => this.myInput = input} />
+```
+- createRef格式：React 16.3版本引入的新的API，使用React.createRef()来实现：
+```jsx
+constructor(props) {
+    super(props)
+    this.myInput = React.createRef()
+}
+render() {
+    return (
+        <input ref={this.myInput} />
+    )
+}
+```
+
+## 为什么React中不可以在render访问refs
+```jsx
+<>
+    <span id='name' ref={this.spanRef}>{this.state.title}</span>
+    <span>{ this.spanRef.current ? '有值' : '无值' }</span>
+</>
+```
+render阶段DOM还没有生成，无法获取DOM，DOM的获取需要在pre-commit阶段和commit阶段：
+![生命周期](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/生命周期.png)
+
+## 插槽Portals
+Portals提供了一种将子节点渲染到存在于父组件以外的DOM节点的优秀方案，Portals是React 16提供的官方解决方案，使得组件可以脱离父组件层级挂载在DOM树的任意位置，通俗来讲就是render出一个组件但这个组件的DOM结构并不在本组件内。
+
+Portals语法：
+```jsx
+ReactDOM.createPortal(child, container)
+```
+- 第一个参数child是可渲染的React子项，如元素、字符串或者片段等。
+- 第二个参数container是一个DOM元素。
+
+一般情况下，组件的render函数返回的元素会被挂载在它的父级组件上：
+```jsx
+import DemoComponent from './DemoComponent'
+
+render() {
+    // DemoComponent元素会被挂载在id为parent的div元素上
+    return (
+        <div id='parent'>
+            <DemoComponent />
+        </div>
+    )
+}
+```
+然而有些元素需要被挂载在更高层级的位置，最典型的应用场景：当父组件具有overflow: hidden或者z-index的样式设置时，组件有可能被其他元素遮挡，这时就可以考虑要不要使用Protals使组件的挂载脱离父组件，例如：对话框、模态窗。
+```jsx
+import DemoComponent from './DemoComponent'
+render() {
+    // react会将DemoComponent组件直接挂载在真实的DOM节点domNode上，生命周期还和16版本之前一样
+    return ReactDOM.createPortal(
+        <DemoComponent />,
+        domNode
+    )
+}
