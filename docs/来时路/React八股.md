@@ -984,3 +984,221 @@ render() {
         domNode
     )
 }
+```
+
+## 如何避免不必要的render
+React基于虚拟DOM和高效Diff算法的完美配合，实现了对DOM最小粒度的更新，大多数情况下，React对DOM的渲染效率足够满足业务日常。但在某些特定场景下仍然会有性能问题，一个重要的优化方向就是避免不必要的render。
+
+### shouldComponentUpdate和PureComponent
+在React类组件中，可以利用shouldComponentUpdate或者PureComponent来减少因父组件更新而触发子组件的render，从而达到目的。shouldComponentUpdate来决定组件是否重新渲染，如果不希望组件重新渲染，返回false即可。
+### 利用高阶组件
+在函数组件中，并没有shouldComponentUpdate这个生命周期钩子函数，可以利用高阶组件封装一个类似PureComponent的功能。
+### 使用React.memo
+React.memo是React 16.6新的一个API，用来缓存组件的渲染，避免不必要的更新，事实上也是一个高阶组件与PureComponent类似，但不同的是React.memo只能用于函数组件。
+
+## React-Intl
+React-Intl是雅虎的语言国际化开源项目FormatJS的一部分，通过其提供的组件和API可以与ReactJS绑定。React-Intl提供了两种使用方法，一种是引用React组件，另一种是直接调取API，官方推荐使用前者，只有在无法使用React组件的地方才应该调用框架提供的API。它提供了一系列React组件，包括数字格式化、字符串格式化、日期格式化等。
+
+在React-Intl中可以配置不同的语言包，它的工作原理就是根据需要在语言包之间进行切换。
+
+## React context
+在React中数据传递一般使用props维持单向数据流，这样可以让组件之间的关系变得简单且可测，但是单项数据流在某些场景并不适用。当组件间层级依赖较深，props的传递就过于繁琐了。
+
+context提供了一种在组件之间共享此类值的方法，不必显式地通过组件树逐层传递props。可以把context当作是特定一个组件树内共享的store，用来做数据传递，实现跨层级组件通信。
+
+JS的代码块在执行期间，会创建一个相应的作用域链，这个作用域链记录着运行时JS代码块执行期间所能访问的活动对象，包括变量和函数，JS程序通过作用域链访问到代码块内部或者外部的变量和函数。假如以JS的作用域链作为类比，React组件提供的context对象其实就好比一个提供给子组件访问的作用域，而context对象的属性可以看成作用域上的活动对象。由于组件的context由其父节点链上所有组件通过getChildContext()返回的context对象组合而成，所以，组件通过context可以访问到父组件链上所有节点组件提供的context的属性。
+
+## 为什么不推荐优先使用context
+- 如果能做到高内聚，不破坏组件树之间的依赖关系，可以考虑使用context
+- 对于组件之间的数据通信或者状态管理，有效使用props或者state解决，然后再考虑使用Redux或Zustand解决，以上都不是最佳方案时才考虑使用context
+- context的更新需要通过setState()触发，但是并不可靠。context支持跨组件访问，但是如果子组件通过一些方法不更新，比如shouldComponentUpdate()返回false，那么不能保证context的更新一定可以使用context的子组件，所以context的可靠性需要关注
+
+## 受控组件
+在使用表单来收集用户输入时，输入框等元素都要绑定一个onChange事件，点表单的状态发生变化就会触发onChange事件，更新组件的state，这种组件在React中被称为受控组件。在受控组件中，组件渲染出的状态与它的value或checked属性相对应，React通过这种方式消除了组件的局部状态，使整个状态可控。
+
+受控组件更新state的流程：
+- 可以通过初试state设置表单的默认值
+- 每当表单的值发生变化时，调用onChange事件处理器
+- 事件处理器通过事件对象e拿到改变后的状态并更新组件的state
+- 一旦通过setState方法更新state，就会触发视图的重新渲染，完成表单组件的更新
+
+受控组件的缺陷：表单元素的值都是由React组件进行管理，当有多个输入框或者多个类似组件时，如果要同时获取到全部的值就必须每个都要编写事件处理函数，这会让代码变得冗长。
+
+## 非受控组件
+如果一个表单组件没有value props时，就可以称为非受控组件，在非受控组件中，可以使用一个ref来从DOM获取表单值，而不是为每个状态更新编写一个事件处理程序。例如，下面的代码在非受控组件中接收单个属性：
+```jsx
+class NameForm extends React.Component {
+    constructor(props) {
+        super(props)
+        this.handleSubmit = this.handleSubmit.bind(this)
+    }
+    handleSubmit(event) {
+        alert('提交的名字: ' + this.input.value)
+        event.preventDefault()
+    }
+    render() {
+        return (
+            <form onSubmit={this.handleSubmit}>
+                <label>
+                    名字:
+                    <input type="text" ref={input => this.input = input} />
+                </label>
+                <input type="submit" value="Submit" />
+            </form>
+        )
+    }
+}
+```
+页面中所有输入类的DOM如果是现用现取的方式获取值就称为非受控组件，而通过setState将输入的值维护到了state中，需要时再从state中取出，这些数据就受到了state的控制，这些组件就称为受控组件。
+
+## Refs
+Refs提供了一种方法来访问在render方法中创建的React元素或DOM节点。适合Refs的使用场景：
+- 处理焦点、文本选择或者媒体的控制
+- 触发必要的动画
+- 集成第三方DOM库
+
+Refs是使用React.createRef()创建的，他通过ref属性附加到React元素上，要在整个组件中使用Refs，需要将ref在构造函数中分配给其实例属性：
+```jsx
+class MyComponent extends React.Component {
+    constructor(props) {
+        super(props)
+        this.myRef = React.createRef()
+    }
+    render() {
+        return <div ref={this.myRef} />
+    }
+}
+```
+由于函数组件没有实例，因此不能在函数组件上直接使用ref：
+```jsx
+function MyFunctionComponent() {
+    return <input />
+}
+
+class Parent extends React.Component {
+    constructor(props) {
+        super(props)
+        this.textInput = React.createRef()
+    }
+    render() {
+        // 下面的代码会报错，因为函数组件没有实例
+        return <MyFunctionComponent ref={this.textInput} />
+    }
+}
+```
+但可以通过闭合的帮助在函数组件内部使用Refs：
+```jsx
+function CustomTextInput(props) {
+    // textInput必须在函数组件内部声明，这样它才能在handleClick中引用 
+    let textInput = null
+    function handleClick() {
+        textInput.focus()
+    }
+    return (
+        <div>
+            <input type="text" ref={(input) => textInput = input} />
+            <input type="button" value="Focus the text input" onClick={handleClick} />
+        </div>
+    )
+}
+```
+注意：
+- 不应该过度使用Refs
+- ref的返回值取决于节点的类型：
+    - 当ref属性被用于一个普通的HTML元素时，React.createRef()将接收底层DOM元素作为其current属性来创建ref。
+    - 当ref属性被用于一个自定义的类组件时，ref对象将接收该组件已挂载的实例作为他的current。
+- 当在父组件中需要访问子组件的ref时可使用forwardRef来转发ref
+
+## React中绑定this
+### 在构造函数中绑定this
+```jsx
+constructor(props) {
+    super(props)
+    this.state = {
+        msg: 'Hello'
+    }
+    this.getMsg = this.getMsg.bind(this)
+}
+```
+### 函数定义的时候使用箭头函数
+```jsx
+constructor(props) {
+    super(props)
+    this.state = {
+        msg: 'Hello'
+    }
+    render() {
+        return (
+            <div>
+                <button onClick={() => this.getMsg()}>点击获取msg</button>
+            </div>
+        )
+    }
+}
+```
+### 函数调用使用bind绑定this
+```jsx
+<button onClick={this.getMsg.bind(this)}>点击获取msg</button>
+```
+
+## React组件的构造函数
+构造函数主要有两个目的：
+- 通过将对象分配给this.state来初始化本地状态
+- 将事件处理程序方法绑定到实例上
+
+所以当在React class中需要设置state的初始值或者绑定事件时需要加上构造函数：
+```jsx
+class LikeButton extends React.Component {
+    constructor(props) {
+        super()
+        this.state = {
+            liked: false
+        }
+        this.handleClick = this.handleClick.bind(this)
+    }
+    handleClick() {
+        this.setState({
+            liked: !this.state.liked
+        })
+    }
+    render() {
+        const text = this.state.liked ? '点赞' : '没有点赞'
+        return (
+            <div onClick={this.handleClick}>
+                {text}
+            </div>
+        )
+    }
+}
+
+ReactDOM.render(
+    <LikeButton />,
+    document.getElementById('root')
+)
+```
+构造函数用来新建父类的this对象，子类必须在constructor方法中调用super方法，否则新建实例会报错，因为子类没有自己的this对象，而是继承父类的this对象，然后对其进行加工。如果不调用super方法，子类就得不到this对象。
+
+注意：
+- constructor()必须配上super()，如果要在constructor内部使用this.props就要传入props，否则不用
+- JavaScript中的bind每次都会返回一个新的函数，为了性能考虑尽量在constructor中绑定事件
+
+## React.forwardRef
+React.forwardRef会创建一个React组件，这个组件能够将其接受的ref属性转发到其组件树下的另一个组件中。这种方法并不常用，但在下面场景中特别有用：
+- 转发refs到DOM组件
+- 在高阶组件中转发refs
+
+## 类组件与函数组件的异同
+### 相同点
+组件是React可复用的最小代码片段，它们会返回要在页面中渲染的React元素。也正因为组件是React的最小编码单位，所以无论是函数组件还是类组件，在使用方式和最终呈现效果上都是完全一致的。
+
+可以将一个类组件改写成函数组件，或者把函数组件改写成一个类组件，虽然并不推荐重构这种行为。从使用者的角度很难从体验上区分二者，而在现代浏览器中，闭包和类的性能只在极端场景下才会有明显的差别。所以基本可认为两者作为组件是完全一致的。
+
+### 不同点
+- 它们在开发时的语法存在较大差异，类组件是基于面向对象编程的，核心概念是继承、生命周期等；而函数组件内核是函数式编程，核心特点是immutable、没有副作用、引用透明。
+- 使用场景上，如果存在需要使用生命周期的组件，那么主推类组件；设计模式上，如果需要使用继承，那么主推类组件；但由于React Hooks的推出，生命周期概念淡化，函数组件可以完全取代类组件，其次继承并不是组件最佳的设计模式，官方推崇“组合优于继承”的设计概念，所以类组件的优势也在淡出。
+- 性能优化上，类组件主要依靠shouldComponentUpdate阻断渲染来提升性能，而函数组件依靠React.memo缓存渲染结果来提升性能。
+- 类组件更易上手，函数组件是未来主推。
+- 类组件在未来时间切片与并发模式中，由于生命周期带来的复杂度，并不易于优化。而函数组件本身轻量简单，且在Hooks的基础上提供了比原先更细粒度的逻辑组织与复用，更适应React未来的发展。
+
+## setState调用的原理
+![setState调用](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/setState调用.png)
