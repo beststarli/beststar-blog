@@ -22,6 +22,7 @@ interface CategoryDocs {
     icon: string
     color: string
     docs: DocItem[]
+    totalDocs: number
 }
 
 const variants: Variants = {
@@ -84,6 +85,8 @@ function CategoryTimeline({ categoryData, index }: { categoryData: CategoryDocs,
                     </h3>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
                         {categoryData.docs.length}
+                        /
+                        {categoryData.totalDocs}
                         {' '}
                         <Translate id="theme.blog.archive.posts.unit">篇</Translate>
                     </span>
@@ -222,27 +225,29 @@ export default function DocsSection() {
         // 按指定顺序生成分类数组
         const categories: CategoryDocs[] = targetCategories
             .filter(category => categoryMap.has(category))
-            .map(category => ({
-                category,
-                icon: categoryConfig[category].icon,
-                color: categoryConfig[category].color,
-                docs: categoryMap
-                    .get(category)!
-                    .sort((a, b) => {
-                        // 优先使用 frontMatter.date，否则使用 lastUpdatedAt
-                        const getTime = (doc: DocItem) => {
-                            if (doc.frontMatter?.date) {
-                                return new Date(doc.frontMatter.date).getTime()
-                            }
-                            return doc.lastUpdatedAt || 0
+            .map((category) => {
+                const allDocsInCategory = categoryMap.get(category)!
+                const sortedDocs = allDocsInCategory.sort((a, b) => {
+                    // 优先使用 frontMatter.date，否则使用 lastUpdatedAt
+                    const getTime = (doc: DocItem) => {
+                        if (doc.frontMatter?.date) {
+                            return new Date(doc.frontMatter.date).getTime()
                         }
+                        return doc.lastUpdatedAt || 0
+                    }
 
-                        const timeA = getTime(a)
-                        const timeB = getTime(b)
-                        return timeB - timeA // 倒序排序，新的在前
-                    })
-                    .slice(0, 2), // 每个分类最多显示2篇
-            }))
+                    const timeA = getTime(a)
+                    const timeB = getTime(b)
+                    return timeB - timeA // 倒序排序，新的在前
+                })
+                return {
+                    category,
+                    icon: categoryConfig[category].icon,
+                    color: categoryConfig[category].color,
+                    docs: sortedDocs.slice(0, 2), // 每个分类最多显示2篇
+                    totalDocs: allDocsInCategory.length,
+                }
+            })
 
         return categories
     }, [allDocs])

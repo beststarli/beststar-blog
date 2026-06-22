@@ -1202,3 +1202,63 @@ React.forwardRef会创建一个React组件，这个组件能够将其接受的re
 
 ## setState调用的原理
 ![setState调用](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/setState调用.png)
+
+1. 首先调用setState入口函数，入口函数充当分发器的角色，根据入参的不同将其分发到不同的功能函数中：
+```js
+ReactComponent.prototype.setState = function(partialState, callback) {
+    this.updater.enqueueSetState(this, partialState)
+    if (callback) {
+        this.updater.enqueueCallback(this, callback, 'setState')
+    }
+}
+```
+2. enqueueSetState方法将新的state放入组件的状态队列中，并调用enqueueUpdate来处理将要更新的实例对象：
+```js
+function enqueueSetState(publicInstance, partialState) {
+    // 根据this拿到对应的组件实例
+    var internalInstance = getInternalInstanceReadyForUpdate(publicInstance, 'setState')
+    // 这个queue对应的就是一个组件实例的state数组
+    var queue = internalInstance._pendingStateQueue || (internalInstance._pendingStateQueue = [])
+    queue.push(partialState)
+    // enqueueUpdate用来处理当前的组件实例对象
+    enqueueUpdate(internalInstance)
+}
+```
+3. 在enqueueUpdate方法中引入一个关键的对象——batchingStrategy，该对象具备isBatchingUpdates属性直接决定当下是走更新流程还是排队等待。如果轮到执行就调用batchedUpdates方法来直接发起更新流程，由此可以知道batchingStrategy或许是React内部专门用于管控批量更新的对象。
+```js
+function enqueueUpdate(component) {
+    ensureInjected()
+    // isBatchingUpdates标识着当前是否处于批量创建/更新组件的阶段
+    if (!batchingStrategy.isBatchingUpdates) {
+        // 若当前没有处于批量创建/更新组件的阶段，则立即更新组件
+        batchingStrategy.batchedUpdates(enqueueUpdate, component)
+        return 
+    }
+    // 否则，先把组件塞入dirtyComponents数组中，等到批量更新阶段再统一处理
+    dirtyComponents.push(component)
+    if (component._updateBatchNumber == null) {
+        component._updateBatchNumber = updateBatchNumber + 1
+    }
+}
+```
+**注意**：batchingStrategy对象可以理解为“锁管理器”，这里的“锁”是指React全局唯一的isBatchingUpdates变量，isBatchingUpdates的初始值是false，意味着“当前并未进行任何批量更新操作”。每当React调用batchedUpdate去执行更新动作时，会先把这个锁给锁上即设为true，表明“现在处于批量更新流程中”，当锁被“锁上”时，任何需要更新的组件都只能暂时进入dirtyComponents里排队等候下一次批量更新，而不能随意插队。此处体现了任务锁的思想，是React面对大量状态仍然能够实现有序分批处理的基石。
+
+## setState调用后发生了什么
+在代码中调用setState之后，React会将传入的参数对象与组件之前的状态合并，然后触发调和过程（Reconciliation），经过调和过程，React会以相对高效的的方式根据新的状态构建React元素树并着手重新渲染整个UI界面。
+
+在React得到元素树之后，React会自动计算出新的树与老树的节点差异，然后根据差异对界面进行最小化重新渲染。在差异计算算法中，React能够相对精确地知道哪些位置发生了什么改变以及应该如何改变，这就保证了按需更新而不是全部重新渲染。
+
+如果在短时间内频繁setState，React会将state的改变压入栈中，在合适的时机批量更新state和视图，达到提高性能的效果。
+
+## setState是同步的还是异步的
+假如所有setState是同步的，意味着每执行一次setState时，都重新VNode Diff + DOM修改，这对性能极为不好。如果是异步的，则可以把一个同步代码中的多个setState合并成一次组件更新，所以默认是异步的，但是一些情况下是同步的。
+
+setState并不是单纯同步或异步的，它的表现会因调用场景的不同而不同，在源码中通过isBatchingUpdates来判断setState是先存进state队列还是直接更新，如果值为true则执行异步操作，为false则直接更新。
+- 异步：在React可以控制的地方则为true，如在React生命周期事件和合成事件中，都会走合并操作，延迟更新的策略。
+- 同步：在React无法控制的地方，如原生事件addEventListener、setTimeout、Promise等异步回调函数中，就只能同步更新。
+
+一般认为做异步设计是为了性能优化、减少渲染次数：
+- `<font style="background-color:transparent">setState</font>`设计为异步，可以显著的提升性能。如果每次调用setState都进行一次更新，那么意味着render函数会被频繁调用，界面更新渲染，这样效率很低。最好的办法应该是获取到多个更新之后进行批量更新。
+- 如果同步更新了state，但是还没有执行render函数，那么state和props不能保持同步。state和props不能保持一致性，会在开发中产生很多问题。
+
+
