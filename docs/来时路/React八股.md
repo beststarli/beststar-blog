@@ -1204,7 +1204,7 @@ React.forwardRef会创建一个React组件，这个组件能够将其接受的re
 ![setState调用](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/setState调用.png)
 
 1. 首先调用setState入口函数，入口函数充当分发器的角色，根据入参的不同将其分发到不同的功能函数中：
-```js
+```jsx
 ReactComponent.prototype.setState = function(partialState, callback) {
     this.updater.enqueueSetState(this, partialState)
     if (callback) {
@@ -1213,7 +1213,7 @@ ReactComponent.prototype.setState = function(partialState, callback) {
 }
 ```
 2. enqueueSetState方法将新的state放入组件的状态队列中，并调用enqueueUpdate来处理将要更新的实例对象：
-```js
+```jsx
 function enqueueSetState(publicInstance, partialState) {
     // 根据this拿到对应的组件实例
     var internalInstance = getInternalInstanceReadyForUpdate(publicInstance, 'setState')
@@ -1225,7 +1225,7 @@ function enqueueSetState(publicInstance, partialState) {
 }
 ```
 3. 在enqueueUpdate方法中引入一个关键的对象——batchingStrategy，该对象具备isBatchingUpdates属性直接决定当下是走更新流程还是排队等待。如果轮到执行就调用batchedUpdates方法来直接发起更新流程，由此可以知道batchingStrategy或许是React内部专门用于管控批量更新的对象。
-```js
+```jsx
 function enqueueUpdate(component) {
     ensureInjected()
     // isBatchingUpdates标识着当前是否处于批量创建/更新组件的阶段
@@ -1261,4 +1261,431 @@ setState并不是单纯同步或异步的，它的表现会因调用场景的不
 - `<font style="background-color:transparent">setState</font>`设计为异步，可以显著的提升性能。如果每次调用setState都进行一次更新，那么意味着render函数会被频繁调用，界面更新渲染，这样效率很低。最好的办法应该是获取到多个更新之后进行批量更新。
 - 如果同步更新了state，但是还没有执行render函数，那么state和props不能保持同步。state和props不能保持一致性，会在开发中产生很多问题。
 
+## setState批量更新的过程
+调用setState时，组件的state并不会立即改变，setState只是把要修改的state放入一个队列，React会优化真正的执行时机，并出于性能原因会将React事件处理程序中的多次React事件处理程序中的多次setState的状态修改合并成一次状态修改。最终更新只产生一次组件及其子组件的重新渲染，这对于大型应用程序中的性能提升至关重要。
+```jsx
+this.setState({
+  count: this.state.count + 1    ===>    入队，[count+1的任务]
+});
+this.setState({
+  count: this.state.count + 1    ===>    入队，[count+1的任务，count+1的任务]
+});
+                                          ↓
+                                         合并 state，[count+1的任务]
+                                          ↓
+                                         执行 count+1的任务
+```
+只要同步代码还在执行，“攒起来”这个动作就不会停止。这里之所以多次 +1 最终只有一次生效，是因为在同一个方法中多次 setState 的合并动作不是单纯地将更新累加。比如这里对于相同属性的设置，React 只会为其保留最后一次的更新。
 
+## getDefaultProps的作用
+通过实现组件的getDefaultProps，对属性设置默认值：
+```jsx
+var ShowTitle = React.createClass({
+    getDefaultProps: function() {
+        return {
+            title: 'React'
+        }
+    },
+    render: function() {
+        return (
+            <h1>{this.props.title}</h1>
+        )
+    }
+})
+```
+
+## setState第二参数
+setState 的第二个参数是一个可选的回调函数。这个回调函数将在组件重新渲染后执行。等价于在 componentDidUpdate 生命周期内执行。通常建议使用 componentDidUpdate 来代替此方式。在这个回调函数中你可以拿到更新后 state 的值：
+```jsx
+this.setState({
+    key1: newState1,
+    key2: newState2,
+    ...
+}, callback) // 第二个参数是 state 更新完成后的回调函数
+```
+
+## setState和replaceState的区别
+### setState
+setState()用于设置状态对象，语法如下：
+```jsx
+setState(object nextState[, function callback])
+```
+- nextState，将要设置的新状态，该状态会和当前的state合并
+- callback，可选参数，回调函数。该函数会在setState设置成功，且组件重新渲染后调用。
+
+合并nextState和当前state，并重新渲染组件。setState是React事件处理函数中和请求回调函数中触发UI更新的主要方法。
+
+### replaceState
+replaceState()方法与setState()类似，但是方法只会保留nextState中状态，原state不在nextState中的状态都会被删除。其语法如下：
+```jsx
+replaceState(object nextState[, function callback])
+```
+- nextState，将要设置的新状态，该状态会替换当前的state。
+- callback，可选参数，回调函数。该函数会在replaceState设置成功，且组件重新渲染后调用。
+
+总结： setState 是修改其中的部分状态，相当于 Object.assign，只是覆盖，不会减少原来的状态。而replaceState 是完全替换原来的状态，相当于赋值，将原来的 state 替换为另一个对象，如果新状态属性减少，那么 state 中就没有这个状态了。
+
+## this.state和setState的区别
+this.state通常是用来初始化state的，this.setState是用来修改state值的。如果初始化了state之后再使用this.state，之前的state会被覆盖掉，如果使用this.setState，只会替换掉相应的state值。所以，如果想要修改state的值，就需要使用setState，而不能直接修改state，直接修改state之后页面是不会更新的。
+
+## state如何注入到组件，reducer到组件经历的过程
+通过connect和mapStateToProps将state注入到组件中：
+```jsx
+import { connect } from 'react-redux'
+import { setVisibilityFilter } from '@/reducers/Todo/actions'
+import Link from '@/containers/Todo/components/Link'
+
+const mapStateToProps = (state, ownProps) => ({
+    active: ownProps.filter === state.visibilityFilter
+})
+
+const mapDispatchToProps = (dispatch, ownProps) => ({
+    setFilter: () => {
+        dispatch(setVisibilityFilter(ownProps.filter))
+    }
+})
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Link)
+```
+上面代码中，active就是注入到Link组件中的状态。 mapStateToProps（state，ownProps）中带有两个参数，含义是∶
+- state-store管理的全局状态对象，所有的组件状态数据都存储在该对象中。
+- ownProps组件通过props传入的参数。
+
+reducer到组件经历的过程：
+- reducer对action对象处理，更新组件状态，并将新的状态值返回store。
+- 通过connect（mapStateToProps，mapDispatchToProps）（Component）对组件Component进行升级，此时将状态值从store取出并作为props参数传递到组件。
+
+高阶组件实现源码：
+```jsx
+import React from 'react'
+import PropTypes from 'prop-types'
+
+// 高阶组件 contect 
+export const connect = (mapStateToProps, mapDispatchToProps) => (WrappedComponent) => {
+    class Connect extends React.Component {
+        // 通过对context调用获取store
+        static contextTypes = {
+            store: PropTypes.object
+        }
+
+        constructor() {
+            super()
+            this.state = {
+                allProps: {}
+            }
+        }
+
+        // 第一遍需初始化所有组件初始状态
+        componentWillMount() {
+            const store = this.context.store
+            this._updateProps()
+            store.subscribe(() => this._updateProps()); // 加入_updateProps()至store里的监听事件列表
+        }
+
+        // 执行action后更新props，使组件可以更新至最新状态（类似于setState）
+        _updateProps() {
+            const store = this.context.store;
+            let stateProps = mapStateToProps ?
+                mapStateToProps(store.getState(), this.props) : {} // 防止 mapStateToProps 没有传入
+            let dispatchProps = mapDispatchToProps ?
+                mapDispatchToProps(store.dispatch, this.props) : {
+                                    dispatch: store.dispatch
+                                } // 防止 mapDispatchToProps 没有传入
+            this.setState({
+                allProps: {
+                    ...stateProps,
+                    ...dispatchProps,
+                    ...this.props
+                }
+            })
+        }
+
+        render() {
+            return <WrappedComponent {...this.state.allProps} />
+        }
+    }
+    return Connect
+}
+```
+
+## state和props的区别
+- state：主要作用是用于组件保存、控制以及修改自己的状态，它只能在constructor中初始化，它算是组件的私有属性，不可通过外部访问和修改，只能通过组件内部的this.setState来修改，修改state属性会导致组件的重新渲染。
+- props：一个从外部传进组件的参数，主要作为就是从父组件向子组件传递数据，它具有可读性和不变性，只能通过外部组件主动传入新的props来重新渲染子组件，否则子组件的props以及展现形式不会改变。
+
+区别：
+- props 是传递给组件的（类似于函数的形参），而state 是在组件内被组件自己管理的（类似于在一个函数内声明的变量）。
+- props 是不可修改的，所有 React 组件都必须像纯函数一样保护它们的 props 不被更改。
+- state 是在组件中创建的，一般在 constructor中初始化 state。state 是多变的、可以修改，每次setState都异步更新的。
+
+## props为什么是只读的
+this.props是组件之间沟通的一个接口，原则上来讲，它只能从父组件流向子组件。React具有浓重的函数式编程的思想。
+
+提到函数式编程就要提一个概念：纯函数。它有几个特点：
+- 给定相同的输入，总是返回相同的输出。
+- 过程没有副作用。
+- 不依赖外部状态。
+
+this.props就是汲取了纯函数的思想。props的不可以变性就保证的相同的输入，页面显示的内容是一样的，并且不会产生副作用。
+
+## props改变时更新组件的方法
+在一个组件传入的props更新时重新渲染该组件常用的方法是在componentWillReceiveProps中将新的props更新到组件的state中（这种state被成为派生状态（Derived State）），从而实现重新渲染。React 16.3中还引入了一个新的钩子函数getDerivedStateFromProps来专门实现这一需求。
+### componentWillReceiveProps（已废弃）
+在react的componentWillReceiveProps(nextProps)生命周期中，可以在子组件的render函数执行前，通过this.props获取旧的属性，通过nextProps获取新的props，对比两次props是否相同，从而更新子组件自己的state。
+这样的好处是，可以将数据请求放在这里进行执行，需要传的参数则从componentWillReceiveProps(nextProps)中获取。而不必将所有的请求都放在父组件中。于是该请求只会在该组件渲染时才会发出，从而减轻请求负担。
+
+### getDerivedStateFromProps（16.3引入）
+这个生命周期函数是为了替代componentWillReceiveProps存在的，所以在需要使用componentWillReceiveProps时，就可以考虑使用getDerivedStateFromProps来进行替代。
+
+两者的参数是不相同的，而getDerivedStateFromProps是一个静态函数，也就是这个函数不能通过this访问到class的属性，也并不推荐直接访问属性。而是应该通过参数提供的nextProps以及prevState来进行判断，根据新传入的props来映射到state。
+
+需要注意的是，如果props传入的内容不需要影响到你的state，那么就需要返回一个null，这个返回值是必须的，所以尽量将其写到函数的末尾：
+```jsx
+static getDerivedStateFromProps(nextProps, prevState) {
+    const {type} = nextProps;
+    // 当传入的type发生变化的时候，更新state
+    if (type !== prevState.type) {
+        return {
+            type,
+        };
+    }
+    // 否则，对于state不进行任何操作
+    return null;
+}
+```
+
+## 如何校验props
+React为我们提供了PropTypes以供验证使用。当我们向Props传入的数据无效（向Props传入的数据类型和验证的数据类型不符）就会在控制台发出警告信息。它可以避免随着应用越来越复杂从而出现的问题。并且，它还可以让程序变得更易读。
+```jsx
+import PropTypes from 'prop-types';
+
+class Greeting extends React.Component {
+  render() {
+    return (
+      <h1>Hello, {this.props.name}</h1>
+    );
+  }
+}
+
+Greeting.propTypes = {
+  name: PropTypes.string
+};
+```
+当然，如果项目汇中使用了TypeScript，那么就可以不用PropTypes来校验，而使用TypeScript定义接口来校验props。
+
+## React的生命周期
+React通常将组件生命周期分为三个阶段：
+- 挂载阶段（Mount），组件第一次在DOM树中被渲染的过程；
+- 更新过程（Update），组件状态发生变化，重新更新渲染的过程；
+- 卸载过程（Unmount），组件从DOM树中被移除的过程；
+![React生命周期](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/生命周期.png)
+### 组件挂载阶段
+挂载阶段组件被创建，然后组件实例插入到 DOM 中，完成组件的第一次渲染，该过程只会发生一次，在此阶段会依次调用以下这些方法：
+- constructor
+- getDerivedStateFromProps
+- render
+- componentDidMount
+#### constructor
+组件的构造函数，第一个被执行，若没有显式定义它，会有一个默认的构造函数，但是若显式定义了构造函数，我们必须在构造函数中执行 super(props)，否则无法在构造函数中拿到this。
+
+如果不初始化 state 或不进行方法绑定，则不需要为 React 组件实现构造函数Constructor。
+
+constructor中通常只做两件事：
+- 初始化组件的 state
+- 给事件处理方法绑定 this
+```jsx
+constructor(props) {
+  super(props);
+  // 不要在构造函数中调用 setState，可以直接给 state 设置初始值
+  this.state = { counter: 0 }
+  this.handleClick = this.handleClick.bind(this)
+}
+```
+#### getDerivedStateFromProps
+```jsx
+static getDerivedStateFromProps(props, state)
+```
+这是个静态方法，所以不能在这个函数里使用 this，有两个参数 props 和 state，分别指接收到的新参数和当前组件的 state 对象，这个函数会返回一个对象用来更新当前的 state 对象，如果不需要更新可以返回 null。
+
+该函数会在装载时，接收到新的 props 或者调用了 setState 和 forceUpdate 时被调用。如当接收到新的属性想修改 state ，就可以使用。
+```jsx
+// 当 props.counter 变化时，赋值给 state 
+class App extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      counter: 0
+    }
+  }
+  static getDerivedStateFromProps(props, state) {
+    if (props.counter !== state.counter) {
+      return {
+        counter: props.counter
+      }
+    }
+    return null
+  }
+  
+  handleClick = () => {
+    this.setState({
+      counter: this.state.counter + 1
+    })
+  }
+  render() {
+    return (
+      <div>
+        <h1 onClick={this.handleClick}>Hello, world!{this.state.counter}</h1>
+      </div>
+    )
+  }
+}
+```
+现在可以显式传入 counter ，但是这里有个问题，如果想要通过点击实现 state.counter 的增加，但这时会发现值不会发生任何变化，一直保持 props 传进来的值。这是由于在 React 16.4^ 的版本中 setState 和 forceUpdate 也会触发这个生命周期，所以当组件内部 state 变化后，就会重新走这个方法，同时会把 state 值赋值为 props 的值。因此需要多加一个字段来记录之前的 props 值，这样就会解决上述问题。具体如下：
+```jsx
+// 这里只列出需要变化的地方
+class App extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      // 增加一个 preCounter 来记录之前的 props 传来的值
+      preCounter: 0,
+      counter: 0
+    }
+  }
+  static getDerivedStateFromProps(props, state) {
+    // 跟 state.preCounter 进行比较
+    if (props.counter !== state.preCounter) {
+      return {
+        counter: props.counter,
+        preCounter: props.counter
+      }
+    }
+    return null
+  }
+  handleClick = () => {
+    this.setState({
+      counter: this.state.counter + 1
+    })
+  }
+  render() {
+    return (
+      <div>
+        <h1 onClick={this.handleClick}>Hello, world!{this.state.counter}</h1>
+      </div>
+    )
+  }
+}
+```
+#### render
+render是React中最核心的方法，一个组件中必须要有这个方法，它会根据状态 state 和属性 props 渲染组件。这个函数只做一件事，就是返回需要渲染的内容，所以不要在这个函数内做其他业务逻辑，通常调用该方法会返回以下类型中一个： 
+- React元素：这里包括原生的 DOM 以及 React 组件；
+- 数组和Fragment（片段）：可以返回多个元素；
+- Portals（插槽）：可以将子元素渲染到不同的 DOM 子树种；
+- 字符串和数字：被渲染成 DOM 中的 text 节点；
+- 布尔值或null：不渲染任何内容。
+
+#### componentDidMount()
+componentDidMount()会在组件挂载后（插入 DOM 树中）立即调用。该阶段通常进行以下操作：
+- 执行依赖于DOM的操作；
+- 发送网络请求；（官方建议）
+- 添加订阅消息（会在componentWillUnmount取消订阅）；
+
+如果在 componentDidMount 中调用 setState ，就会触发一次额外的渲染，多调用了一次 render 函数，由于它是在浏览器刷新屏幕前执行的，所以用户对此是没有感知的，但是我应当避免这样使用，这样会带来一定的性能问题，尽量是在 constructor 中初始化 state 对象。
+
+在组件装载之后，将计数数字变为1：
+```jsx
+class App extends React.Component  {
+  constructor(props) {
+    super(props)
+    this.state = {
+      counter: 0
+    }
+  }
+  componentDidMount () {
+    this.setState({
+      counter: 1
+    })
+  }
+  render ()  {
+    return (
+      <div className="counter">
+        counter值: { this.state.counter }
+      </div>
+    )
+  }
+}
+```
+
+### 组件更新阶段
+当组件的 props 改变了，或组件内部调用了 setState/forceUpdate，会触发更新重新渲染，这个过程可能会发生多次。这个阶段会依次调用下面这些方法：
+- getDerivedStateFromProps
+- shouldComponentUpdate
+- render
+- getSnapshotBeforeUpdate
+- componentDidUpdate
+
+#### shouldComponentUpdate
+```jsx
+shouldComponentUpdate(nextProps, nextState)
+```
+在说这个生命周期函数之前，来看两个问题：
+1. 问题一：setState 函数在任何情况下都会导致组件重新渲染吗？例如下面这种情况：
+```jsx
+this.setState({number: this.state.number})
+```
+2. 问题二：如果没有调用setState，props值也没有变化，是不是组件就不会重新渲染？
+
+问题一的答案是会，问题二如果是父组件重新渲染时，不管传入的props有没有变化，都会引起子组件的重新渲染。
+
+那么有没有什么方法解决在这两个场景下不让组件重新渲染进而提升性能呢？这个时候shouldComponentUpdate登场了，这个生命周期函数是用来提升速度的，它是在重新渲染组件开始前触发的，默认返回true，可以比较this.props和nextProps，this.state和nextState值是否变化，来确认返回true或者false。当返回false时，组件的更新过程停止，后续的render、componentDidUpdate也不会被调用。
+
+注意：添加shouldComponentUpdate方法时，不建议使用深度相等检查（如使用JSON.stringify()），因为深比较效率很低，可能会比重新渲染组件效率还低。而且该方法维护比较困难，建议使用该方法会产生明显的性能提升时使用。
+
+#### getSnapshotBeforeUpdate
+```jsx
+getSnapshotBeforeUpdate(prevProps, prevState)
+```
+这个方法在render之后，componentDidUpdate之前调用，有两个参数prevProps和prevState，表示更新之前的props和state，这个函数必须要和componentDidUpdate一起使用，并且要有一个返回值，默认是null，这个返回值作为第三个参数传给componentDidUpdate。
+
+#### componentDidUpdate
+componentDidUpdate()会在更新后会被立即调用，首次渲染不会执行此方法。该阶段通常进行以下操作：
+- 当组件更新后，对DOM进行操作；
+- 如果你对更新前后的props进行了比较，也可以选择在此处进行网络请求；（例如，当props未发生变化时，则不会执行网络请求）。
+```jsx
+componentDidUpdate(prevProps, prevState, snapshot){}
+```
+该方法有三个参数：
+- prevProps: 更新前的props
+- prevState: 更新前的state
+- snapshot: getSnapshotBeforeUpdate()生命周期的返回值
+
+### 组件卸载阶段
+卸载阶段只有一个生命周期函数，componentWillUnmount()会在组件卸载及销毁之前直接调用。在此方法中执行必要的清理操作：
+- 清除timer，取消网络请求或清除
+- 取消在componentDidMount()中创建的订阅等；
+
+这个生命周期在一个组件被卸载和销毁之前被调用，因此你不应该在这个方法中使用setState，因为组件一旦被卸载，就不会再装载，也就不会重新渲染。
+
+### 错误处理阶段
+componentDidCatch(error, info)，此生命周期在后代组件抛出错误后被调用。它接收两个参数∶
+- error：抛出的错误。
+- info：带有componentStack key的对象，其中包含有关组件引发错误的栈信息
+
+### 生命周期大致过程
+- 挂载阶段，首先执行constructor构造方法，来创建组件
+- 创建完成之后，就会执行render方法，该方法会返回需要渲染的内容
+- 随后，React会将需要渲染的内容挂载到DOM树上
+- 挂载完成之后就会执行componentDidMount生命周期函数
+- 如果我们给组件创建一个props（用于组件通信）、调用setState（更改state中的数据）、调用forceUpdate（强制更新组件）时，都会重新调用render函数
+- render函数重新执行之后，就会重新进行DOM树的挂载
+- 挂载完成之后就会执行componentDidUpdate生命周期函数
+- 当移除组件时，就会执行componentWillUnmount生命周期函数
+
+### 总结
+- getDefaultProps：这个函数会在组件创建之前被调用一次（有且仅有一次），它被用来初始化组件的 Props；
+- getInitialState：用于初始化组件的 state 值；
+- componentWillMount：在组件创建后、render 之前，会走到 componentWillMount 阶段。这个阶段我个人一直没用过、非常鸡肋。后来React 官方已经不推荐大家在 componentWillMount 里做任何事情、到现在 React16 直接废弃了这个生命周期，足见其鸡肋程度了；
+- render：这是所有生命周期中唯一一个你必须要实现的方法。一般来说需要返回一个 jsx 元素，这时 React 会根据 props 和 state 来把组件渲染到界面上；不过有时，你可能不想渲染任何东西，这种情况下让它返回 null 或者 false 即可；
+- componentDidMount：会在组件挂载后（插入 DOM 树中后）立即调用，标志着组件挂载完成。一些操作如果依赖获取到 DOM 节点信息，我们就会放在这个阶段来做。此外，这还是 React 官方推荐的发起 ajax 请求的时机。该方法和 componentWillMount 一样，有且仅有一次调用。
