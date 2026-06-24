@@ -1857,3 +1857,446 @@ constructor() -> componentWillMount() -> render() -> componentDidMount()
     - componentDidUpdate
 - 卸载过程：
     - componentWillUnmount
+
+## 父子组件通信
+### 父组件向子组件通信
+父组件通过props向子组件传递需要的信息:
+```jsx
+// 子组件：Child
+const Child = props => {
+    return <p>{props.name}</p>
+}
+
+// 父组件：Parent
+const Parent = () => {
+    return <Child name="React" />
+}
+```
+### 子组件向父组件通信
+props+回调的方式：
+```jsx
+// 子组件：Child
+const Child = props => {
+    const cb = msg => {
+        return () => {
+            props.callback(msg)
+        }
+    }
+    return (
+        <button onClick={cb('Hello, React!')}>Click Me</button>
+    )
+}
+
+// 父组件：Parent
+class Parent extends Component {
+    callback(msg) {
+        console.log(msg)
+    }
+    render() {
+        return <Child callback={this.callback.bind(this)} />
+    }
+}
+```
+
+## 跨级组件的通信方式
+父组件向子组件的子组件通信，向更深层子组件通信：
+- 使用props，利用中间组件层层传递,但是如果父组件结构较深，那么中间每一层组件都要去传递props，增加了复杂度，并且这些props并不是中间组件自己需要的。
+- 使用context，context相当于一个大容器，可以把要通信的内容放在这个容器中，这样不管嵌套多深，都可以随意取用，对于跨越多层的全局数据可以使用context实现。
+```jsx
+// context方式实现跨级组件通信 
+// Context 设计目的是为了共享那些对于一个组件树而言是“全局”的数据
+const BatteryContext = createContext();
+//  子组件的子组件 
+class GrandChild extends Component {
+    render(){
+        return (
+            <BatteryContext.Consumer>
+                {
+                    color => <h1 style={{"color":color}}>我是红色的:{color}</h1>
+                }
+            </BatteryContext.Consumer>
+        )
+    }
+}
+//  子组件
+const Child = () =>{
+    return (
+        <GrandChild/>
+    )
+}
+// 父组件
+class Parent extends Component {
+      state = {
+          color:"red"
+      }
+      render(){
+          const {color} = this.state
+          return (
+          <BatteryContext.Provider value={color}>
+              <Child></Child>
+          </BatteryContext.Provider>
+          )
+      }
+}
+```
+
+## 非嵌套关系组件的通信方式
+即没有任何包含关系的组件，包括兄弟组件以及不在同一个父级中的非兄弟组件。
+- 可以使用自定义事件通信（发布订阅模式）
+- 可以通过redux等进行全局状态管理
+- 如果是兄弟组件通信，可以找到这两个兄弟节点共同的父节点, 结合父子间通信方式进行通信。
+
+## 解决props层级过深
+- 使用Context API：提供一种组件之间的状态共享，而不必通过显式组件树逐层传递props
+- 使用状态管理库：如Redux、MobX等，将状态存储在全局store中，组件可以直接从store中获取所需的状态，而不需要通过props传递。
+
+## 组件通信的方式
+- ⽗组件向⼦组件通讯: ⽗组件可以向⼦组件通过传 props 的⽅式，向⼦组件进⾏通讯
+- ⼦组件向⽗组件通讯: props+回调的⽅式，⽗组件向⼦组件传递props进⾏通讯，此props为作⽤域为⽗组件⾃身的函 数，⼦组件调⽤该函数，将⼦组件想要传递的信息，作为参数，传递到⽗组件的作⽤域中
+- 兄弟组件通信: 找到这两个兄弟节点共同的⽗节点,结合上⾯两种⽅式由⽗节点转发信息进⾏通信
+- 跨层级通信: Context 设计⽬的是为了共享那些对于⼀个组件树⽽⾔是“全局”的数据，例如当前认证的⽤户、主题或⾸选语⾔，对于跨越多层的全局数据通过 Context 通信再适合不过
+- 发布订阅模式: 发布者发布事件，订阅者监听事件并做出反应,我们可以通过引⼊event模块进⾏通信
+- 全局状态管理⼯具: 借助Redux或者Mobx等全局状态管理⼯具进⾏通信,这种⼯具会维护⼀个全局状态中⼼Store,并根据不同的事件产⽣新的状态
+
+## React Router实现原理
+### 客户端路由实现原理
+- 基于 hash 的路由：通过监听hashchange事件，感知 hash 的变化：
+    - 改变 hash 可以直接通过 location.hash=xxx
+- 基于 H5 history 路由：
+    - 改变 url 可以通过 history.pushState 和 resplaceState 等，会将URL压入堆栈，同时能够应用 history.go() 等 API
+    - 监听 url 的变化可以通过自定义事件触发实现
+
+### React Router实现的思想
+- 基于 history 库来实现上述不同的客户端路由实现思想，并且能够保存历史记录等，磨平浏览器差异，上层无感知
+- 通过维护的列表，在每次 URL 发生变化的回收，通过配置的 路由路径，匹配到对应的 Component，并且 render
+
+## 如何配置React Router实现路由切换
+### 使用`<Route>`组件
+路由匹配是通过比较 `<Route>` 的 path 属性和当前地址的 pathname 来实现的。当一个 `<Route>` 匹配成功时，它将渲染其内容，当它不匹配时就会渲染 null。没有路径的 `<Route>` 将始终被匹配。
+```jsx
+// when location = { pathname: '/about' }
+<Route path='/about' component={About}/> // renders <About/>
+<Route path='/contact' component={Contact}/> // renders null
+<Route component={Always}/> // renders <Always/>
+```
+
+### 结合使用`<Switch>`和`<Route>`组件
+`<Switch>` 用于将 `<Route>` 分组。`<Switch>` 不是分组 `<Route>` 所必须的，但他通常很有用。 一个 `<Switch>` 会遍历其所有的子 `<Route>`元素，并仅渲染与当前地址匹配的第一个元素。
+```jsx
+<Switch>
+    <Route exact path="/" component={Home} />
+    <Route path="/about" component={About} />
+    <Route path="/contact" component={Contact} />
+</Switch>
+```
+
+### 使用`<Link>`、`<NavLink>`、`<Redirect>`组件
+`<Link>` 组件来在你的应用程序中创建链接。无论你在何处渲染一个`<Link>` ，都会在应用程序的 HTML 中渲染锚（`<a>`）。
+```jsx
+<Link to="/">Home</Link>   
+// <a href='/'>Home</a>
+```
+`<NavLink>`是一种特殊类型的组件，当它的to属性与当前地址匹配时，可以将其定义为“活跃的”。
+```jsx
+// location = { pathname: '/react' }
+<NavLink to="/react" activeClassName="hurray">
+    React
+</NavLink>
+// <a href='/react' className='hurray'>React</a>
+```
+当我们想强制导航时，可以渲染一个`<Redirect>`，当一个`<Redirect>`渲染时，它将使用它的to属性进行定向。
+
+## React Router设置重定向
+使用`<Redirect>`组件实现路由的重定向：
+```jsx
+<Switch>
+  <Redirect from='/users/:id' to='/users/profile/:id'/>
+  <Route path='/users/profile/:id' component={Profile}/>
+</Switch>
+```
+当请求 /users/:id 被重定向去 '/users/profile/:id'：
+- 属性`from: string`：需要匹配的将要被重定向路径。
+- 属性`to: string`：重定向的 URL 字符串
+- 属性`to: object`：重定向的 location 对象
+- 属性`push: bool`：若为真，重定向操作将会把新地址加入到访问历史记录里面，并且无法回退到前面的页面。
+
+## React Router中`<Link>`标签与`<a>`标签的区别
+从最终渲染的 DOM 来看，这两者都是链接，都是 标签，区别是：`<Link>`是React Router里实现路由跳转的链接，一般配合`<Route>`使用，React Router接管了其默认的链接跳转行为，区别于传统的页面跳转，`<Link>`的“跳转”行为只会触发相匹配的`<Route>`对应的页面内容更新，而不会刷新整个页面。
+
+`<Link>`做了3件事：
+- 有onclick那就执行onclick
+- click的时候阻止a标签默认事件
+- 根据跳转href(即是to)，用history (web前端路由两种方式之一，history & hash)跳转，此时只是链接变了，并没有刷新页面而`<a>`标签就是普通的超链接了，用于从当前页面跳转到href指向的另一 个页面(非锚点情况)。
+
+`<a>`标签默认事件禁掉之后如何实现跳转：
+```jsx
+let domArr = document.getElementsByTagName('a')
+[...domArr].forEach(item=>{
+    item.addEventListener('click',function () {
+        location.href = this.href
+    })
+})
+```
+
+## React Router获取URL的参数和历史对象
+### 获取URL参数
+#### get传值
+路由配置还是普通的配置，如：'admin'，传参方式如：'admin?id='1111''。通过this.props.location.search获取url获取到一个字符串'?id='1111'可以用url，qs，querystring，浏览器提供的api URLSearchParams对象或者自己封装的方法去解析出id的值。
+
+#### 动态路由传值
+路由需要配置成动态路由：如path='/admin/:id'，传参方式，如'admin/111'。通过this.props.match.params.id 取得url中的动态路由id部分的值，除此之外还可以通过useParams（Hooks）来获取
+
+#### 通过query或state传值
+传参方式如：在Link组件的to属性中可以传递对象`{pathname:'/admin',query:'111',state:'111'}`;。通过this.props.location.state或this.props.location.query来获取即可，传递的参数可以是对象、数组等，但是存在缺点就是只要刷新页面，参数就会丢失。
+
+### 获取历史对象
+#### 使用useHistory（Hooks）
+```jsx
+import { useHistory } from 'react-router-dom';
+let history = useHistory();
+```
+
+#### 使用this.props.history
+```jsx
+let history = this.props.history;
+```
+
+#### React Router 4在路由变化时如何重新渲染同一个组价
+当路由变化时，即组件的props发生了变化，会调用componentWillReceiveProps等生命周期钩子。那需要做的只是： 当路由改变时，根据路由，也去请求数据：
+```jsx
+class NewsList extends Component {
+  componentDidMount () {
+     this.fetchData(this.props.location);
+  }
+  
+  fetchData(location) {
+    const type = location.pathname.replace('/', '') || 'top'
+    this.props.dispatch(fetchListData(type))
+  }
+  componentWillReceiveProps(nextProps) {
+     if (nextProps.location.pathname != this.props.location.pathname) {
+         this.fetchData(nextProps.location);
+     } 
+  }
+  render () {
+    ...
+  }
+}
+```
+利用生命周期componentWillReceiveProps，进行重新render的预处理操作。
+
+## React Router的路由模式
+React-Router支持使用hash（对应HashRouter）和browser（对应BrowserRouter）两种路由规则，react-router-dom提供了BrowserRouter和HashRouter两个组件来实现应用的UI和URL同步：
+- BrowserRouter创建的URL格式：xxx.com/path
+- HashRouter创建的URL格式：xxx.com/#/path
+
+### BrowserRouter
+它使用 HTML5 提供的 history API（pushState、replaceState 和 popstate 事件）来保持 UI 和 URL 的同步。由此可以看出，BrowserRouter 是使用 HTML 5 的 history API 来控制路由跳转的：
+```jsx
+<BrowserRouter
+    basename={string}
+    forceRefresh={bool}
+    getUserConfirmation={func}
+    keyLength={number}
+/>
+```
+- basename：所有路由的基准URL。basename的正确格式是前面有一个前导斜杠，但不能有尾部斜杠；
+```jsx
+<BrowserRouter basename="/calendar">
+    <Link to="/today" />
+</BrowserRouter>
+```
+等同于
+```jsx
+<a href="/calendar/today" />
+```
+- forceRefresh 如果为 true，在导航的过程中整个页面将会刷新。需要配合`<Prompt>`一起使用。一般情况下，只有在不支持 HTML5 history API 的浏览器中使用此功能；
+- getUserConfirmation 用于确认导航的函数，默认使用 window.confirm。例如，当从 /a 导航至 /b 时，会使用默认的 confirm 函数弹出一个提示，用户点击确定后才进行导航，否则不做任何处理；
+```jsx
+// 这是默认的确认函数
+const getConfirmation = (message, callback) => {
+  const allowTransition = window.confirm(message);
+  callback(allowTransition);
+}
+<BrowserRouter getUserConfirmation={getConfirmation} />
+```
+- KeyLength 用来设置 Location.Key 的长度。
+
+### HashRouter
+使用 URL 的 hash 部分（即 window.location.hash）来保持 UI 和 URL 的同步。由此可以看出，HashRouter 是通过 URL 的 hash 属性来控制路由跳转的：
+```jsx
+<HashRouter
+    basename={string}
+    getUserConfirmation={func}
+    hashType={string}  
+/>
+```
+- basename, getUserConfirmation 和 BrowserRouter 功能一样；
+- hashType window.location.hash 使用的 hash 类型，有如下几种：
+    - slash - 后面跟一个斜杠，例如 #/ 和 #/sunshine/lollipops；
+    - noslash - 后面没有斜杠，例如 # 和 #sunshine/lollipops；
+    - hashbang - Google 风格的 ajax crawlable，例如 #!/ 和 #!/sunshine/lollipops。
+
+## React Router 4中Switch的作用
+Switch 通常被用来包裹 Route，用于渲染与路径匹配的第一个子 `<Route>` 或 `<Redirect>`，它里面不能放其他元素。假如不加`<Switch>`：
+```jsx
+import { Route } from 'react-router-dom'
+
+<Route path="/" component={Home}></Route>
+<Route path="/login" component={Login}></Route>
+```
+Route 组件的 path 属性用于匹配路径，因为需要匹配 / 到 Home，匹配 /login 到 Login，所以需要两个 Route，但是不能这么写。这样写的话，当 URL 的 path 为 “/login” 时，`<Route path="/" />`和`<Route path="/login" />` 都会被匹配，因此页面会展示 Home 和 Login 两个组件。这时就需要借助 `<Switch>` 来做到只显示一个匹配组件：
+```jsx
+import { Switch, Route} from 'react-router-dom'
+    
+<Switch>
+    <Route path="/" component={Home}></Route>
+    <Route path="/login" component={Login}></Route>
+</Switch>
+```
+此时，再访问 “/login” 路径时，却只显示了 Home 组件。这是就用到了exact属性，它的作用就是精确匹配路径，经常与`<Switch>`联合使用。只有当 URL 和该`<Route>`的 path 属性完全一致的情况下才能匹配上：
+```jsx
+import { Switch, Route} from 'react-router-dom'
+   
+<Switch>
+   <Route exact path="/" component={Home}></Route>
+   <Route exact path="/login" component={Login}></Route>
+</Switch>
+```
+
+## 对React Hook的理解
+React-Hooks 是 React 团队在 React 组件开发实践中，逐渐认知到的一个改进点，这背后其实涉及对类组件和函数组件两种组件形式的思考和侧重。
+### 类组件
+所谓类组件，就是基于 ES6 Class 这种写法，通过继承 React.Component 得来的 React 组件。以下是一个类组件：
+```jsx
+class DemoClass extends React.Component {
+  state = {
+    text: ""
+  };
+  componentDidMount() {
+    //...
+  }
+  changeText = (newText) => {
+    this.setState({
+      text: newText
+    });
+  };
+
+  render() {
+    return (
+      <div className="demoClass">
+        <p>{this.state.text}</p>
+        <button onClick={this.changeText}>修改</button>
+      </div>
+    );
+  }
+}
+```
+可以看出，React 类组件内部预置了相当多的“现成的东西”等着我们去调度/定制，state 和生命周期就是这些“现成东西”中的典型。要想得到这些东西，难度也不大，只需要继承一个 React.Component 即可。
+
+当然，这也是类组件的一个不便，它太繁杂了，对于解决许多问题来说，编写一个类组件实在是一个过于复杂的姿势。复杂的姿势必然带来高昂的理解成本，这也是我们所不想看到的。除此之外，由于开发者编写的逻辑在封装后是和组件粘在一起的，这就使得类组件内部的逻辑难以实现拆分和复用。
+
+### 函数组件
+函数组件就是以函数的形态存在的 React 组件。早期并没有 React-Hooks，函数组件内部无法定义和维护 state，因此它还有一个别名叫“无状态组件”。以下是一个函数组件：
+```jsx
+function DemoFunction(props) {
+  const { text } = props
+  return (
+    <div className="demoFunction">
+      <p>{`函数组件接收的内容：[${text}]`}</p>
+    </div>
+  );
+}
+```
+相比于类组件，函数组件肉眼可见的特质自然包括轻量、灵活、易于组织和维护、较低的学习成本等。通过对比，从形态上可以对两种组件做区分，它们之间的区别如下：
+- 类组件需要继承 class，函数组件不需要；
+- 类组件可以访问生命周期方法，函数组件不能；
+- 类组件中可以获取到实例化后的 this，并基于这个 this 做各种各样的事情，而函数组件不可以；
+- 类组件中可以定义并维护 state（状态），而函数组件不可以；
+
+除此之外，还有一些其他的不同。通过上面的区别，我们不能说谁好谁坏，它们各有自己的优势。在 React-Hooks 出现之前，类组件的能力边界明显强于函数组件。
+
+实际上，类组件和函数组件之间，是面向对象和函数式编程这两套不同的设计思想之间的差异。而函数组件更加契合 React 框架的设计理念：
+```txt
+UI = render(data)
+或
+UI = f(data)
+```
+
+React 组件本身的定位就是函数，一个输入数据、输出 UI 的函数。作为开发者，我们编写的是声明式的代码，而 React 框架的主要工作，就是及时地把声明式的代码转换为命令式的 DOM 操作，把数据层面的描述映射到用户可见的 UI 变化中去。这就意味着从原则上来讲，React 的数据应该总是紧紧地和渲染绑定在一起的，而类组件做不到这一点。函数组件就真正地将数据和渲染绑定到了一起。函数组件是一个更加匹配其设计理念、也更有利于逻辑拆分与重用的组件表达形式。
+
+为了能让开发者更好的的去编写函数式组件。于是，React-Hooks 便应运而生。React-Hooks 是一套能够使函数组件更强大、更灵活的“钩子”。
+
+函数组件比起类组件少了很多东西，比如生命周期、对 state 的管理等。这就给函数组件的使用带来了非常多的局限性，导致我们并不能使用函数这种形式，写出一个真正的全功能的组件。而React-Hooks 的出现，就是为了帮助函数组件补齐这些（相对于类组件来说）缺失的能力。
+
+如果说函数组件是一台轻巧的快艇，那么 React-Hooks 就是一个内容丰富的零部件箱。“重装战舰”所预置的那些设备，这个箱子里基本全都有，同时它还不强制你全都要，而是允许你自由地选择和使用你需要的那些能力，然后将这些能力以 Hook（钩子）的形式“钩”进你的组件里，从而定制出一个最适合你的“专属战舰”。
+
+## useState为什么使用数组
+```jsx
+const [count, setCount] = useState(0)
+```
+可以看到 useState 返回的是一个数组，这里用到了解构赋值，所以先来看一下ES6 的解构赋值：
+- 数组的解构赋值：
+```js
+const foo = [1, 2, 3];
+const [one, two, three] = foo;
+console.log(one);	// 1
+console.log(two);	// 2
+console.log(three);	// 3
+```
+- 对象的解构赋值：
+```js
+const user = {
+  id: 888,
+  name: "xiaoxin"
+};
+const { id, name } = user;
+console.log(id);	// 888
+console.log(name);	// "xiaoxin"
+```
+所以问题的答案是：
+- 如果 useState 返回的是数组，那么使用者可以对数组中的元素命名，代码看起来也比较干净
+- 如果 useState 返回的是对象，在解构对象的时候必须要和 useState 内部实现返回的对象同名，想要使用多次的话，必须得设置别名才能使用返回值
+
+如果useState返回的是对象：
+```jsx
+// 第一次使用
+const { state, setState } = useState(false);
+// 第二次使用
+const { state: counter, setState: setCounter } = useState(0) 
+```
+可以看到返回对象的使用方式还是挺麻烦的，更何况实际项目中会使用的更频繁。useState 返回的是 array 而不是 object 的原因就是为了降低使用的复杂度，返回数组的话可以直接根据顺序解构，而返回对象的话要想使用多次就需要定义别名了。
+
+## React Hooks解决了什么问题
+### 组件间复用状态逻辑难
+React 没有提供将可复用性行为“附加”到组件的途径（例如，把组件连接到 store）解决此类问题可以使用 render props 和 高阶组件。但是这类方案需要重新组织组件结构，这可能会很麻烦，并且会使代码难以理解。由 providers，consumers，高阶组件，render props 等其他抽象层组成的组件会形成“嵌套地狱”。尽管可以在 DevTools 过滤掉它们，但这说明了一个更深层次的问题：React 需要为共享状态逻辑提供更好的原生途径。
+
+可以使用 Hook 从组件中提取状态逻辑，使得这些逻辑可以单独测试并复用。Hook 使我们在无需修改组件结构的情况下复用状态逻辑。 这使得在组件间或社区内共享 Hook 变得更便捷。
+
+### 复杂组件变得难以理解
+在组件中，每个生命周期常常包含一些不相关的逻辑。例如，组件常常在 componentDidMount 和 componentDidUpdate 中获取数据。但是，同一个 componentDidMount 中可能也包含很多其它的逻辑，如设置事件监听，而之后需在 componentWillUnmount 中清除。相互关联且需要对照修改的代码被进行了拆分，而完全不相关的代码却在同一个方法中组合在一起。如此很容易产生 bug，并且导致逻辑不一致。
+
+在多数情况下，不可能将组件拆分为更小的粒度，因为状态逻辑无处不在。这也给测试带来了一定挑战。同时，这也是很多人将 React 与状态管理库结合使用的原因之一。但是，这往往会引入了很多抽象概念，需要你在不同的文件之间来回切换，使得复用变得更加困难。
+
+为了解决这个问题，Hook 将组件中相互关联的部分拆分成更小的函数（比如设置订阅或请求数据），而并非强制按照生命周期划分。你还可以使用 reducer 来管理组件的内部状态，使其更加可预测。
+
+### 难以理解的class
+除了代码复用和代码管理会遇到困难外，class 是学习 React 的一大屏障。我们必须去理解 JavaScript 中 this 的工作方式，这与其他语言存在巨大差异。还不能忘记绑定事件处理器。没有稳定的语法提案，这些代码非常冗余。大家可以很好地理解 props，state 和自顶向下的数据流，但对 class 却一筹莫展。即便在有经验的 React 开发者之间，对于函数组件与 class 组件的差异也存在分歧，甚至还要区分两种组件的使用场景。
+
+为了解决这些问题，Hook 使你在非 class 的情况下可以使用更多的 React 特性。 从概念上讲，React 组件一直更像是函数。而 Hook 则拥抱了函数，同时也没有牺牲 React 的精神原则。Hook 提供了问题的解决方案，无需学习复杂的函数式或响应式编程技术。
+
+## Hooks的使用限制
+React Hooks 的限制主要有两条：
+- 不要在循环、条件或嵌套函数中调用 Hook；
+- 在 React 的函数组件中调用 Hook。
+
+那为什么会有这样的限制呢？Hooks 的设计初衷是为了改进 React 组件的开发模式。在旧有的开发模式下遇到了三个问题。
+1. 组件之间难以复用状态逻辑。过去常见的解决方案是高阶组件、render props 及状态管理框架。
+2. 复杂的组件变得难以理解。生命周期函数与业务逻辑耦合太深，导致关联部分难以拆分。
+3. 人和机器都很容易混淆类。常见的有 this 的问题，但在 React 团队中还有类难以优化的问题，希望在编译优化层面做出一些改进。
+
+这三个问题在一定程度上阻碍了 React 的后续发展，所以为了解决这三个问题，Hooks 基于函数组件开始设计。然而第三个问题决定了 Hooks 只支持函数组件。
+
+那为什么不要在循环、条件或嵌套函数中调用Hook呢？因为Hooks的设计是基于数组实现。在调用时按顺序加入数组中，如果使用循环、条件或嵌套函数很有可能导致数组取值错位，执行错误的Hook。当然，实质上 React 的源码里不是数组，是链表。
+
+这些限制会在编码上造成一定程度的心智负担，新手可能会写错，为了避免这样的情况，可以引入 ESLint 的 Hooks 检查插件进行预防。
