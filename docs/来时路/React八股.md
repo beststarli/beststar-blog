@@ -2300,3 +2300,563 @@ React Hooks 的限制主要有两条：
 那为什么不要在循环、条件或嵌套函数中调用Hook呢？因为Hooks的设计是基于数组实现。在调用时按顺序加入数组中，如果使用循环、条件或嵌套函数很有可能导致数组取值错位，执行错误的Hook。当然，实质上 React 的源码里不是数组，是链表。
 
 这些限制会在编码上造成一定程度的心智负担，新手可能会写错，为了避免这样的情况，可以引入 ESLint 的 Hooks 检查插件进行预防。
+
+## useEffect与useLayoutEffect的区别
+### 相同点
+- 运用效果： useEffect 与 useLayoutEffect 两者都是用于处理副作用，这些副作用包括改变 DOM、设置订阅、操作定时器等。在函数组件内部操作副作用是不被允许的，所以需要使用这两个函数去处理。
+- 使用方式： useEffect 与 useLayoutEffect 两者底层的函数签名是完全一致的，都是调用的 mountEffectImpl方法，在使用上也没什么差异，基本可以直接替换。
+
+### 不同点
+- 使用场景： useEffect 在 React 的渲染过程中是被异步调用的，用于绝大多数场景；而 useLayoutEffect 会在所有的 DOM 变更之后同步调用，主要用于处理 DOM 操作、调整样式、避免页面闪烁等问题。也正因为是同步处理，所以需要避免在 useLayoutEffect 做计算量较大的耗时任务从而造成阻塞。
+- 使用效果： useEffect是按照顺序执行代码的，改变屏幕像素之后执行（先渲染，后改变DOM），当改变屏幕内容时可能会产生闪烁；useLayoutEffect是改变屏幕像素之前就执行了（会推迟页面显示的事件，先改变DOM后渲染），不会产生闪烁。useLayoutEffect总是比useEffect先执行。
+
+在未来的趋势上，两个 API 是会长期共存的，暂时没有删减合并的计划，需要开发者根据场景去自行选择。React 团队的建议非常实用，如果实在分不清，先用 useEffect，一般问题不大；如果页面有异常，再直接替换为 useLayoutEffect 即可。
+
+## 开发中需要注意的Hooks问题
+### 不要在循环，条件或嵌套函数中调用Hook
+必须始终在React函数的顶层使用Hooks，这是因为React需要利用调用顺序来正确更新相应的状态，以及调用相应的钩子函数。一旦在循环或条件分支语句中调用Hook，就容易导致调用顺序的不一致性，从而产生难以预料到的后果。
+
+### 不可使用push、pop、shift、unshift等方法直接修改state
+使用push、pop等直接更改数组无法获取到新值，应该采用析构方式，但是在class里面不会有这个问题。代码示例：
+```jsx
+function Indicatorfilter() {
+  let [num,setNums] = useState([0,1,2,3])
+  const test = () => {
+    // 这里坑是直接采用push去更新num
+    // setNums(num)是无法更新num的
+    // 必须使用num = [...num ,1]
+    num.push(1)
+    // num = [...num ,1]
+    setNums(num)
+  }
+return (
+    <div className='filter'>
+      <div onClick={test}>测试</div>
+        <div>
+          {num.map((item,index) => (
+              <div key={index}>{item}</div>
+          ))}
+      </div>
+    </div>
+  )
+}
+
+class Indicatorfilter extends React.Component<any,any>{
+  constructor(props:any){
+      super(props)
+      this.state = {
+          nums:[1,2,3]
+      }
+      this.test = this.test.bind(this)
+  }
+
+  test(){
+      // class采用同样的方式是没有问题的
+      this.state.nums.push(1)
+      this.setState({
+          nums: this.state.nums
+      })
+  }
+
+  render(){
+      let {nums} = this.state
+      return(
+          <div>
+              <div onClick={this.test}>测试</div>
+                  <div>
+                      {nums.map((item:any,index:number) => (
+                          <div key={index}>{item}</div>
+                      ))}
+                  </div>
+          </div>
+
+      )
+  }
+}
+```
+### useState设置状态只有第一次生效
+后期需要更新状态必须通过useEffect。TableDeail是一个公共组件，在调用它的父组件里面，我们通过set改变columns的值，以为传递给TableDeail 的 columns是最新的值，所以tabColumn每次也是最新的值，但是实际tabColumn是最开始的值，不会随着columns的更新而更新：
+```jsx
+const TableDeail = ({
+    columns,
+}:TableData) => {
+    const [tabColumn, setTabColumn] = useState(columns) 
+}
+
+// 正确的做法是通过useEffect改变这个值
+const TableDeail = ({
+    columns,
+}:TableData) => {
+    const [tabColumn, setTabColumn] = useState(columns) 
+    useEffect(() =>{setTabColumn(columns)},[columns])
+}
+```
+
+### 善用useCallback
+父组件传递给子组件事件句柄时，如果我们没有任何参数变动可能会选用useMemo。但是每一次父组件渲染子组件即使没变化也会跟着渲染一次。
+
+### 不滥用useContext
+可以使用基于 useContext 封装的状态管理工具。
+
+## React Hooks与生命周期的关系
+函数组件 的本质是函数，没有 state 的概念的，因此不存在生命周期一说，仅仅是一个 render 函数而已。但是引入 Hooks 之后就变得不同了，它能让组件在不使用 class 的情况下拥有 state，所以就有了生命周期的概念，所谓的生命周期其实就是 useState、 useEffect() 和 useLayoutEffect() 。
+
+即：Hooks 组件（使用了Hooks的函数组件）有生命周期，而函数组件（未使用Hooks的函数组件）是没有生命周期的。
+
+下面是具体的 class 与 Hooks 的生命周期对应关系：
+- constructor：函数组件不需要构造函数，可以通过调用 useState 来初始化state。如果计算的代价比较昂贵，也可以传一个函数给 useState。
+```jsx
+const [num, UpdateNum] = useState(0)
+```
+- getDerivedStateFromProps：一般情况下，我们不需要使用它，可以在渲染过程中更新 state，以达到实现 getDerivedStateFromProps 的目的。
+```jsx
+function ScrollView({row}) {
+  let [isScrollingDown, setIsScrollingDown] = useState(false);
+  let [prevRow, setPrevRow] = useState(null);
+  if (row !== prevRow) {
+    // Row 自上次渲染以来发生过改变。更新 isScrollingDown。
+    setIsScrollingDown(prevRow !== null && row > prevRow);
+    setPrevRow(row);
+  }
+  return `Scrolling down: ${isScrollingDown}`;
+}
+```
+React 会立即退出第一次渲染并用更新后的 state 重新运行组件以避免耗费太多性能。
+- shouldComponentUpdate：可以用 **React.memo** 包裹一个组件来对它的 props 进行浅比较
+```jsx
+const Button = React.memo((props) => {  // 具体的组件});
+```
+注意：**React.memo** 等效于 **`PureComponent`**，它只浅比较 props。这里也可以使用 useMemo 优化每一个节点。
+- render：这是函数组件体本身。
+- componentDidMount, componentDidUpdate： useLayoutEffect 与它们两的调用阶段是一样的。但是，我们推荐你一开始先用 useEffect，只有当它出问题的时候再尝试使用 useLayoutEffect。useEffect 可以表达所有这些的组合。
+```jsx
+// componentDidMount
+useEffect(()=>{
+  // 需要在 componentDidMount 执行的内容
+}, [])
+useEffect(() => { 
+  // 在 componentDidMount，以及 count 更改时 componentDidUpdate 执行的内容
+  document.title = `You clicked ${count} times`; 
+  return () => {
+    // 需要在 count 更改时 componentDidUpdate（先于 document.title = ... 执行，遵守先清理后更新）
+    // 以及 componentWillUnmount 执行的内容       
+  } // 当函数中 Cleanup 函数会按照在代码中定义的顺序先后执行，与函数本身的特性无关
+}, [count]); // 仅在 count 更改时更新
+```
+React 会等待浏览器完成画面渲染之后才会延迟调用 ，因此会使得额外操作很方便
+- componentWillUnmount：相当于 useEffect 里面返回的 cleanup 函数
+```jsx
+// componentDidMount/componentWillUnmount
+useEffect(()=>{
+  // 需要在 componentDidMount 执行的内容
+  return function cleanup() {
+    // 需要在 componentWillUnmount 执行的内容      
+  }
+}, [])
+```
+- componentDidCatch和getDerivedStateFromError：目前没有 Hooks 等价物，仍需使用 class 组件或 ErrorBoundary 包裹
+
+### 总结
+
+**Class 组件生命周期 ↔ Hooks 组件对照表：**
+
+| Class 组件 | Hooks 组件（函数组件） | 说明 |
+|-----------|---------------------|------|
+| `constructor` | `useState(initialValue)` <br/> 或 `useState(() => expensiveComputation())` | 函数组件不需要构造函数，`useState` 的惰性初始化可替代 |
+| `getDerivedStateFromProps` | 在渲染过程中直接 `setState` | 渲染时根据 props 变化更新 state，React 会自动重渲染 |
+| `shouldComponentUpdate` | `React.memo`（浅比较）<br/>`useMemo` / `useCallback`（细粒度控制） | `React.memo` ≈ `PureComponent`，`useMemo` 可缓存任意值 |
+| `render` | **函数组件体本身** | 函数组件 return 的内容就是 render 输出 |
+| `componentDidMount` | `useEffect(() => { ... }, [])` | 空依赖数组，仅挂载后执行一次 |
+| `componentDidUpdate` | `useEffect(() => { ... })`（无依赖）<br/>`useEffect(() => { ... }, [deps])`（指定依赖） | 无依赖 → 每次渲染后执行；有依赖 → 仅依赖变化时执行 |
+| `componentDidMount` + `componentDidUpdate`（合并） | `useEffect(() => { ... })` | 无依赖数组时，挂载和每次更新都会执行 |
+| `componentWillUnmount` | `useEffect(() => { return () => { ... } }, [])` | useEffect 返回的 cleanup 函数 |
+| `componentDidMount` + `componentWillUnmount`（成对） | `useEffect(() => { /* 订阅 */ return () => { /* 取消订阅 */ } }, [])` | 一个 useEffect 同时处理挂载和卸载 |
+| `componentDidCatch` | **暂无 Hooks 替代** | 仍需要使用 class 组件或 `ErrorBoundary` 包裹 |
+| `getDerivedStateFromError` | **暂无 Hooks 替代** | 同上 |
+| **同步 DOM 操作** | `useLayoutEffect(() => { ... }, [])` | 在 DOM 变更后同步执行，不等浏览器绘制，避免闪烁 |
+
+## 虚拟DOM
+从本质上来说，Virtual Dom是一个JavaScript对象，通过对象的方式来表示DOM结构。将页面的状态抽象为JS对象的形式，配合不同的渲染工具，使跨平台渲染成为可能。通过事务处理机制，将多次DOM修改的结果一次性的更新到页面上，从而有效的减少页面渲染的次数，减少修改DOM的重绘重排次数，提高渲染性能。
+
+虚拟DOM是对DOM的抽象，这个对象是更加轻量级的对DOM的描述。它设计的最初目的，就是更好的跨平台，比如node.js就没有DOM，如果想实现SSR，那么一个方式就是借助虚拟dom，因为虚拟dom本身是js对象。 在代码渲染到页面之前，vue或者react会把代码转换成一个对象（虚拟DOM）。以对象的形式来描述真实dom结构，最终渲染到页面。在每次数据发生变化前，虚拟dom都会缓存一份，变化之时，现在的虚拟dom会与缓存的虚拟dom进行比较。在vue或者react内部封装了diff算法，通过这个算法来进行比较，渲染时修改改变的变化，原先没有发生改变的通过原先的数据进行渲染。
+
+另外现代前端框架的一个基本要求就是无须手动操作DOM，一方面是因为手动操作DOM无法保证程序性能，多人协作的项目中如果review不严格，可能会有开发者写出性能较低的代码，另一方面更重要的是省略手动DOM操作可以大大提高开发效率。
+
+### 为什么用虚拟DOM
+#### 保证性能下限
+在不进行手动优化的情况下，提供过得去的性能，下面对比一下修改DOM时真实DOM操作和Virtual DOM的过程，来看一下它们重排重绘的性能消耗∶
+- 真实DOM∶ 生成HTML字符串 ＋ 重建所有的DOM元素
+- Virtual DOM∶ 生成vNode ＋ DOMDiff ＋ 必要的DOM更新
+
+Virtual DOM的更新DOM的准备工作耗费更多的时间，也就是JS层面，相比于更多的DOM操作它的消费是极其便宜的。尤雨溪在社区论坛中说道∶ 框架给你的保证是，你不需要手动优化的情况下，我依然可以给你提供过得去的性能。
+
+#### 跨平台
+Virtual DOM本质上是JavaScript的对象，它可以很方便的跨平台操作，比如服务端渲染、uniapp等。
+
+## React Diff算法原理
+实际上，diff 算法探讨的就是虚拟 DOM 树发生变化后，生成 DOM 树更新补丁的方式。它通过对比新旧两株虚拟 DOM 树的变更差异，将更新补丁作用于真实 DOM，以最小成本完成视图更新。
+![Diff原理](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/Diff原理.png)
+具体的流程如下：
+- 真实的 DOM 首先会映射为虚拟 DOM；
+- 当虚拟 DOM 发生变化后，就会根据差距计算生成 patch，这个 patch 是一个结构化的数据，内容包含了增加、更新、移除等；
+- 根据 patch 去更新真实的 DOM，反馈到用户的界面上。
+![Diff流程](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/Diff流程.png)
+简单的例子：
+```jsx
+import React from 'react'
+export default class ExampleComponent extends React.Component {
+  render() {
+    if(this.props.isVisible) {
+       return <div className="visible">visbile</div>;
+    }
+     return <div className="hidden">hidden</div>;
+  }
+}
+```
+这里，首先假定 ExampleComponent 可见，然后再改变它的状态，让它不可见 。映射为真实的 DOM 操作是这样的，React 会创建一个 div 节点。
+```jsx
+<div class="visible">visbile</div>
+```
+当把 visbile 的值变为 false 时，就会替换 class 属性为 hidden，并重写内部的 innerText 为 hidden。这样一个生成补丁、更新差异的过程统称为 diff 算法。
+
+diff算法可以总结为三个策略，分别从树、组件及元素三个层面进行复杂度的优化：
+1. 策略一：忽略节点跨层级操作场景，提升比对效率。（基于树进行对比）
+
+这一策略需要进行树比对，即对树进行分层比较。树比对的处理手法是非常“暴力”的，即两棵树只对同一层次的节点进行比较，如果发现节点已经不存在了，则该节点及其子节点会被完全删除掉，不会用于进一步的比较，这就提升了比对效率。
+
+2. 策略二：如果组件的 class 一致，则默认为相似的树结构，否则默认为不同的树结构。（基于组件进行对比）,在组件比对的过程中：
+- 如果组件是同一类型则进行树比对；
+- 如果不是则直接放入补丁中。
+
+只要父组件类型不同，就会被重新渲染。这也就是为什么 shouldComponentUpdate、PureComponent 及 React.memo 可以提高性能的原因。
+
+3. 策略三：同一层级的子节点，可以通过标记 key 的方式进行列表对比。（基于节点进行对比）
+
+元素比对主要发生在同层级中，通过标记节点操作生成补丁。节点操作包含了插入、移动、删除等。其中节点重新排序同时涉及插入、移动、删除三个操作，所以效率消耗最大，此时策略三起到了至关重要的作用。通过标记 key 的方式，React 可以直接移动 DOM 节点，降低内耗。
+
+## React key的作用
+Keys 是 React 用于追踪哪些列表中元素被修改、被添加或者被移除的辅助标识。在开发过程中，我们需要保证某个元素的 key 在其同级元素中具有唯一性。
+
+在 React Diff 算法中 React 会借助元素的 Key 值来判断该元素是新近创建的还是被移动而来的元素，从而减少不必要的元素重渲染此外，React 还需要借助 Key 值来判断元素与本地状态的关联关系。
+
+注意事项：
+- key值一定要和具体的元素—一对应；
+- 尽量不要用数组的index去作为key；
+- 不要在render的时候用随机数或者其他操作给元素加上不稳定的key，这样造成的性能开销比不加key的情况下更糟糕。
+
+## 虚拟DOM与原生DOM的效率对比
+虚拟DOM相对原生的DOM不一定是效率更高，如果只修改一个按钮的文案，那么虚拟 DOM 的操作无论如何都不可能比真实的 DOM 操作更快。在首次渲染大量DOM时，由于多了一层虚拟DOM的计算，虚拟DOM也会比innerHTML插入慢。它能保证性能下限，在真实DOM操作的时候进行针对性的优化时，还是更快的。所以要根据具体的场景进行探讨。
+
+在整个 DOM 操作的演化过程中，其实主要矛盾并不在于性能，而在于开发者写得爽不爽，在于研发体验/研发效率。虚拟 DOM 不是别的，正是前端开发者们为了追求更好的研发体验和研发效率而创造出来的高阶产物。虚拟 DOM 并不一定会带来更好的性能，React 官方也从来没有把虚拟 DOM 作为性能层面的卖点对外输出过。虚拟 DOM 的优越之处在于，它能够在提供更爽、更高效的研发模式（也就是函数式的 UI 编程方式）的同时，仍然保持一个还不错的性能。
+
+## React与Vue的Diff算法区别
+diff 算法是指生成更新补丁的方式，主要应用于虚拟 DOM 树变化后，更新真实 DOM。所以 diff 算法一定存在这样一个过程：触发更新 → 生成补丁 → 应用补丁。
+
+React 的 diff 算法，触发更新的时机主要在 state 变化与 hooks 调用之后。此时触发虚拟 DOM 树变更遍历，采用了深度优先遍历算法。但传统的遍历方式，效率较低。为了优化效率，使用了分治的方式。将单一节点比对转化为了 3 种类型节点的比对，分别是树、组件及元素，以此提升效率。
+- 树比对：由于网页视图中较少有跨层级节点移动，两株虚拟 DOM 树只对同一层次的节点进行比较。
+- 组件比对：如果组件是同一类型，则进行树比对，如果不是，则直接放入到补丁中。
+- 元素比对：主要发生在同层级中，通过标记节点操作生成补丁，节点操作对应真实的 DOM 剪裁操作。
+
+以上是经典的 React diff 算法内容。自 React 16 起，引入了 Fiber 架构。为了使整个更新过程可随时暂停恢复，节点与树分别采用了 FiberNode 与 FiberTree 进行重构。fiberNode 使用了双链表的结构，可以直接找到兄弟节点与子节点。整个更新过程由 current 与 workInProgress 两株树双缓冲完成。workInProgress 更新完成后，再通过修改 current 相关指针指向新节点。
+
+Vue 的 diff 策略与 React 有本质区别：
+- **React** 因为 JSX 的灵活性无法做静态分析，依赖"运行时全量 diff + Fiber 可中断"的架构来解决性能问题。每次更新从根节点开始遍历整棵 Fiber 树，通过双缓冲机制和任务分片使渲染可中断、可恢复。
+- **Vue** 借助模板编译做静态提升（hoisting）和 patch flags 标记，运行时**只对动态节点做 diff**。配合 Proxy 驱动的细粒度响应式系统，更新时能精确知道哪些组件需要重渲染，不需要从根开始全量 diff。
+
+因此 Vue **不需要时间切片**——它的更新粒度足够细，单次 diff 的成本天然就低，也从未引入过时间切片功能（并非"引入后又移除"）。这也意味着在 Vue 中无需通过防抖节流来补偿 diff 性能，响应式系统自身已足够高效。
+
+## React 16解决了什么问题
+### Time Slicing（解决CPU速度问题）
+使得在执行任务的期间可以随时暂停，跑去干别的事情，这个特性使得react能在性能极其差的机器跑时，仍然保持有良好的性能。
+### Suspense（解决网络I/O问题）
+和lazy配合，实现异步加载组件。能暂停当前组件的渲染， 当完成某件事以后再继续渲染，解决从react出生到现在都存在的「异步副作用」的问题，而且解决得非常优雅，使用的是异步但是同步的写法，这是最好的解决异步问题的方式。
+### componentDidCatch内置函数
+提供了一个内置函数componentDidCatch，当有错误发生时，可以友好地展示 fallback 组件; 可以捕捉到它的子元素（包括嵌套子元素）抛出的异常; 可以复用错误组件。
+### 16.8引入Hooks
+React16.8 加入hooks，让React函数式组件更加灵活，hooks之前，React存在很多问题：
+- 在组件间复用状态逻辑很难
+- 复杂组件变得难以理解，高阶组件和函数组件的嵌套过深。
+- class组件的this指向问题
+- 难以记忆的生命周期
+
+hooks很好的解决了上述问题，hooks提供了很多方法：
+- useState 返回有状态值，以及更新这个状态值的函数
+- useEffect 接受包含命令式，可能有副作用代码的函数。
+- useContext 接受上下文对象（从 React.createContext返回的值）并返回当前上下文值，
+- useReducer useState 的替代方案。接受类型为 （state，action）=> newState的reducer，并返回与dispatch方法配对的当前状态。
+- useCallback 返回一个缓存的 memoized 回调函数，该回调仅在某个依赖项发生变化时才会更新。useMemo 返回一个记忆化的值，仅在依赖项变化时重新计算。useRef 返回一个可变的 ref 对象，其 current 属性被初始化为传递的参数，返回的 ref 对象在组件的整个生命周期内保持不变。
+- useImperativeMethods 自定义使用ref时公开给父组件的实例值
+- useMutationEffect 更新兄弟组件之前，它在React执行其DOM改变的同一阶段同步触发
+- useLayoutEffect DOM改变后同步触发。使用它来从DOM读取布局并同步重新渲染
+
+## React与Vue对比
+### 相似之处
+- 都将注意力集中保持在核心库，而将其他功能如路由和全局状态管理交给相关的库
+- 都有自己的构建工具，能让你得到一个根据最佳实践设置的项目模板。
+- 都使用了Virtual DOM（虚拟DOM）提高重绘性能
+- 都有props的概念，允许组件间的数据传递
+- 都鼓励组件化应用，将应用分拆成一个个功能明确的模块，提高复用性
+
+### 不同之处
+#### 数据流
+Vue默认支持数据双向绑定，而React一直提倡单向数据流
+#### 虚拟DOM
+- Vue宣称可以更快地计算出Virtual DOM的差异，这是由于它在渲染过程中，会跟踪每一个组件的依赖关系，不需要重新渲染整个组件树。
+- 对于React而言，每当应用的状态被改变时，全部子组件都会重新渲染。当然，这可以通过 PureComponent/shouldComponentUpdate这个生命周期方法来进行控制，但Vue将此视为默认的优化。
+#### 组件化
+React与Vue最大的不同是模板的编写。Vue鼓励写近似常规HTML的模板。写起来很接近标准 HTML元素，只是多了一些属性。React推荐你所有的模板通用JavaScript的语法扩展——JSX书写。
+
+具体来讲：React中render函数是支持闭包特性的，所以我们import的组件在render中可以直接调用。但是在Vue中，由于模板中使用的数据都必须挂在 this 上进行一次中转，所以 import 完组件之后，还需要在 components 中再声明下。
+#### 监听数据变化的实现原理不同
+- Vue 2 通过 getter/setter 劫持（`Object.defineProperty`），Vue 3 改用 `Proxy` 代理，能精确知道数据变化，不需要特别的优化就能达到很好的性能
+- React 默认是通过比较引用的方式进行的，如果不优化（PureComponent/shouldComponentUpdate）可能导致大量不必要的vDOM的重新渲染。这是因为 Vue 使用的是可变数据，而React更强调数据的不可变。
+
+#### 高阶组件
+react可以通过高阶组件（Higher Order Components-- HOC）来扩展，而vue需要通过mixins来扩展。高阶组件就是高阶函数，而React的组件本身就是纯粹的函数，所以高阶函数对React来说易如反掌。相反Vue.js使用HTML模板创建视图组件，这时模板无法有效的编译，因此Vue不采用HOC来实现。
+
+## React设计思路
+### 编写简单直观的代码
+React最大的价值不是高性能的虚拟DOM、封装的事件机制、服务器端渲染，而是声明式的直观的编码方式。react文档第一条就是声明式，React 使创建交互式 UI 变得轻而易举。为应用的每一个状态设计简洁的视图，当数据改变时 React 能有效地更新并正确地渲染组件。 以声明式编写 UI，可以让代码更加可靠，且方便调试。
+
+### 简化可复用的组件
+React框架里面使用了简化的组件模型，但更彻底地使用了组件化的概念。React将整个UI上的每一个功能模块定义成组件，然后将小的组件通过组合或者嵌套的方式构成更大的组件。React的组件具有如下的特性：
+- 可组合：简单组件可以组合为复杂的组件
+- 可重用：每个组件都是独立的，可以被多个组件使用
+- 可维护：和组件相关的逻辑和UI都封装在了组件的内部，方便维护
+- 可测试：因为组件的独立性，测试组件就变得方便很多。
+
+### 虚拟DOM
+真实页面对应一个DOM树。在传统页面的开发模式中，每次需要更新页面时，都要手动操作DOM来进行更新。DOM操作非常昂贵。在前端开发中，性能消耗最大的就是DOM操作，而且这部分代码会让整体项目的代码变得难以维护。React把真实DOM树转换成JavaScript对象树，也就是Virtual DOM，每次数据更新后，重新计算Virtual DOM，并和上一次生成的Virtual DOM做对比，对发生变化的部分做批量更新。React也提供了直观的shouldComponentUpdate生命周期回调，来减少数据变化后不必要的Virtual DOM对比过程，以保证性能。
+
+### 函数式编程
+React 把过去不断重复构建 UI 的过程抽象成了组件，且在给定参数的情况下约定渲染对应的 UI 界面。React 能充分利用很多函数式方法去减少冗余代码。此外，由于它本身就是简单函数，所以易于测试。
+
+### 一次学习，随处编写
+无论现在正在使用什么技术栈，都可以随时引入 React来开发新特性，而不需要重写现有代码。
+
+React 还可以使用 Node 进行服务器渲染，或使用 React Native 开发原生移动应用。因为 React 组件可以映射为对应的原生控件。在输出的时候，是输出 Web DOM，还是 Android 控件，还是 iOS 控件，就由平台本身决定了。所以，react很方便和其他平台集成。
+
+## props.children和React.Children的区别
+在React中，当涉及组件嵌套，在父组件中使用props.children把所有子组件显示出来。如下：
+```jsx      
+function ParentComponent(props){
+	return (
+		<div>
+			{props.children}
+		</div>
+	)
+}
+```
+如果想把父组件中的属性传给所有的子组件，需要使用React.Children方法。比如，把几个Radio组合起来，合成一个RadioGroup，这就要求所有的Radio具有同样的name属性值。可以这样：把Radio看做子组件，RadioGroup看做父组件，name的属性值在RadioGroup这个父组件中设置。
+
+首先是子组件：
+```jsx
+//子组件
+function RadioOption(props) {
+  return (
+    <label>
+      <input type="radio" value={props.value} name={props.name} />
+      {props.label}
+    </label>
+  )
+}
+```
+然后是父组件，不仅需要把它所有的子组件显示出来，还需要为每个子组件赋上name属性和值：
+```jsx
+//父组件用,props是指父组件的props
+function renderChildren(props) {
+    
+  //遍历所有子组件
+  return React.Children.map(props.children, child => {
+    if (child.type === RadioOption)
+      return React.cloneElement(child, {
+        //把父组件的props.name赋值给每个子组件
+        name: props.name
+      })
+    else
+      return child
+  })
+}
+//父组件
+function RadioGroup(props) {
+  return (
+    <div>
+      {renderChildren(props)}
+    </div>
+  )
+}
+function App() {
+  return (
+    <RadioGroup name="hello">
+      <RadioOption label="选项一" value="1" />
+      <RadioOption label="选项二" value="2" />
+      <RadioOption label="选项三" value="3" />
+    </RadioGroup>
+  )
+}
+export default App;
+```
+React.Children.map让我们对父组件的所有子组件又更灵活的控制。
+
+## constructor和getInitialState的区别
+两者都是用来初始化state的。前者是ES6中的语法，后者是ES5中的语法，新版本的React中已经废弃了该方法。
+
+getInitialState是ES5中的方法，如果使用createClass方法创建一个Component组件，可以自动调用它的getInitialState方法来获取初始化的State对象。
+```jsx
+var APP = React.creatClass ({
+  getInitialState() {
+    return { 
+        userName: 'hi',
+        userId: 0
+     };
+　}
+})
+```
+React在ES6的实现中去掉了getInitialState这个hook函数，规定state在constructor中实现，如下：
+```jsx
+Class App extends React.Component{
+    constructor(props){
+      super(props);
+      this.state={};
+    }
+  }
+```
+
+## StrictMode的作用
+StrictMode 是一个用来突出显示应用程序中潜在问题的工具。与 Fragment 一样，StrictMode 不会渲染任何可见的 UI。它为其后代元素触发额外的检查和警告。 可以为应用程序的任何部分启用严格模式。例如：
+```jsx
+import React from 'react';
+function ExampleApplication() {
+  return (
+    <div>
+      <Header />
+      <React.StrictMode>        
+        <div>
+          <ComponentOne />
+          <ComponentTwo />
+        </div>
+      </React.StrictMode>      
+      <Footer />
+    </div>
+  );
+}
+```
+在上述的示例中，不会对 Header 和 Footer 组件运行严格模式检查。但是，ComponentOne 和 ComponentTwo 以及它们的所有后代元素都将进行检查。
+
+StrictMode的作用在于：
+- 识别不安全的生命周期
+- 关于使用过时字符串 ref API 的警告
+- 关于使用废弃的 findDOMNode 方法的警告
+- 检测意外的副作用
+- 检测过时的 context API
+
+## React.Children.map和JavaScript运法中map的区别
+JavaScript中的map不会对为null或者undefined的数据进行处理，而React.Children.map中的map可以处理React.Children为null或者undefined的情况。
+
+## 对React SSR的理解
+服务端渲染是数据与模版组成的html，即 HTML = 数据 ＋ 模版。将组件或页面通过服务器生成html字符串，再发送到浏览器，最后将静态标记"混合"为客户端上完全交互的应用程序。页面没使用服务渲染，当请求页面时，返回的body里为空，之后执行js将html结构注入到body里，结合css显示出来。
+
+### SSR的优势
+- 对SEO友好
+- 所有的模版、图片等资源都存在服务器端
+- 一个html返回所有数据
+- 减少HTTP请求
+- 响应快、用户体验好、首屏渲染快
+
+#### 更利于SEO
+不同爬虫工作原理类似，只会爬取源码，不会执行网站的任何脚本使用了React或者其它MVVM框架之后，页面大多数DOM元素都是在客户端根据js动态生成，可供爬虫抓取分析的内容大大减少。另外，浏览器爬虫不会等待我们的数据完成之后再去抓取页面数据。服务端渲染返回给客户端的是已经获取了异步数据并执行JavaScript脚本的最终HTML，网络爬中就可以抓取到完整页面的信息。
+#### 更利于首屏渲染
+首屏的渲染是node发送过来的html字符串，并不依赖于js文件了，这就会使用户更快的看到页面的内容。尤其是针对大型单页应用，打包后文件体积比较大，普通客户端渲染加载所有所需文件时间较长，首页就会有一个很长的白屏等待时间。
+
+### SSR的局限
+#### 服务端压力较大
+本来是通过客户端完成渲染，现在统一到服务端node服务去做。尤其是高并发访问的情况，会大量占用服务端CPU资源。
+#### 开发条件受限
+在服务端渲染中，只会执行到componentDidMount之前的生命周期钩子，因此项目引用的第三方的库也不可用其它生命周期钩子，这对引用库的选择产生了很大的限制。
+#### 学习成本较高
+除了对webpack、MVVM框架要熟悉，还需要掌握node、 Koa2等相关技术。相对于客户端渲染，项目构建、部署过程更加复杂。
+
+### SPA与SSO耗时比较
+#### 数据请求
+由服务端请求首屏数据，而不是客户端请求首屏数据，这是"快"的一个主要原因。服务端在内网进行请求，数据响应速度快。客户端在不同网络环境进行数据请求，且外网http请求开销大，导致时间长。
+- 客户端数据请求
+![客户端渲染](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/客户端渲染.png)
+- 服务端数据请求
+![服务端渲染](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/服务端渲染.png)
+
+#### HTML渲染
+服务端渲染是先向后端服务器请求数据，然后生成完整首屏 html返回给浏览器；而客户端渲染是等js代码下载、加载、解析完成后再请求数据渲染，等待的过程页面是什么都没有的，就是用户看到的白屏。就是服务端渲染不需要等待js代码下载完成并请求数据，就可以返回一个已有完整数据的首屏页面。
+- 非SSR HTML渲染
+![非ssr渲染](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/非ssr渲染.png)
+- SSR HTML渲染
+![SSR渲染](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/ssr渲染.png)
+
+## React为什么使用JSX
+JSX 是一个 JavaScript 的语法扩展，或者说是一个类似于 XML 的 ECMAScript 语法扩展。它本身没有太多的语法定义，也不期望引入更多的标准。其实 React 本身并不强制使用 JSX。在没有 JSX 的时候，React 实现一个组件依赖于使用 React.createElement 函数。代码如下：
+```js
+class Hello extends React.Component {
+  render() {
+    return React.createElement(
+        'div',
+        null, 
+        `Hello ${this.props.toWhat}`
+      );
+  }
+}
+ReactDOM.render(
+  React.createElement(Hello, {toWhat: 'World'}, null),
+  document.getElementById('root')
+);
+```
+而 JSX 更像是一种语法糖，通过类似 XML 的描述方式，描写函数对象。在采用 JSX 之后，这段代码会这样写：
+```jsx
+class Hello extends React.Component {
+  render() {
+    return <div>Hello {this.props.toWhat}</div>;
+  }
+}
+ReactDOM.render(
+  <Hello toWhat="World" />,
+  document.getElementById('root')
+);
+```
+通过对比，可以清晰地发现，代码变得更为简洁，而且代码结构层次更为清晰。因为 React 需要将组件转化为虚拟 DOM 树，所以在编写代码时，实际上是在手写一棵结构树。而XML 在树结构的描述上天生具有可读性强的优势。但这样可读性强的代码仅仅是给写程序的同学看的，实际上在运行的时候，会使用 Babel 插件将 JSX 语法的代码还原为 React.createElement 的代码。
+
+JSX 是一个 JavaScript 的语法扩展，结构类似 XML。JSX 主要用于声明 React 元素，但 React 中并不强制使用 JSX。即使使用了 JSX，也会在构建过程中，通过 Babel 插件编译为 React.createElement。所以 JSX 更像是 React.createElement 的一种语法糖。React 团队并不想引入 JavaScript 本身以外的开发体系。而是希望通过合理的关注点分离保持组件开发的纯粹性。
+
+## 高阶组件HOC使用了什么设计模式
+使用了装饰模式：
+```jsx
+function withWindowWidth(BaseComponent) {
+  class DerivedClass extends React.Component {
+    state = {
+      windowWidth: window.innerWidth,
+    }
+    onResize = () => {
+      this.setState({
+        windowWidth: window.innerWidth,
+      })
+    }
+    componentDidMount() {
+      window.addEventListener('resize', this.onResize)
+    }
+    componentWillUnmount() {
+      window.removeEventListener('resize', this.onResize);
+    }
+    render() {
+      return <BaseComponent {...this.props} {...this.state}/>
+    }
+  }
+  return DerivedClass;
+}
+const MyComponent = (props) => {
+  return <div>Window width is: {props.windowWidth}</div>
+};
+export default withWindowWidth(MyComponent);
+```
+装饰模式的特点是不需要改变 被装饰对象 本身，而只是在外面套一个外壳接口。JavaScript 目前已经有了原生装饰器的提案，其用法如下：
+```jsx
+@testable
+   class MyTestableClass {
+}
+```
