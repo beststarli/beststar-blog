@@ -6,6 +6,11 @@ tags: [JavaScript,原型链,手撕题]
 date: 2026-05-18
 ---
 
+instanceof()运算符用于判断构造函数的prototype属性是否出现在对象的原型链中的任何位置。实现步骤：
+1. 首先获取类型的原型
+2. 然后获取对象的原型
+3. 一直循环判断对象的原型是否等于类型的原型，直到对象原型为null，因为原型链最终指向null。
+
 ## 写法一
 ```js
 function myInstanceof(left, right) {
