@@ -1,7 +1,7 @@
 ---
 title: JavaScript八股
 description: JavaScript八股
-sidebar_position: 5
+sidebar_position: 6
 date: 2026-05-18
 ---
 
