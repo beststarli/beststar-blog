@@ -18,29 +18,35 @@ export function useUpdateData(): UpdateItem[] {
         const items: UpdateItem[] = []
 
         blogData?.posts?.forEach((p) => {
-            const date = p.metadata.frontMatter?.date as string | undefined
-            if (date) {
+            const lastUpdated = p.metadata.lastUpdatedAt as number | undefined
+            const createdDate = p.metadata.frontMatter?.date as string | undefined
+            // 有 lastUpdatedAt 就用它作为时间戳和显示日期
+            const ts = lastUpdated ?? (createdDate ? new Date(createdDate).getTime() : undefined)
+            if (ts) {
                 items.push({
                     type: 'blog',
                     title: p.metadata.title,
                     permalink: p.metadata.permalink,
-                    date,
-                    timestamp: new Date(date).getTime(),
+                    date: lastUpdated
+                        ? new Date(lastUpdated).toISOString().slice(0, 10)
+                        : createdDate!,
+                    timestamp: ts,
                 })
             }
         })
 
         docData?.versions?.[0]?.docs?.forEach((d) => {
-            const dateStr = d.frontMatter?.date as string | undefined
-            const ts = dateStr
-                ? new Date(dateStr).getTime()
-                : (d.lastUpdatedAt as number | undefined)
+            const lastUpdated = d.lastUpdatedAt as number | undefined
+            const createdDate = d.frontMatter?.date as string | undefined
+            const ts = lastUpdated ?? (createdDate ? new Date(createdDate).getTime() : undefined)
             if (ts) {
                 items.push({
                     type: 'doc',
                     title: d.title || d.id,
                     permalink: d.permalink,
-                    date: dateStr || new Date(d.lastUpdatedAt!).toISOString().slice(0, 10),
+                    date: lastUpdated
+                        ? new Date(lastUpdated).toISOString().slice(0, 10)
+                        : createdDate!,
                     timestamp: ts,
                 })
             }
