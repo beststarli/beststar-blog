@@ -11,7 +11,7 @@ import Lightbox from './_components/Lightbox'
 import styles from './styles.module.css'
 
 const TITLE = translate({ id: 'theme.album.title', message: '相册' })
-const DESCRIPTION = translate({ id: 'theme.album.description', message: '记录生活中的美好瞬间' })
+const DESCRIPTION = translate({ id: 'theme.album.description', message: '照片是情绪表达的载体' })
 
 const BATCH_SIZE = 20
 const COLUMN_BREAKPOINTS = { default: 4, 1200: 3, 768: 2, 480: 1 }
@@ -37,8 +37,8 @@ function useColumnCount(): number {
 }
 
 /** 将图片分配到最短列（Pinterest/小红书式瀑布流） */
-function masonryLayout(photos: { height: number; width: number }[], columnCount: number): number[][] {
-    const columns: { items: number[]; totalHeight: number }[] = Array.from({ length: columnCount }, () => ({
+function masonryLayout(photos: { height: number, width: number }[], columnCount: number): number[][] {
+    const columns: { items: number[], totalHeight: number }[] = Array.from({ length: columnCount }, () => ({
         items: [],
         totalHeight: 0,
     }))
@@ -51,7 +51,7 @@ function masonryLayout(photos: { height: number; width: number }[], columnCount:
         target.totalHeight += aspectRatio * 200 // 200 为基准宽度
     })
 
-    return columns.map((c) => c.items)
+    return columns.map(c => c.items)
 }
 
 function AlbumHeader() {
@@ -77,7 +77,7 @@ function LoadMoreTrigger({ onLoad }: { onLoad: () => void }) {
 export default function Album() {
     const [displayCount, setDisplayCount] = useState(BATCH_SIZE)
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
-    const [imageSizes, setImageSizes] = useState<Record<number, { width: number; height: number }>>({})
+    const [imageSizes, setImageSizes] = useState<Record<number, { width: number, height: number }>>({})
 
     const columnCount = useColumnCount()
     const hasMore = displayCount < allPhotos.length
@@ -101,7 +101,7 @@ export default function Album() {
     )
 
     const loadMore = useCallback(() => {
-        if (hasMore) setDisplayCount((prev) => prev + BATCH_SIZE)
+        if (hasMore) setDisplayCount(prev => prev + BATCH_SIZE)
     }, [hasMore])
 
     // 监听真实图片尺寸（回退方案）
@@ -116,11 +116,11 @@ export default function Album() {
     const closeLightbox = useCallback(() => setLightboxIndex(null), [])
 
     const goPrev = useCallback(() => {
-        setLightboxIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : allPhotos.length - 1))
+        setLightboxIndex(prev => (prev !== null && prev > 0 ? prev - 1 : allPhotos.length - 1))
     }, [allPhotos.length])
 
     const goNext = useCallback(() => {
-        setLightboxIndex((prev) => (prev !== null && prev < allPhotos.length - 1 ? prev + 1 : 0))
+        setLightboxIndex(prev => (prev !== null && prev < allPhotos.length - 1 ? prev + 1 : 0))
     }, [allPhotos.length])
 
     if (allPhotos.length === 0) {
@@ -129,7 +129,7 @@ export default function Album() {
                 <main className="margin-vert--lg">
                     <AlbumHeader />
                     <section className="margin-top--lg margin-bottom--xl">
-                        <div className="container padding-vert--md text-center">
+                        <div className="padding-vert--md container text-center">
                             <div className={styles.emptyState}>
                                 <span className={styles.emptyIcon}>📸</span>
                                 <h3><Translate id="theme.album.empty.title">暂无照片</Translate></h3>
