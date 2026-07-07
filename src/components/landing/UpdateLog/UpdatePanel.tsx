@@ -154,7 +154,7 @@ function PanelBody({ updates }: { updates: UpdateItem[] }) {
 
 function PanelFooter() {
     return (
-        <div className="border-t border-solid border-gray-100 px-4 py-2 dark:border-gray-700">
+        <div className="rounded-b-2xl border-t border-solid border-gray-100 px-4 py-2 dark:border-gray-700">
             <Link
                 href="/docs/intro"
                 className={cn(

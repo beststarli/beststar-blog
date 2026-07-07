@@ -16,6 +16,7 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
+    "prebuild": "node scripts/fetch-album.mjs",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
@@ -70,6 +71,7 @@
     "@typescript-eslint/eslint-plugin": "8.20.0",
     "ajv": "^8.17.1",
     "ajv-keywords": "^5.1.0",
+    "cos-nodejs-sdk-v5": "^2.15.4",
     "eslint": "9.18.0",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-tailwindcss": "3.18.0",
