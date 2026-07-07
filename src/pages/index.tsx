@@ -5,6 +5,7 @@ import DocsSection from '../components/landing/DocsSection'
 import FeaturesSection from '../components/landing/FeaturesSection'
 import Hero from '../components/landing/Hero'
 import ProjectSection from '../components/landing/ProjectSection'
+import UpdateLog from '../components/landing/UpdateLog'
 import Particles from '../components/magicui/particles'
 import { Analytics } from '@vercel/analytics/react'
 
@@ -19,6 +20,7 @@ export default function Home() {
       <main>
         <Hero />
         <Analytics />
+        <UpdateLog />
         <Particles className="absolute inset-0" quantity={100} ease={80} color="#ffffff" refresh />
 
         <div className="relative">

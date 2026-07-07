@@ -263,7 +263,7 @@ const config: Config = {
                 // 临时隐藏不想在文档侧边栏展示的分类（生产环境隐藏，开发环境可见）
                 sidebarItemsGenerator: async ({ defaultSidebarItemsGenerator, ...args }) => {
                     const sidebarItems = await defaultSidebarItemsGenerator(args)
-                    const hiddenCategories = process.env.NODE_ENV === 'production' ? new Set(['来时路']) : new Set()
+                    const hiddenCategories = process.env.NODE_ENV === 'production' ? new Set() : new Set()
 
                     const filterItems = items => items
                         .map((item) => {

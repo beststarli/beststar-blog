@@ -152,7 +152,7 @@ export default function DocsSection() {
         const categoryMap = new Map<string, DocItem[]>()
 
         // 定义要显示的分类和顺序
-        const targetCategories = ['JavaScript', 'TypeScript', 'React', 'Vue', 'Web开发与安全', '计算机网络', '跨端开发', '前端工程化', 'AI', '情景与手撕题', '算法']
+        const targetCategories = ['JavaScript', 'TypeScript', 'React', 'Vue', 'Web开发与安全', '计算机网络', '跨端开发', '前端工程化', 'AI', '情景与手撕题', '算法', '来时路']
         const categoryConfig = {
             JavaScript: {
                 icon: 'logos:javascript',
@@ -197,6 +197,10 @@ export default function DocsSection() {
             算法: {
                 icon: 'mdi:brain',
                 color: '#10B981',
+            },
+            来时路: {
+                icon: 'mdi:book-open-page-variant',
+                color: '#1E7FF0',
             },
         }
 
