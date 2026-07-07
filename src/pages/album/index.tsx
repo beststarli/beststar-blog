@@ -1,7 +1,6 @@
 import Translate, { translate } from '@docusaurus/Translate'
 import { Icon } from '@iconify/react'
 import allPhotos from '@site/data/album'
-import type { AlbumPhoto } from './_types'
 import { cn } from '@site/src/lib/utils'
 import MyLayout from '@site/src/theme/MyLayout'
 import { useInView } from 'framer-motion'
@@ -36,22 +35,13 @@ function useColumnCount(): number {
     return cols
 }
 
-/** 将图片分配到最短列（Pinterest/小红书式瀑布流） */
-function masonryLayout(photos: { height: number, width: number }[], columnCount: number): number[][] {
-    const columns: { items: number[], totalHeight: number }[] = Array.from({ length: columnCount }, () => ({
-        items: [],
-        totalHeight: 0,
-    }))
-
-    photos.forEach((photo, index) => {
-        const aspectRatio = photo.width && photo.height ? photo.height / photo.width : 1
-        // 找最短列
-        const target = columns.reduce((a, b) => (a.totalHeight <= b.totalHeight ? a : b))
-        target.items.push(index)
-        target.totalHeight += aspectRatio * 200 // 200 为基准宽度
-    })
-
-    return columns.map(c => c.items)
+/** 将图片均匀分配到各列 */
+function masonryLayout(photoCount: number, columnCount: number): number[][] {
+    const columns: number[][] = Array.from({ length: columnCount }, () => [])
+    for (let i = 0; i < photoCount; i++) {
+        columns[i % columnCount].push(i)
+    }
+    return columns
 }
 
 function AlbumHeader() {
@@ -77,40 +67,20 @@ function LoadMoreTrigger({ onLoad }: { onLoad: () => void }) {
 export default function Album() {
     const [displayCount, setDisplayCount] = useState(BATCH_SIZE)
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
-    const [imageSizes, setImageSizes] = useState<Record<number, { width: number, height: number }>>({})
 
     const columnCount = useColumnCount()
     const hasMore = displayCount < allPhotos.length
 
     const visiblePhotos = useMemo(() => allPhotos.slice(0, displayCount), [displayCount])
 
-    // 合并尺寸信息
-    const photosWithSize = useMemo(
-        () =>
-            visiblePhotos.map((p, i) => ({
-                ...p,
-                width: p.width || imageSizes[i]?.width || 1,
-                height: p.height || imageSizes[i]?.height || 1,
-            })),
-        [visiblePhotos, imageSizes],
-    )
-
     const columns = useMemo(
-        () => masonryLayout(photosWithSize, columnCount),
-        [photosWithSize, columnCount],
+        () => masonryLayout(visiblePhotos.length, columnCount),
+        [visiblePhotos.length, columnCount],
     )
 
     const loadMore = useCallback(() => {
         if (hasMore) setDisplayCount(prev => prev + BATCH_SIZE)
     }, [hasMore])
-
-    // 监听真实图片尺寸（回退方案）
-    const handleImageLoad = useCallback((index: number, w: number, h: number) => {
-        setImageSizes((prev) => {
-            if (prev[index]) return prev
-            return { ...prev, [index]: { width: w, height: h } }
-        })
-    }, [])
 
     const openLightbox = useCallback((index: number) => setLightboxIndex(index), [])
     const closeLightbox = useCallback(() => setLightboxIndex(null), [])

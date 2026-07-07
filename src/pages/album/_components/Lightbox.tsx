@@ -89,15 +89,6 @@ export default function Lightbox({ photos, currentIndex, onClose, onPrev, onNext
                         className="max-h-[90vh] max-w-[90vw] rounded-xl object-contain shadow-2xl"
                     />
 
-                    {/* 底部信息 */}
-                    {(current.title || current.date) && (
-                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-xl bg-black/50 px-4 py-2 text-center text-white backdrop-blur-sm">
-                            {current.title && <p className="text-sm font-medium">{current.title}</p>}
-                            {current.date && <p className="text-xs text-white/70">{current.date}</p>}
-                        </div>
-                    )}
-                </motion.div>
-
                 {/* 计数器 */}
                 {photos.length > 1 && (
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/40 px-3 py-1 text-xs text-white/80">
@@ -106,6 +97,7 @@ export default function Lightbox({ photos, currentIndex, onClose, onPrev, onNext
                         {photos.length}
                     </div>
                 )}
+            </motion.div>
             </motion.div>
         </AnimatePresence>
     )

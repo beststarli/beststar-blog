@@ -55,11 +55,6 @@ export default function AlbumCard({ photo, index, onClick }: Props) {
                 </div>
             )}
 
-            {/* 悬停遮罩 */}
-            <div className={styles.overlay}>
-                {photo.title && <span className={styles.cardTitle}>{photo.title}</span>}
-                {photo.date && <span className={styles.cardDate}>{photo.date}</span>}
-            </div>
         </div>
     )
 }
