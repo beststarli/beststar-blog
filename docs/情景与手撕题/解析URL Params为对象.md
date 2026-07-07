@@ -42,3 +42,4 @@ function parseParam(url) {
   })
   return paramsObj;
 }
+```
