@@ -1,0 +1,16 @@
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.scrollArea {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.scrollArea :global(.menu) {
+    /* 嵌套过深的分类不撑破容器 */
+    overflow-y: auto;
+}
