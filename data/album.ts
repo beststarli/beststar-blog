@@ -4,8 +4,8 @@
 import type { AlbumPhoto } from '../src/pages/album/_types'
 
 const photos: AlbumPhoto[] = [
-    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/605晚霞.jpg', title: '七桥瓮公园晚霞' },
-    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/壁纸.JPG', title: '黄秋英（E100反转片）' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/605晚霞.jpg', title: '605晚霞' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/壁纸.JPG', title: '壁纸' },
 ]
 
 export default photos

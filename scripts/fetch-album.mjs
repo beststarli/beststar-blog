@@ -46,8 +46,8 @@ let COS
 try {
     COS = (await import('cos-nodejs-sdk-v5')).default
 } catch {
-    console.error('[album] 未安装 cos-nodejs-sdk-v5，请运行: npm install --save-dev cos-nodejs-sdk-v5')
-    process.exit(1)
+    console.warn('[album] 未安装 cos-nodejs-sdk-v5，跳过拉取（不影响构建）')
+    process.exit(0)
 }
 
 // ── 读取配置 ──
@@ -65,9 +65,9 @@ const CONFIG = {
 // 校验必填字段
 const missing = ['secretId', 'secretKey', 'bucket'].filter((k) => !CONFIG[k])
 if (missing.length > 0) {
-    console.error(`[album] 缺少必要环境变量: ${missing.join(', ')}`)
-    console.error('请设置 COS_SECRET_ID, COS_SECRET_KEY, COS_BUCKET')
-    process.exit(1)
+    console.warn(`[album] 缺少环境变量 ${missing.join(', ')}，跳过拉取（不影响构建）`)
+    console.warn('如需从 COS 同步图片，请设置 COS_SECRET_ID, COS_SECRET_KEY, COS_BUCKET')
+    process.exit(0)
 }
 
 // ── 获取图片列表 ──
