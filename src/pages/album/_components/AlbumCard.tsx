@@ -1,8 +1,9 @@
-import type { AlbumPhoto } from '../_types'
 import { cn } from '@site/src/lib/utils'
 import { useInView } from 'framer-motion'
 import React, { useRef, useState } from 'react'
+import type { AlbumPhoto } from '../_types'
 import styles from '../styles.module.css'
+import { thumbUrl } from './thumb'
 
 interface Props {
     photo: AlbumPhoto
@@ -14,7 +15,8 @@ export default function AlbumCard({ photo, index, onClick }: Props) {
     const [loaded, setLoaded] = useState(false)
     const [error, setError] = useState(false)
     const ref = useRef<HTMLDivElement>(null)
-    const isInView = useInView(ref, { once: true, margin: '200px' })
+    // margin: '300px' 表示卡片距离视口边缘 300px 时就开始加载，预加载更平滑
+    const isInView = useInView(ref, { once: true, margin: '300px' })
 
     return (
         <div
@@ -28,17 +30,13 @@ export default function AlbumCard({ photo, index, onClick }: Props) {
             {/* 占位骨架 */}
             <div
                 className={cn(styles.skeleton, loaded && styles.skeletonHidden)}
-                style={{
-                    paddingBottom: photo.width && photo.height
-                        ? `${(photo.height / photo.width) * 100}%`
-                        : '75%',
-                }}
+                style={{ paddingBottom: '75%' }}
             />
 
-            {/* 图片 */}
+            {/* 图片 — 只用缩略图 URL，省流量 */}
             {isInView && !error && (
                 <img
-                    src={photo.src}
+                    src={thumbUrl(photo.src)}
                     alt={photo.title || `Photo ${index + 1}`}
                     loading="lazy"
                     onLoad={() => setLoaded(true)}
@@ -54,7 +52,6 @@ export default function AlbumCard({ photo, index, onClick }: Props) {
                     <span className="text-xs">加载失败</span>
                 </div>
             )}
-
         </div>
     )
 }
