@@ -29,6 +29,9 @@ const SKILLS = [
   'mapbox',
   'docusaurus',
   'apacheecharts',
+  'prisma',
+  'fastify',
+  'rustfs',
 ]
 
 export default SKILLS
