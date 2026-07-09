@@ -829,5 +829,86 @@ class C {
 ```
 3. get方法与set方法的可访问性必须一致，要么都为公开方法，要么都为私有方法。
 
+### 类的interface接口
+#### implements关键字
+implements关键字后面，不仅可以是接口，也可以是另一个类。这时，后面的类将被当作接口。
+```ts
+class Car {
+  id:number = 1;
+  move():void {};
+}
 
+class MyCar implements Car {
+  id = 2; // 不可省略
+  move():void {};   // 不可省略
+}
+```
+上面示例中，implements后面是类Car，这时 TypeScript 就把Car视为一个接口，要求MyCar实现Car里面的每一个属性和方法，否则就会报错。所以，这时不能因为Car类已经实现过一次，而在MyCar类省略属性或方法。
 
+interface 描述的是类的对外接口，也就是实例的公开属性和公开方法，不能定义私有的属性和方法。这是因为 TypeScript 设计者认为，私有属性是类的内部实现，接口作为模板，不应该涉及类的内部代码写法。
+```ts
+interface Foo {
+  private member:{}; // 报错
+}
+```
+
+#### 类与接口的合并
+TypeScript 不允许两个同名的类，但是如果一个类和一个接口同名，那么接口会被合并进类。
+```ts
+class A {
+  x:number = 1;
+}
+
+interface A {
+  y:number;
+}
+
+let a = new A();
+a.y = 10;
+
+a.x // 1
+a.y // 10
+```
+
+### Class类型
+作为类型使用时，类名只能表示实例的类型，不能表示类的自身类型。由于类名作为类型使用，实际上代表一个对象，因此可以把类看作为对象类型起名。事实上，TypeScript 有三种方法可以为对象类型起名：type、interface 和 class。
+```ts
+class Point {
+  x:number;
+  y:number;
+
+  constructor(x:number, y:number) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+// 错误
+function createPoint(
+  PointClass:Point,
+  x: number,
+  y: number
+) {
+  return new PointClass(x, y);
+}
+```
+
+### 结构类型原则
+确定两个类的兼容关系时，只检查实例成员，不考虑静态成员和构造方法。
+```ts
+class Point {
+  x: number;
+  y: number;
+  static t: number;
+  constructor(x:number) {}
+}
+
+class Position {
+  x: number;
+  y: number;
+  z: number;
+  constructor(x:string) {}
+}
+
+const point:Point = new Position('');
+```
