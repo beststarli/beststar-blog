@@ -273,4 +273,305 @@ let b = Object(BigInt());
 
 目前在 TypeScript 里面，symbol和Symbol两种写法没有差异，bigint和BigInt也是如此，建议始终使用小写的symbol和bigint，不使用大写的Symbol和BigInt。
 
+## Object类型与object类型
+### Object类型
+大写的Object类型代表 JavaScript 语言里面的广义对象。所有可以转成对象的值，都是Object类型，这囊括了几乎所有的值。事实上，除了undefined和null这两个值不能转为对象，其他任何值都可以赋值给Object类型。
+```ts
+let obj:Object;
+ 
+obj = true;
+obj = 'hi';
+obj = 1;
+obj = { foo: 123 };
+obj = [1, 2];
+obj = (a:number) => a + 1;
+obj = undefined; // 报错
+obj = null; // 报错
+```
 
+另外，空对象{}是Object类型的简写形式，所以使用Object时常常用空对象代替。
+```ts
+let obj:{};
+ 
+obj = true;
+obj = 'hi';
+obj = 1;
+obj = { foo: 123 };
+obj = [1, 2];
+obj = (a:number) => a + 1;
+```
+
+### object类型
+小写的object类型代表 JavaScript 里面的狭义对象，即可以用字面量表示的对象，只包含对象、数组和函数，不包括原始类型的值。大多数时候，我们使用对象类型，只希望包含真正的对象，不希望包含原始类型。所以，建议总是使用小写类型object，不使用大写类型Object。
+```ts
+let obj:object;
+ 
+obj = { foo: 123 };
+obj = [1, 2];
+obj = (a:number) => a + 1;
+obj = true; // 报错
+obj = 'hi'; // 报错
+obj = 1; // 报错
+```
+
+## 值类型
+TypeScript 规定，单个值也是一种类型，称为“值类型”。
+```ts
+let x:'hello';
+
+x = 'hello'; // 正确
+x = 'world'; // 报错
+```
+TypeScript 推断类型时，遇到const命令声明的变量，如果代码里面没有注明类型，就会推断该变量是值类型。这样推断是合理的，因为const命令声明的变量，一旦声明就不能改变，相当于常量。值类型就意味着不能赋为其他值。
+```ts
+// x 的类型是 "https"
+const x = 'https';
+
+// y 的类型是 string
+const y:string = 'https';
+```
+注意，const命令声明的变量，如果赋值为对象，并不会推断为值类型。这是因为const变量赋值为对象时，属性值是可以改变的。
+```ts
+// x 的类型是 { foo: number }
+const x = { foo: 1 };
+```
+值类型可能会出现一些很奇怪的报错。由于5是number的子类型，number是5的父类型，父类型不能赋值给子类型，所以报错了：
+```ts
+const x:5 = 4 + 1; // 报错
+```
+反过来是可以的，子类型可以赋值给父类型。
+```ts
+let x:5 = 5;
+let y:number = 4 + 1;
+
+x = y; // 报错
+y = x; // 正确
+```
+
+只包含单个值的值类型，用处不大。实际开发中，往往将多个值结合，作为联合类型使用。
+
+## 联合类型
+联合类型（union types）指的是多个类型组成的一个新类型，使用符号|表示。
+
+“类型缩小”是 TypeScript 处理联合类型的标准方法，凡是遇到可能为多种类型的场合，都需要先缩小类型，再进行处理。实际上，联合类型本身可以看成是一种“类型放大”（type widening），处理时就需要“类型缩小”（type narrowing）。
+
+## 交叉类型
+交叉类型（intersection types）指的是多个类型组成的一个新类型，使用符号&表示。交叉类型A&B表示，任何一个类型必须同时属于A和B，才属于交叉类型A&B，即交叉类型同时满足A和B的特征：
+```ts
+let x:number&string;
+```
+变量x同时是数值和字符串，这当然是不可能的，所以 TypeScript 会认为x的类型实际是never。
+
+## type命令
+type命令用来定义一个类型的别名。别名不允许重名。
+```ts
+type Age = number;
+let age:Age = 55;
+
+type Color = 'red';
+type Color = 'blue'; // 报错
+```
+别名的作用域是块级作用域。这意味着，代码块内部定义的别名，影响不到外部。
+```ts
+type Color = 'red';
+if (Math.random() < 0.5) {
+  type Color = 'blue';
+}
+```
+别名支持使用表达式，也可以在定义一个别名时，使用另一个别名，即别名允许嵌套。
+```ts
+type World = "world";
+type Greeting = `hello ${World}`;
+```
+
+
+## typeof运算符
+JavaScript 里面，typeof运算符只可能返回八种结果，而且都是字符串。
+```js
+typeof undefined; // "undefined"
+typeof true; // "boolean"
+typeof 1337; // "number"
+typeof "foo"; // "string"
+typeof {}; // "object"
+typeof parseInt; // "function"
+typeof Symbol(); // "symbol"
+typeof 127n // "bigint"
+```
+
+TypeScript 将typeof运算符移植到了类型运算，它的操作数依然是一个值，但是返回的不是字符串，而是该值的 TypeScript 类型：
+```ts
+const a = { x: 0 };
+type T0 = typeof a;   // { x: number }
+type T1 = typeof a.x; // number
+```
+
+typeof命令的参数不能是类型。
+```ts
+type Age = number;
+type MyAge = typeof Age; // 报错
+```
+
+## 数组
+### 类型推断
+数组变量arr的初始值是空数组，然后随着新成员的加入，TypeScript 会自动修改推断的数组类型：
+```ts
+const arr = [];
+arr // 推断为 any[]
+arr.push(123);
+arr // 推断类型为 number[]
+arr.push('abc');
+arr // 推断类型为 (string|number)[]
+```
+但是，类型推断的自动更新只发生初始值为空数组的情况。如果初始值不是空数组，类型推断就不会更新。
+```ts
+// 推断类型为 number[]
+const arr = [123];
+arr.push('abc'); // 报错
+```
+
+### 只读数组
+TypeScript 允许声明只读数组，方法是在数组类型前面加上readonly关键字。TypeScript 将readonly number[]与number[]视为两种不一样的类型，后者是前者的子类型。这是因为只读数组没有pop()、push()之类会改变原数组的方法，所以number[]的方法数量要多于readonly number[]，这意味着number[]其实是readonly number[]的子类型。子类型继承了父类型的所有特征，并加上了自己的特征，所以子类型number[]可以用于所有使用父类型的场合，反过来不行：
+```ts
+let a1:number[] = [0, 1];
+let a2:readonly number[] = a1; // 正确
+
+a1 = a2; // 报错
+```
+readonly关键字不能与数组的泛型写法一起使用。
+```ts
+// 报错
+const arr:readonly Array<number> = [0, 1];
+```
+实际上，TypeScript 提供了两个专门的泛型，用来生成只读数组的类型。
+```ts
+const a1:ReadonlyArray<number> = [0, 1];
+const a2:Readonly<number[]> = [0, 1];
+```
+
+只读数组还有一种声明方法，就是使用“const 断言”。
+```ts
+const arr = [0, 1] as const;
+arr[0] = [2]; // 报错 
+```
+
+## 元祖
+元组（tuple）是 TypeScript 特有的数据类型，JavaScript 没有单独区分这种类型。它表示成员类型可以自由设置的数组，即数组的各个成员的类型可以不同。
+```ts
+const s:[string, string, boolean] = ['a', 'b', true];
+```
+
+由于需要声明每个成员的类型，所以大多数情况下，元组的成员数量是有限的，从类型声明就可以明确知道，元组包含多少个成员，越界的成员会报错。
+```ts
+let x:[string, string] = ['a', 'b'];
+x[2] = 'c'; // 报错
+```
+
+## symbol类型
+Symbol 值通过Symbol()函数生成。在 TypeScript 里面，Symbol 的类型使用symbol表示。变量x和y的类型都是symbol，且都用Symbol()生成，但是它们是不相等的：
+```ts
+let x:symbol = Symbol();
+let y:symbol = Symbol();
+x === y // false
+```
+
+### unique symbol
+symbol类型包含所有的 Symbol 值，但是无法表示某一个具体的 Symbol 值。比如，5是一个具体的数值，就用5这个字面量来表示，这也是它的值类型。但是，Symbol 值不存在字面量，必须通过变量来引用，所以写不出只包含单个 Symbol 值的那种值类型。为了解决这个问题，TypeScript 设计了symbol的一个子类型unique symbol，它表示单个的、某个具体的 Symbol 值。因为unique symbol表示单个值，所以这个类型的变量是不能修改值的，只能用const命令声明，不能用let声明：
+```ts
+// 正确
+const x:unique symbol = Symbol();
+// 报错
+let y:unique symbol = Symbol();
+```
+const命令为变量赋值 Symbol 值时，变量类型默认就是unique symbol，所以类型可以省略不写：
+```ts
+const x:unique symbol = Symbol();
+// 等同于
+const x = Symbol();
+```
+每个声明为unique symbol类型的变量，它们的值都是不一样的，其实属于两个值类型：
+```ts
+const a:unique symbol = Symbol();
+const b:unique symbol = Symbol();
+a === b // 报错
+```
+
+### 类型声明
+let命令声明的变量，推断类型为 symbol。const命令声明的变量，推断类型为 unique symbol。const命令声明的变量，如果赋值为另一个 symbol 类型的变量，则推断类型为 symbol。let命令声明的变量，如果赋值为另一个 unique symbol 类型的变量，则推断类型还是 symbol。
+```ts
+// 类型为 symbol
+let x = Symbol();
+// 类型为 unique symbol
+const y = Symbol();
+// 类型为 symbol
+const z = x;
+// 类型为 symbol
+let u = y;
+```
+
+## 函数
+如果一个变量要套用另一个函数类型，有一个小技巧，就是使用typeof运算符：
+```ts
+function add(
+  x:number,
+  y:number
+) {
+  return x + y;
+}
+
+const myAdd:typeof add = function (x, y) {
+  return x + y;
+}
+```
+
+### Function类型
+TypeScript 提供 Function 类型表示函数，任何函数都属于这个类型。Function 类型的函数可以接受任意数量的参数，每个参数的类型都是any，返回值的类型也是any，代表没有任何约束，所以不建议使用这个类型，给出函数详细的类型声明会更好：
+```ts
+function doSomething(f:Function) {
+  return f(1, 2, 3);
+}
+```
+
+### void类型
+void 类型允许返回undefined或null：
+```ts
+function f():void {
+  return undefined; // 正确
+}
+
+function f():void {
+  return null; // 正确
+}
+```
+
+如果变量、对象方法、函数参数是一个返回值为 void 类型的函数，那么并不代表不能赋值为有返回值的函数。恰恰相反，该变量、对象方法和函数参数可以接受返回任意值的函数，这时并不会报错：
+```ts
+type voidFunc = () => void;
+const f:voidFunc = () => {
+  return 123;
+};
+```
+这是因为，这时 TypeScript 认为，这里的 void 类型只是表示该函数的返回值没有利用价值，或者说不应该使用该函数的返回值。只要不用到这里的返回值，就不会报错。如果后面使用了这个函数的返回值，就违反了约定，则会报错：
+```ts
+type voidFunc = () => void;
+const f:voidFunc = () => {
+  return 123;
+};
+f() * 2 // 报错
+```
+
+### never类型
+never类型表示肯定不会出现的值。它用在函数的返回值，就表示某个函数肯定不会返回值，即函数不会正常执行结束。它主要有以下两种情况：
+- 抛出错误的函数。
+```ts
+function fail(msg:string):never {
+  throw new Error(msg);
+}
+```
+- 无限执行的函数。
+```ts
+const sing = function():never {
+  while (true) {
+    console.log('sing');
+  }
+};
+```
