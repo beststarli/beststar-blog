@@ -787,3 +787,47 @@ type AorBwithName = AorB & {
 综上所述，如果有复杂的类型运算，那么没有其他选择只能使用type；一般情况下，interface灵活性比较高，便于扩充类型或自动合并，建议优先使用。
 
 ## class类型
+### 存取器
+存取器（accessor）是特殊的类方法，包括取值器（getter）和存值器（setter）两种方法。它们用于读写某个属性，取值器用来读取属性，存值器用来写入属性。
+```ts
+class C {
+  _name = '';
+  get name() {
+    return this._name;
+  }
+  set name(value) {
+    this._name = value;
+  }
+}
+```
+TypeScript 对存取器有以下规则：
+1. 如果某个属性只有get方法，没有set方法，那么该属性自动成为只读属性。
+```ts
+class C {
+  _name = 'foo';
+
+  get name() {
+    return this._name;
+  }
+}
+
+const c = new C();
+c.name = 'bar'; // 报错
+```
+2. TypeScript 5.1 版之前，set方法的参数类型，必须兼容get方法的返回值类型，否则报错。
+```ts
+// TypeScript 5.1 版之前
+class C {
+  _name = '';
+  get name():string {  // 报错
+    return this._name;
+  }
+  set name(value:number) {
+    this._name = String(value);
+  }
+}
+```
+3. get方法与set方法的可访问性必须一致，要么都为公开方法，要么都为私有方法。
+
+
+

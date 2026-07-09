@@ -5,6 +5,7 @@ import social from './data/social'
 import type { GiscusConfig } from './src/components/Comment'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const beian = '冀ICP备2026007642号-1'
 const beian1 = '冀公网安备13040202001096号'
