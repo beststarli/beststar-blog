@@ -575,3 +575,215 @@ const sing = function():never {
   }
 };
 ```
+
+## 对象类型
+### 属性名的索引类型
+对象可以同时有多种类型的属性名索引，比如同时有数值索引和字符串索引。但是，数值索引不能与字符串索引发生冲突，必须服从后者，这是因为在 JavaScript 语言内部，所有的数值属性名都会自动转为字符串属性名。
+```ts
+type MyType = {
+  [x: number]: boolean; // 报错
+  [x: string]: string;
+}
+```
+
+同样地，可以既声明属性名索引，也声明具体的单个属性名。如果单个属性名不符合属性名索引的范围，两者发生冲突，就会报错。
+```ts
+type MyType = {
+  foo: boolean; // 报错
+  [x: string]: string;
+}
+```
+
+### 严格字面量检查
+如果对象使用字面量表示，会触发 TypeScript 的严格字面量检查（strict object literal checking）。如果字面量的结构跟类型定义的不一样（比如多出了未定义的属性），就会报错：
+```ts
+const point:{
+  x:number;
+  y:number;
+} = {
+  x: 1,
+  y: 1,
+  z: 1 // 报错
+};
+```
+如果等号右边不是字面量，而是一个变量，根据结构类型原则，是不会报错的。
+```ts
+const myPoint = {
+  x: 1,
+  y: 1,
+  z: 1
+};
+
+const point:{
+  x:number;
+  y:number;
+} = myPoint; // 正确
+```
+
+## interface接口
+### interface的继承
+#### interface继承interface
+多重接口继承，实际上相当于多个父接口的合并。如果子接口与父接口存在同名属性，那么子接口的属性会覆盖父接口的属性。注意，子接口与父接口的同名属性必须是类型兼容的，不能有冲突，否则会报错。
+```ts
+interface Foo {
+  id: string;
+}
+interface Bar extends Foo {
+  id: number; // 报错
+}
+```
+多重继承时，如果多个父接口存在同名属性，那么这些同名属性不能有类型冲突，否则会报错。
+```ts
+interface Foo {
+  id: string;
+}
+
+interface Bar {
+  id: number;
+}
+
+// 报错
+interface Baz extends Foo, Bar {
+  type: string;
+}
+```
+
+#### interface继承type
+如果type命令定义的类型不是对象，interface就无法继承。
+
+### 接口合并
+同名接口合并时，如果同名方法有不同的类型声明，那么会发生函数重载。而且，后面的定义比前面的定义具有更高的优先级。
+```ts
+interface Cloner {
+  clone(animal: Animal): Animal;
+}
+
+interface Cloner {
+  clone(animal: Sheep): Sheep;
+}
+
+interface Cloner {
+  clone(animal: Dog): Dog;
+  clone(animal: Cat): Cat;
+}
+
+// 等同于
+interface Cloner {
+  clone(animal: Dog): Dog;
+  clone(animal: Cat): Cat;
+  clone(animal: Sheep): Sheep;
+  clone(animal: Animal): Animal;
+}
+```
+这个规则有一个例外。同名方法之中，如果有一个参数是字面量类型，字面量类型有更高的优先级。
+```ts
+interface A {
+  f(x:'foo'): boolean;
+}
+
+interface A {
+  f(x:any): void;
+}
+
+// 等同于
+interface A {
+  f(x:'foo'): boolean;
+  f(x:any): void;
+}
+```
+
+如果两个 interface 组成的联合类型存在同名属性，那么该属性的类型也是联合类型。
+```ts
+interface Circle {
+  area: bigint;
+}
+
+interface Rectangle {
+  area: number;
+}
+
+declare const s: Circle | Rectangle;
+
+s.area;   // bigint | number
+```
+
+### [interface和type的异同](/docs/TypeScript/interface与type.md)
+interface与type两者往往可以换用，区别主要在于：
+1. type能够表示非对象类型，而interface只能表示对象类型（包括数组、函数等）。
+2. interface可以继承其他类型，type不支持继承。type定义的对象类型如果想要添加属性，只能使用&运算符，重新定义一个类型。继承时type和interface是可以换用的。
+```ts
+type Animal = {
+  name: string
+}
+type Bear = Animal & {
+  honey: boolean
+}
+```
+```ts
+type Foo = { x: number; };
+interface Bar extends Foo {
+  y: number;
+}
+```
+```ts
+interface Foo {
+  x: number;
+}
+type Bar = Foo & { y: number; };
+```
+3. 同名interface会自动合并，同名type则会报错。也就是说，TypeScript 不允许使用type多次定义同一个类型。这表明，interface 是开放的，可以添加属性，type 是封闭的，不能添加属性，只能定义新的 type。
+4. interface不能包含属性映射（mapping），type可以。
+```ts
+interface Point {
+  x: number;
+  y: number;
+}
+
+// 正确
+type PointCopy1 = {
+  [Key in keyof Point]: Point[Key];
+};
+
+// 报错
+interface PointCopy2 {
+  [Key in keyof Point]: Point[Key];
+};
+```
+5. this关键字只能用于interface。
+```ts
+// 正确
+interface Foo {
+  add(num:number): this;
+};
+
+// 报错
+type Foo = {
+  add(num:number): this;
+};
+```
+6. type 可以扩展原始数据类型，interface 不行。
+```ts
+// 正确
+type MyStr = string & {
+  type: 'new'
+};
+
+// 报错
+interface MyStr extends string {
+  type: 'new'
+}
+```
+7. interface无法表达某些复杂类型（比如交叉类型和联合类型），但是type可以。
+```ts
+type A = { /* ... */ };
+type B = { /* ... */ };
+
+type AorB = A | B;
+type AorBwithName = AorB & {
+  name: string
+};
+```
+
+综上所述，如果有复杂的类型运算，那么没有其他选择只能使用type；一般情况下，interface灵活性比较高，便于扩充类型或自动合并，建议优先使用。
+
+## class类型
