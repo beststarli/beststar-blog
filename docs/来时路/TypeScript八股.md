@@ -912,3 +912,989 @@ class Position {
 
 const point:Point = new Position('');
 ```
+
+### 可访问性修饰符
+#### private
+严格地说，private定义的私有成员，并不是真正意义的私有成员。一方面，编译成 JavaScript 后，private关键字就被剥离了，这时外部访问该成员就不会报错。另一方面，由于前一个原因，TypeScript 对于访问private成员没有严格禁止，使用方括号写法（[]）或者in运算符，实例对象就能访问该成员。
+```ts
+class A {
+  private x = 1;
+}
+
+const a = new A();
+a['x'] // 1
+
+if ('x' in a) { // 正确
+  // ...
+}
+```
+由于private存在这些问题，加上它是 ES2022 标准发布前出台的，而 ES2022 引入了自己的私有成员写法#propName。因此建议不使用private，改用 ES2022 的写法，获得真正意义的私有成员。
+```ts
+class A {
+  #x = 1;
+}
+
+const a = new A();
+a['x'] // 报错
+```
+
+构造方法也可以是私有的，这就直接防止了使用new命令生成实例对象，只能在类的内部创建实例对象。这时一般会有一个静态方法，充当工厂函数，强制所有实例都通过该方法生成。下面示例使用私有构造方法，实现了单例模式。
+```ts
+class Singleton {
+  private static instance?: Singleton;
+
+  private constructor() {}
+
+  static getInstance() {
+    if (!Singleton.instance) {
+      Singleton.instance = new Singleton();
+    }
+    return Singleton.instance;
+  }
+}
+
+const s = Singleton.getInstance();
+```
+
+#### protected
+protected修饰符表示该成员是保护成员，只能在类的内部使用该成员，实例无法使用该成员，但是子类内部可以使用。
+```ts
+class A {
+  protected x = 1;
+}
+
+class B extends A {
+  getX() {
+    return this.x;
+  }
+}
+
+const a = new A();
+const b = new B();
+
+a.x // 报错
+b.getX() // 1
+```
+子类不仅可以拿到父类的保护成员，还可以定义同名成员。
+```ts
+class A {
+  protected x = 1;
+}
+
+class B extends A {
+  x = 2;
+}
+```
+
+### 顶层属性的处理方法
+类的顶层属性在 TypeScript 里面，有两种写法。
+```ts
+class User {
+  // 写法一
+  age = 25;
+
+  // 写法二
+  constructor(private currentYear: number) {}
+}
+```
+
+ES2022 标准里面的处理方法是，先进行顶层属性的初始化，再运行构造方法。这在某些情况下，会使得同一段代码在 TypeScript 和 JavaScript 下运行结果不一致。这种不一致一般发生在两种情况：
+- 第一种情况是，顶层属性的初始化依赖于其他实例属性。
+```ts
+class User {
+  age = this.currentYear - 1998;
+
+  constructor(private currentYear: number) {
+    // 输出结果将不一致
+    console.log('Current age:', this.age);
+  }
+}
+
+const user = new User(2023);
+```
+- 第二种情况与类的继承有关，子类声明的顶层属性在父类完成初始化。
+```ts
+interface Animal {
+  animalStuff: any;
+}
+
+interface Dog extends Animal {
+  dogStuff: any;
+}
+
+class AnimalHouse {
+  resident: Animal;
+
+  constructor(animal:Animal) {
+    this.resident = animal;
+  }
+}
+
+class DogHouse extends AnimalHouse {
+  resident: Dog;
+
+  constructor(dog:Dog) {
+    super(dog);
+  }
+}
+
+const dog = {
+  animalStuff: 'animal',
+  dogStuff: 'dog'
+};
+
+const dogHouse = new DogHouse(dog);
+console.log(dogHouse.resident) // 输出结果将不一致
+```
+如果希望避免这种不一致，让代码在不同设置下的行为都一样，那么可以将所有顶层属性的初始化，都放到构造方法里面。
+```ts
+class User  {
+  age: number;
+
+  constructor(private currentYear: number) {
+    this.age = this.currentYear - 1998;
+    console.log('Current age:', this.age);
+  }
+}
+
+const user = new User(2023);
+```
+对于类的继承，还有另一种解决方法，就是使用declare命令，去声明子类顶层属性的类型，告诉 TypeScript 这些属性的初始化由父类实现。
+```ts
+class DogHouse extends AnimalHouse {
+  declare resident: Dog;
+
+  constructor(dog:Dog) {
+    super(dog);
+  }
+}
+```
+
+### 静态成员
+静态成员是只能通过类本身使用的成员，不能通过实例对象使用。
+```ts
+class MyClass {
+  static x = 0;
+  static printX() {
+    console.log(MyClass.x);
+  }
+}
+
+MyClass.x // 0
+MyClass.printX() // 0
+```
+static关键字前面可以使用 public、private、protected 修饰符。
+```ts
+class MyClass {
+  private static x = 0;
+}
+
+MyClass.x // 报错
+```
+public和protected的静态成员可以被继承。
+```ts
+class A {
+  public static x = 1;
+  protected static y = 1;
+}
+
+class B extends A {
+  static getY() {
+    return B.y;
+  }
+}
+
+B.x // 1
+B.getY() // 1
+```
+
+### 泛型类
+类也可以写成泛型，使用类型参数。
+```ts
+class Box<Type> {
+  contents: Type;
+
+  constructor(value:Type) {
+    this.contents = value;
+  }
+}
+
+const b:Box<string> = new Box('hello!');
+```
+注意，静态成员不能使用泛型的类型参数。
+```ts
+class Box<Type> {
+  static defaultContents: Type; // 报错
+}
+```
+
+### 抽象类与抽象成员
+TypeScript 允许在类的定义前面，加上关键字abstract，表示该类不能被实例化，只能当作其他类的模板。这种类就叫做“抽象类”（abstract class）。
+```ts
+abstract class A {
+  id = 1;
+}
+
+const a = new A(); // 报错
+```
+抽象类只能当作基类使用，用来在它的基础上定义子类。
+```ts
+abstract class A {
+  id = 1;
+}
+
+class B extends A {
+  amount = 100;
+}
+
+const b = new B();
+
+b.id // 1
+b.amount // 100
+```
+抽象类的子类也可以是抽象类，也就是说，抽象类可以继承其他抽象类。
+```ts
+abstract class A {
+  foo:number;
+}
+
+abstract class B extends A {
+  bar:string;
+}
+```
+抽象类的内部可以有已经实现好的属性和方法，也可以有还未实现的属性和方法。后者就叫做“抽象成员”（abstract member），即属性名和方法名有abstract关键字，表示该方法需要子类实现。如果子类没有实现抽象成员，就会报错。
+```ts
+abstract class A {
+  abstract foo:string;
+  bar:string = '';
+}
+
+class B extends A {
+  foo = 'b';
+}
+```
+
+几个注意点：
+- 抽象成员只能存在于抽象类，不能存在于普通类。
+- 抽象成员不能有具体实现的代码。也就是说，已经实现好的成员前面不能加abstract关键字。
+- 抽象成员前也不能有private修饰符，否则无法在子类中实现该成员。
+- 一个子类最多只能继承一个抽象类。
+
+### this问题
+有些场合需要给出this类型，但是 JavaScript 函数通常不带有this参数，这时 TypeScript 允许函数增加一个名为this的参数，放在参数列表的第一位，用来描述函数内部的this关键字的类型。
+```ts
+// 编译前
+function fn(
+  this: SomeType,
+  x: number
+) {
+  /* ... */
+}
+
+// 编译后
+function fn(x) {
+  /* ... */
+}
+```
+this参数的类型可以声明为各种对象。
+```ts
+function foo(
+  this: { name: string }
+) {
+  this.name = 'Jack';
+  this.name = 0; // 报错
+}
+
+foo.call({ name: 123 }); // 报错
+```
+在类的内部，this本身也可以当作类型使用，表示当前类的实例对象。
+```ts
+class Box {
+  contents:string = '';
+
+  set(value:string):this {
+    this.contents = value;
+    return this;
+  }
+}
+```
+this类型不允许应用于静态成员。原因是this类型表示实例对象，但是静态成员拿不到实例对象。
+```ts
+class A {
+  static a:this; // 报错
+}
+```
+
+## 泛型
+类型参数的名字，可以随便取，但是必须为合法的标识符。习惯上，类型参数的第一个字符往往采用大写字母。一般会使用T（type 的第一个字母）作为类型参数的名字。如果有多个类型参数，则使用 T 后面的 U、V 等字母命名，各个参数之间使用逗号（“,”）分隔。
+```ts
+function map<T, U>(
+  arr:T[],
+  f:(arg:T) => U
+):U[] {
+  return arr.map(f);
+}
+
+// 用法实例
+map<string, number>(
+  ['1', '2', '3'],
+  (n) => parseInt(n)
+); // 返回 [1, 2, 3]
+```
+
+### 泛型的写法
+泛型主要用在四个场合：函数、接口、类和别名。
+#### 函数的写法
+function关键字定义的泛型函数，类型参数放在尖括号中，写在函数名后面。
+```ts
+function id<T>(arg:T):T {
+  return arg;
+}
+```
+对于变量形式定义的函数，泛型有下面两种写法。
+```ts
+// 写法一
+let myId:<T>(arg:T) => T = id;
+
+// 写法二
+let myId:{ <T>(arg:T): T } = id;
+```
+
+#### 接口的写法
+interface 也可以采用泛型的写法。
+```ts
+interface Box<Type> {
+  contents: Type;
+}
+
+let box:Box<string>;
+```
+泛型接口还有第二种写法。
+```ts
+interface Fn {
+  <Type>(arg:Type): Type;
+}
+
+function id<Type>(arg:Type): Type {
+  return arg;
+}
+
+let myId:Fn = id;
+```
+第二种写法还有一个差异之处。那就是它的类型参数定义在某个方法之中，其他属性和方法不能使用该类型参数。前面的第一种写法，类型参数定义在整个接口，接口内部的所有属性和方法都可以使用该类型参数。
+
+#### 类的写法
+泛型类的类型参数写在类名后面。
+```ts
+class Pair<K, V> {
+  key: K;
+  value: V;
+}
+```
+泛型也可以用在类表达式。
+```ts
+const Container = class<T> {
+  constructor(private readonly data:T) {}
+};
+
+const a = new Container<boolean>(true);
+const b = new Container<number>(0);
+```
+JavaScript 的类本质上是一个构造函数，因此也可以把泛型类写成构造函数。
+```ts
+type MyClass<T> = new (...args: any[]) => T;
+
+// 或者
+interface MyClass<T> {
+  new(...args: any[]): T;
+}
+
+// 用法实例
+function createInstance<T>(
+  AnyClass: MyClass<T>,
+  ...args: any[]
+):T {
+  return new AnyClass(...args);
+}
+```
+泛型类描述的是类的实例，不包括静态属性和静态方法，因为这两者定义在类的本身。因此，它们不能引用类型参数。
+```ts
+class C<T> {
+  static data: T;  // 报错
+  constructor(public value:T) {}
+}
+```
+
+#### 类型别名的写法
+type 命令定义的类型别名，也可以使用泛型。
+```ts
+type Nullable<T> = T | undefined | null;
+```
+
+### 类型参数的默认值
+一旦类型参数有默认值，就表示它是可选参数。如果有多个类型参数，可选参数必须在必选参数之后。
+```ts
+<T = boolean, U> // 错误
+<T, U = boolean> // 正确
+```
+
+### 类型参数的约束条件
+类型参数可以同时设置约束条件和默认值，前提是默认值必须满足约束条件。
+```ts
+type Fn<A extends string, B extends string = 'world'>
+  =  [A, B];
+
+type Result = Fn<'hello'> // ["hello", "world"]
+```
+
+### 使用注意点
+1. 尽量少用泛型：泛型虽然灵活，但是会加大代码的复杂性，使其变得难读难写。一般来说，只要使用了泛型，类型声明通常都不太易读，容易写得很复杂。因此，可以不用泛型就不要用。
+2. 类型参数越少越好。
+3. 类型参数需要出现两次。
+4. 泛型可以嵌套。
+
+## Enum类型
+Enum 结构的特别之处在于，它既是一种类型，也是一个值。绝大多数 TypeScript 语法都是类型语法，编译后会全部去除，但是 Enum 结构是一个值，编译后会变成 JavaScript 对象，留在代码中。
+```ts
+// 编译前
+enum Color {
+  Red,     // 0
+  Green,   // 1
+  Blue     // 2
+}
+
+// 编译后
+let Color = {
+  Red: 0,
+  Green: 1,
+  Blue: 2
+};
+```
+由于 TypeScript 的定位是 JavaScript 语言的类型增强，所以官方建议谨慎使用 Enum 结构，因为它不仅仅是类型，还会为编译后的代码加入一个对象。Enum 结构比较适合的场景是，成员的值不重要，名字更重要，从而增加代码的可读性和可维护性。
+
+由于 Enum 结构编译后是一个对象，所以不能有与它同名的变量（包括对象、函数、类等）。
+```ts
+enum Color {
+  Red,
+  Green,
+  Blue
+}
+
+const Color = 'red'; // 报错
+```
+
+### Enum成员的值
+Enum 成员默认不必赋值，系统会从零开始逐一递增，按照顺序为每个成员赋值，但是，也可以为 Enum 成员显式赋值。
+```ts
+enum Color {
+  Red,
+  Green,
+  Blue
+}
+
+// 等同于
+enum Color {
+  Red = 0,
+  Green = 1,
+  Blue = 2
+}
+```
+成员的值可以是任意数值，但不能是大整数（Bigint）。
+```ts
+enum Color {
+  Red = 90,
+  Green = 0.5,
+  Blue = 7n // 报错
+}
+```
+成员的值甚至可以相同。如果只设定第一个成员的值，后面成员的值就会从这个值开始递增。
+```ts
+enum Color {
+  Red = 0,
+  Green = 0,
+  Blue = 0
+}
+
+// 或者
+enum Color {
+  Red = 7,
+  Green,  // 8
+  Blue   // 9
+}
+
+// 或者
+enum Color {
+  Red, // 0
+  Green = 7,
+  Blue // 8
+}
+```
+
+Enum 成员值都是只读的，不能重新赋值。
+```ts
+enum Color {
+  Red,
+  Green,
+  Blue
+}
+
+Color.Red = 4; // 报错
+```
+
+### 同名Enum的合并
+多个同名的 Enum 结构会自动合并。
+```ts
+enum Foo {
+  A,
+}
+
+enum Foo {
+  B = 1,
+}
+
+enum Foo {
+  C = 2,
+}
+
+// 等同于
+enum Foo {
+  A,
+  B = 1,
+  C = 2
+}
+```
+Enum 结构合并时，只允许其中一个的首成员省略初始值，否则报错。
+```ts
+enum Foo {
+  A,
+}
+
+enum Foo {
+  B, // 报错
+}
+```
+同名 Enum 合并时，不能有同名成员，否则报错。
+```ts
+enum Foo {
+  A,
+  B
+}
+
+enum Foo {
+  B = 1, // 报错
+  C
+}
+```
+同名 Enum 合并的另一个限制是，所有定义必须同为 const 枚举或者非 const 枚举，不允许混合使用。
+```ts
+// 正确
+enum E {
+  A,
+}
+enum E {
+  B = 1,
+}
+
+// 正确
+const enum E {
+  A,
+}
+const enum E {
+  B = 1,
+}
+
+// 报错
+enum E {
+  A,
+}
+const enum E {
+  B = 1,
+}
+```
+同名 Enum 的合并，最大用处就是补充外部定义的 Enum 结构。
+
+### 字符串Enum
+注意，字符串枚举的所有成员值，都必须显式设置。如果没有设置，成员值默认为数值，且位置必须在字符串成员之前。
+```ts
+enum Foo {
+  A, // 0
+  B = 'hello',
+  C // 报错
+}
+```
+Enum 成员可以是字符串和数值混合赋值。除了数值和字符串，Enum 成员不允许使用其他值（比如 Symbol 值）。
+```ts
+enum Enum {
+  One = 'One',
+  Two = 'Two',
+  Three = 3,
+  Four = 4,
+}
+```
+变量类型如果是字符串 Enum，就不能再赋值为字符串，这跟数值 Enum 不一样。
+```ts
+enum MyEnum {
+  One = 'One',
+  Two = 'Two',
+}
+
+let s = MyEnum.One;
+s = 'One'; // 报错
+```
+由于这个原因，如果函数的参数类型是字符串 Enum，传参时就不能直接传入字符串，而要传入 Enum 成员。
+```ts
+enum MyEnum {
+  One = 'One',
+  Two = 'Two',
+}
+
+function f(arg:MyEnum) {
+  return 'arg is ' + arg;
+}
+
+f('One') // 报错
+```
+字符串 Enum 可以使用联合类型（union）代替。函数参数where属于联合类型，效果跟指定为字符串 Enum 是一样的。
+```ts
+function move(
+  where:'Up'|'Down'|'Left'|'Right'
+) {
+  // ...
+ }
+```
+字符串 Enum 的成员值，不能使用表达式赋值。
+```ts
+enum MyEnum {
+  A = 'one',
+  B = ['T', 'w', 'o'].join('') // 报错
+}
+```
+
+### keyof运算符
+keyof 运算符可以取出 Enum 结构的所有成员名，作为联合类型返回。这里的typeof是必需的，否则keyof MyEnum相当于keyof string。
+```ts
+enum MyEnum {
+  A = 'a',
+  B = 'b'
+}
+
+// 'A'|'B'
+type Foo = keyof typeof MyEnum;
+```
+如果要返回 Enum 所有的成员值，可以使用in运算符。
+```ts
+enum MyEnum {
+  A = 'a',
+  B = 'b'
+}
+
+// { a: any, b: any }
+type Foo = { [key in MyEnum]: any };
+```
+
+### 反向映射
+数值 Enum 存在反向映射，即可以通过成员值获得成员名。这种情况只发生在数值 Enum，对于字符串 Enum，不存在反向映射。
+```ts
+enum Weekdays {
+  Monday = 1,
+  Tuesday,
+  Wednesday,
+  Thursday,
+  Friday,
+  Saturday,
+  Sunday
+}
+
+console.log(Weekdays[3]) // Wednesday
+
+// 编译后
+var Weekdays;
+(function (Weekdays) {
+    Weekdays[Weekdays["Monday"] = 1] = "Monday";
+    Weekdays[Weekdays["Tuesday"] = 2] = "Tuesday";
+    Weekdays[Weekdays["Wednesday"] = 3] = "Wednesday";
+    Weekdays[Weekdays["Thursday"] = 4] = "Thursday";
+    Weekdays[Weekdays["Friday"] = 5] = "Friday";
+    Weekdays[Weekdays["Saturday"] = 6] = "Saturday";
+    Weekdays[Weekdays["Sunday"] = 7] = "Sunday";
+})(Weekdays || (Weekdays = {}));
+```
+```ts
+enum MyEnum {
+  A = 'a',
+  B = 'b'
+}
+
+// 编译后
+var MyEnum;
+(function (MyEnum) {
+    MyEnum["A"] = "a";
+    MyEnum["B"] = "b";
+})(MyEnum || (MyEnum = {}));
+```
+
+## 类型断言
+### 类型断言的条件
+类型断言的使用前提是，值的实际类型与断言的类型必须满足一个条件。
+```ts
+expr as T
+```
+expr是实际的值，T是类型断言，它们必须满足下面的条件：expr是T的子类型，或者T是expr的子类型。也就是说，类型断言要求实际的类型与断言的类型兼容，实际类型可以断言为一个更加宽泛的类型（父类型），也可以断言为一个更加精确的类型（子类型），但不能断言为一个完全无关的类型。
+
+但是，如果真的要断言成一个完全无关的类型，也是可以做到的。那就是连续进行两次类型断言，先断言成 unknown 类型或 any 类型，然后再断言为目标类型。因为any类型和unknown类型是所有其他类型的父类型，所以可以作为两种完全无关的类型的中介。
+```ts
+// 或者写成 <T><unknown>expr
+expr as unknown as T
+```
+
+### as const断言
+如果没有声明变量类型，let 命令声明的变量，会被类型推断为 TypeScript 内置的基本类型之一；const 命令声明的变量，则被推断为值类型常量。
+```ts
+// 类型推断为基本类型 string
+let s1 = 'JavaScript';
+
+// 类型推断为字符串 “JavaScript”
+const s2 = 'JavaScript';
+```
+as const断言只能用于字面量，不能用于变量。as const也不能用于表达式。
+```ts
+let s1 = 'JavaScript';
+let s2 = s1 as const; // 报错
+let s = ('Java' + 'Script') as const; // 报错
+```
+as const也可以写成前置的形式。
+```ts
+// 后置形式
+expr as const
+
+// 前置形式
+<const>expr
+```
+
+### 断言函数
+断言函数与类型保护函数（type guard）是两种不同的函数。它们的区别是，断言函数不返回值，而类型保护函数总是返回一个布尔值。
+```ts
+// 断言函数
+function isString(value:unknown):asserts value is string {
+  if (typeof value !== 'number')
+    throw new Error('Not a number');
+}
+
+// 类型保护函数
+function isString(
+  value:unknown
+):value is string {
+  return typeof value === 'string';
+}
+```
+
+## namespace
+namespace 出现在 ES 模块诞生之前，作为 TypeScript 自己的模块格式而发明的。但是，自从有了 ES 模块，官方已经不推荐使用 namespace 了。
+### 基本用法
+namespace 用来建立一个容器，内部的所有变量和函数，都必须在这个容器里面使用。
+```ts
+namespace Utils {
+  function isString(value:any) {
+    return typeof value === 'string';
+  }
+
+  // 正确
+  isString('yes');
+}
+
+Utils.isString('no'); // 报错
+```
+如果要在命名空间以外使用内部成员，就必须为该成员加上export前缀，表示对外输出该成员。
+```ts
+namespace Utility {
+  export function log(msg:string) {
+    console.log(msg);
+  }
+  export function error(msg:string) {
+    console.error(msg);
+  }
+}
+
+Utility.log('Call me');
+Utility.error('maybe!');
+```
+namespace 内部还可以使用import命令输入外部成员，相当于为外部成员起别名。当外部成员的名字比较长时，别名能够简化代码。
+```ts
+namespace Utils {
+  export function isString(value:any) {
+    return typeof value === 'string';
+  }
+}
+
+namespace App {
+  import isString = Utils.isString;
+
+  isString('yes');
+  // 等同于
+  Utils.isString('yes');
+}
+```
+import命令也可以在 namespace 外部，指定别名。
+```ts
+namespace Shapes {
+  export namespace Polygons {
+    export class Triangle {}
+    export class Square {}
+  }
+}
+
+import polygons = Shapes.Polygons;
+
+// 等同于 new Shapes.Polygons.Square()
+let sq = new polygons.Square();
+```
+namespace 可以嵌套。注意，如果要在外部使用Messaging，必须在它前面加上export命令。使用嵌套的命名空间，必须从最外层开始引用。
+```ts
+namespace Utils {
+  export namespace Messaging {
+    export function log(msg:string) {
+      console.log(msg);
+    }
+  }
+}
+
+Utils.Messaging.log('hello') // "hello"
+```
+namespace 不仅可以包含实义代码，还可以包括类型代码。
+```ts
+namespace N {
+  export interface MyInterface{}
+  export class MyClass{}
+}
+```
+如果 namespace 代码放在一个单独的文件里，那么引入这个文件需要使用三斜杠的语法。
+```ts
+/// <reference path = "SomeFileName.ts" />
+```
+
+### namespace的输出
+namespace 本身也可以使用export命令输出，供其他文件使用。其他脚本文件使用import命令，加载这个命名空间。
+```ts
+// shapes.ts
+export namespace Shapes {
+  export class Triangle {
+    // ...
+  }
+  export class Square {
+    // ...
+  }
+}
+
+// 写法一
+import { Shapes } from './shapes';
+let t = new Shapes.Triangle();
+
+// 写法二
+import * as shapes from "./shapes";
+let t = new shapes.Shapes.Triangle();
+```
+更好的方法还是建议使用模块，采用模块的输出和输入。
+```ts
+// shapes.ts
+export class Triangle {
+  /* ... */
+}
+export class Square {
+  /* ... */
+}
+
+// shapeConsumer.ts
+import * as shapes from "./shapes";
+let t = new shapes.Triangle();
+```
+
+### namespace的合并
+多个同名的 namespace 会自动合并，这一点跟 interface 一样。这样做的目的是，如果同名的命名空间分布在不同的文件中，TypeScript 最终会将它们合并在一起。这样就比较方便扩展别人的代码。
+```ts
+namespace Animals {
+  export class Cat {}
+}
+namespace Animals {
+  export interface Legged {
+    numberOfLegs: number;
+  }
+  export class Dog {}
+}
+
+// 等同于
+namespace Animals {
+  export interface Legged {
+    numberOfLegs: number;
+  }
+  export class Cat {}
+  export class Dog {}
+}
+```
+合并命名空间时，命名空间中的非export的成员不会被合并，但是它们只能在各自的命名空间中使用。
+```ts
+namespace N {
+  const a = 0;
+
+  export function foo() {
+    console.log(a);  // 正确
+  }
+}
+
+namespace N {
+  export function bar() {
+    foo(); // 正确
+    console.log(a);  // 报错
+  }
+}
+```
+命名空间还可以跟同名函数合并，但是要求同名函数必须在命名空间之前声明。这样做是为了确保先创建出一个函数对象，然后同名的命名空间就相当于给这个函数对象添加额外的属性。
+```ts
+function f() {
+  return f.version;
+}
+
+namespace f {
+  export const version = '1.0';
+}
+
+f()   // '1.0'
+f.version // '1.0'
+```
+命名空间也能与同名 class 合并，同样要求class 必须在命名空间之前声明，原因同上。
+```ts
+class C {
+  foo = 1;
+}
+
+namespace C {
+  export const bar = 2;
+}
+
+C.bar // 2
+```
+命名空间还能与同名 Enum 合并。注意，Enum 成员与命名空间导出成员不允许同名。
+```ts
+enum E {
+  A,
+  B,
+  C,
+}
+
+namespace E {
+  export function foo() {
+    console.log(E.C);
+  }
+}
+
+E.foo() // 2
+
+
+enum E {
+  A, // 报错
+  B,
+}
+
+namespace E {
+  export function A() {} // 报错
+}
+```
