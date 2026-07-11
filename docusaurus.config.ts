@@ -63,8 +63,8 @@ const config: Config = {
                 alt: '嘉星',
                 src: 'img/beststar-128.webp',
                 srcDark: 'img/beststar-128.webp',
-				width: 32,
-				height: 32,
+                width: 32,
+                height: 32,
             },
             hideOnScroll: true,
             // 导航栏菜单项
@@ -408,7 +408,7 @@ const config: Config = {
                 onload: 'this.media=\'all\'',
             },
         },
-	    ],
+    ],
 
     // 国际化配置
     i18n: {

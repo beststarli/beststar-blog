@@ -154,7 +154,7 @@ async function main() {
     const embeddings = await embed(batch.map(c => c.text))
     embeddings.forEach((e, j) => { e.source = batch[j].source })
     results.push(...embeddings)
-    if (i + BATCH < allChunks.length) await new Promise(r => setTimeout(r, 10000))
+    if (i + BATCH < allChunks.length) await new Promise(r => setTimeout(r, 9000))
   }
 
   const outPath = join(ROOT, 'public', 'embeddings.json')
