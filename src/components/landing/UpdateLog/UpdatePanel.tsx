@@ -29,8 +29,8 @@ function UpdateItemRow({ item, index }: { item: UpdateItem; index: number }) {
             <Link
                 href={item.permalink}
                 className={cn(
-                    'group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm no-underline transition-all',
-                    'hover:bg-gray-50 dark:hover:bg-gray-700/40',
+                    'group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm no-underline transition-all',
+                    'hover:bg-[var(--ifm-hover-overlay)]',
                 )}
             >
                 <span
@@ -45,13 +45,12 @@ function UpdateItemRow({ item, index }: { item: UpdateItem; index: number }) {
                 <span
                     className={cn(
                         'flex-1 truncate leading-tight transition-colors',
-                        'text-gray-700 group-hover:text-gray-900',
-                        'dark:text-gray-300 dark:group-hover:text-white',
+                        'text-[var(--ifm-color-emphasis-700)] group-hover:text-[var(--ifm-color-emphasis-900)]',
                     )}
                 >
                     {item.title}
                 </span>
-                <span className="shrink-0 text-xs font-medium text-gray-400 dark:text-gray-500">
+                <span className="shrink-0 text-xs font-medium text-[var(--ifm-color-emphasis-500)]">
                     {formatShortDate(item.date)}
                 </span>
             </Link>
@@ -78,14 +77,14 @@ export default function UpdatePanel({ updates, onClose }: Props) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 className={cn(
-                    'hidden overflow-hidden rounded-2xl border border-solid bg-white shadow-blog lg:block',
-                    'border-gray-200 dark:border-gray-700 dark:bg-gray-800',
-                    'w-72',
+                    'hidden flex-col overflow-hidden rounded-2xl border border-solid lg:flex',
+                    'w-[360px] max-h-[calc(100vh-8rem)]',
+                    'border-[var(--ifm-color-emphasis-200)] bg-[var(--ifm-card-background-color)]',
+                    'shadow-[0_8px_32px_rgba(0,0,0,0.12)]',
                 )}
             >
                 <PanelHeader onClose={onClose} />
                 <PanelBody updates={updates} />
-                <PanelFooter />
             </motion.div>
 
             {/* Mobile bottom sheet */}
@@ -106,7 +105,6 @@ export default function UpdatePanel({ updates, onClose }: Props) {
                 </div>
                 <PanelHeader onClose={onClose} />
                 <PanelBody updates={updates} />
-                <PanelFooter />
             </motion.div>
         </>
     )
@@ -114,8 +112,8 @@ export default function UpdatePanel({ updates, onClose }: Props) {
 
 function PanelHeader({ onClose }: { onClose: () => void }) {
     return (
-        <div className="flex items-center justify-between px-4 pb-2 pt-3.5">
-            <div className="flex items-center gap-2 text-sm font-bold">
+        <div className="flex shrink-0 items-center justify-between border-b border-solid border-[var(--ifm-color-emphasis-200)] px-4 py-3">
+            <div className="flex items-center gap-2 text-[0.9rem] font-semibold text-[var(--ifm-color-emphasis-800)]">
                 <span
                     className="flex size-7 items-center justify-center rounded-lg text-sm"
                     style={{
@@ -130,9 +128,8 @@ function PanelHeader({ onClose }: { onClose: () => void }) {
             <button
                 onClick={onClose}
                 className={cn(
-                    'flex size-6 cursor-pointer items-center justify-center rounded-lg text-sm transition-colors',
-                    'text-gray-400 hover:bg-gray-100 hover:text-gray-600',
-                    'dark:hover:bg-gray-700 dark:hover:text-gray-300',
+                    'flex size-7 cursor-pointer items-center justify-center rounded-[0.375rem] border-none bg-transparent text-base transition-colors',
+                    'text-[var(--ifm-color-emphasis-500)] hover:bg-[var(--ifm-hover-overlay)]',
                 )}
                 aria-label="收起"
             >
@@ -144,28 +141,10 @@ function PanelHeader({ onClose }: { onClose: () => void }) {
 
 function PanelBody({ updates }: { updates: UpdateItem[] }) {
     return (
-        <div className="max-h-[340px] overflow-y-auto px-2 pb-2.5">
+        <div className="max-h-[min(360px,calc(100vh-12rem))] overflow-y-auto p-3 flex-1 min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {updates.map((item, i) => (
                 <UpdateItemRow key={`${item.type}-${item.permalink}`} item={item} index={i} />
             ))}
-        </div>
-    )
-}
-
-function PanelFooter() {
-    return (
-        <div className="rounded-b-2xl border-t border-solid border-gray-100 px-4 py-2 dark:border-gray-700">
-            <Link
-                href="/docs/intro"
-                className={cn(
-                    'flex items-center justify-center gap-1 text-xs no-underline transition-colors',
-                    'text-gray-400 hover:text-gray-600',
-                    'dark:text-gray-500 dark:hover:text-gray-300',
-                )}
-            >
-                <span>查看全部文档</span>
-                <Icon icon="ri:arrow-right-s-line" className="text-sm" />
-            </Link>
         </div>
     )
 }
