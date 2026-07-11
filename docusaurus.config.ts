@@ -15,7 +15,7 @@ const config: Config = {
     title: '嘉星的博客',
     url: 'https://www.beststarli.cn/',
     baseUrl: '/',
-    favicon: 'img/beststar.jpg',
+    favicon: 'img/beststar-128.webp',
     organizationName: 'beststarli',
     projectName: 'beststar-blog',
     // 自定义字段
@@ -61,8 +61,10 @@ const config: Config = {
             title: 'BestStar Blog',
             logo: {
                 alt: '嘉星',
-                src: 'img/beststar.jpg',
-                srcDark: 'img/beststar.jpg',
+                src: 'img/beststar-128.webp',
+                srcDark: 'img/beststar-128.webp',
+				width: 32,
+				height: 32,
             },
             hideOnScroll: true,
             // 导航栏菜单项
@@ -346,15 +348,67 @@ const config: Config = {
                 content: '我的个人博客',
             },
         },
-    ],
-
-    // 外部样式表配置
-    stylesheets: [
-        'https://cdn.jsdelivr.net/npm/misans@4.0.0/lib/Normal/MiSans-Normal.min.css',
-        'https://cdn.jsdelivr.net/npm/misans@4.0.0/lib/Normal/MiSans-Medium.min.css',
-        'https://cdn.jsdelivr.net/npm/misans@4.0.0/lib/Normal/MiSans-Semibold.min.css',
-        'https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css',
-    ],
+        // 预连接到 CDN，减少连接延迟
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'dns-prefetch',
+                href: 'https://cdn.jsdelivr.net',
+            },
+        },
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'preconnect',
+                href: 'https://cdn.jsdelivr.net',
+            },
+        },
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'preconnect',
+                href: 'https://raw.githubusercontent.com',
+            },
+        },
+        // MiSans 字体 CSS - 使用非阻塞加载（media="print" 不会阻塞渲染）
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'stylesheet',
+                href: 'https://cdn.jsdelivr.net/npm/misans@4.0.0/lib/Normal/MiSans-Normal.min.css',
+                media: 'print',
+                onload: 'this.media=\'all\'',
+            },
+        },
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'stylesheet',
+                href: 'https://cdn.jsdelivr.net/npm/misans@4.0.0/lib/Normal/MiSans-Medium.min.css',
+                media: 'print',
+                onload: 'this.media=\'all\'',
+            },
+        },
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'stylesheet',
+                href: 'https://cdn.jsdelivr.net/npm/misans@4.0.0/lib/Normal/MiSans-Semibold.min.css',
+                media: 'print',
+                onload: 'this.media=\'all\'',
+            },
+        },
+        // KaTeX CSS - 非阻塞加载（仅在数学公式页面需要）
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'stylesheet',
+                href: 'https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css',
+                media: 'print',
+                onload: 'this.media=\'all\'',
+            },
+        },
+	    ],
 
     // 国际化配置
     i18n: {

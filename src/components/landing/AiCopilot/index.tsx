@@ -9,9 +9,21 @@ interface Props {
     onOpenChange?: (open: boolean) => void
 }
 
+interface Source {
+    text: string
+    source: string
+}
+
+interface Message {
+    role: 'user' | 'assistant'
+    content: string
+    sources?: Source[]
+}
+
 export default function AiCopilot({ isOpen: controlledOpen, onOpenChange }: Props) {
     const [internalOpen, setInternalOpen] = useState(false)
     const [show, setShow] = useState(false)
+    const [messages, setMessages] = useState<Message[]>([])
 
     const isOpen = controlledOpen ?? internalOpen
     const setIsOpen = (val: boolean) => {
@@ -35,7 +47,7 @@ export default function AiCopilot({ isOpen: controlledOpen, onOpenChange }: Prop
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
                     transition={{ type: 'spring', damping: 20, stiffness: 260 }}
-                    className="fixed bottom-40 right-4 z-10 lg:bottom-auto lg:top-36"
+                    className="fixed bottom-40 right-4 z-50 lg:bottom-auto lg:top-36"
                 >
                     {isOpen
                         ? (
@@ -45,7 +57,7 @@ export default function AiCopilot({ isOpen: controlledOpen, onOpenChange }: Prop
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 20, scale: 0.95 }}
                             >
-                                <ChatPanel onClose={() => setIsOpen(false)} />
+                                <ChatPanel messages={messages} setMessages={setMessages} onClose={() => setIsOpen(false)} />
                             </motion.div>
                         )
                         : (

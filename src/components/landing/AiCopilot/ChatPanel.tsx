@@ -4,23 +4,19 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import MessageItem from './MessageItem'
 import styles from './styles.module.css'
 
-interface Source {
-    text: string
-    source: string
-}
-
 interface Message {
     role: 'user' | 'assistant'
     content: string
-    sources?: Source[]
+    sources?: { text: string; source: string }[]
 }
 
 interface Props {
+    messages: Message[]
+    setMessages: React.Dispatch<React.SetStateAction<Message[]>>
     onClose: () => void
 }
 
-export default function ChatPanel({ onClose }: Props) {
-    const [messages, setMessages] = useState<Message[]>([])
+export default function ChatPanel({ messages, setMessages, onClose }: Props) {
     const [input, setInput] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')

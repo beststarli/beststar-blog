@@ -17,7 +17,7 @@ const variants: Variants = {
       damping: 25,
       stiffness: 100,
       duration: 0.3,
-      delay: i * 0.3,
+      delay: i * 0.12,
     },
   }),
   hidden: { opacity: 0, y: 30 },
