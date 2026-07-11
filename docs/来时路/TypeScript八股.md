@@ -2594,8 +2594,8 @@ const a:A = { x: 0, y: 0 };
 ```
 
 使用这种语法进行模块的类型扩展时，有三点需要注意：
-1. declare module NAME语法里面的模块名NAME，跟 import 和 export 的模块名规则是一样的，且必须跟当前文件加载该模块的语句写法（上例import { A } from './a'）保持一致。
-2. 不能创建新的顶层类型。也就是说，只能对a.ts模块中已经存在的类型进行扩展，不允许增加新的顶层类型，比如新定义一个接口B。
+1. declare module NAME语法里面的模块名NAME，跟 import 和 export 的模块名规则是一样的，且必须跟当前文件加载该模块的语句写法（上例`import { A } from './a'`）保持一致。
+2. 不能创建新的顶层类型。也就是说，只能对`a.ts`模块中已经存在的类型进行扩展，不允许增加新的顶层类型，比如新定义一个接口B。
 3. 不能对默认的default接口进行扩展，只能对 export 命令输出的命名接口进行扩充。这是因为在进行类型扩展时，需要依赖输出的接口名。
 
 declare module 描述的模块名可以使用通配符。
@@ -2612,7 +2612,7 @@ declare module 'my-plugin-*' {
 ```
 
 ### declare global
-如果要为 JavaScript 引擎的原生对象添加属性和方法，可以使用declare global {}语法。
+如果要为 JavaScript 引擎的原生对象添加属性和方法，可以使用`declare global {}`语法。
 ```ts
 export {};
 
