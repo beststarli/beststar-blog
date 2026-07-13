@@ -1,29 +1,3 @@
-.fab {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 1.25rem;
-    color: #fff;
-    background: linear-gradient(135deg, #12affa, #0598df);
-    box-shadow: 0 4px 16px rgba(18, 175, 250, 0.35);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    z-index: 100;
-}
-
-.fab:hover {
-    transform: scale(1.08);
-    box-shadow: 0 6px 24px rgba(18, 175, 250, 0.45);
-}
-
-.fab:active {
-    transform: scale(0.95);
-}
-
 /* ── 面板 ── */
 
 .panel {

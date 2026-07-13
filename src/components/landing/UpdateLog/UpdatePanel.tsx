@@ -23,7 +23,7 @@ const itemVariants = {
     }),
 }
 
-function UpdateItemRow({ item, index }: { item: UpdateItem; index: number }) {
+function UpdateItemRow({ item, index }: { item: UpdateItem, index: number }) {
     return (
         <motion.div custom={index} variants={itemVariants} initial="hidden" animate="visible">
             <Link
@@ -84,6 +84,7 @@ export default function UpdatePanel({ updates, onClose }: Props) {
                 )}
             >
                 <PanelHeader onClose={onClose} />
+                <div className="mx-3 h-px bg-[var(--ifm-color-emphasis-200)] opacity-50" />
                 <PanelBody updates={updates} />
             </motion.div>
 
@@ -100,10 +101,11 @@ export default function UpdatePanel({ updates, onClose }: Props) {
                 )}
             >
                 {/* Drag handle */}
-                <div className="flex justify-center pt-2.5 pb-1">
+                <div className="flex justify-center pb-1 pt-2.5">
                     <div className="h-1 w-8 rounded-full bg-gray-300 dark:bg-gray-600" />
                 </div>
                 <PanelHeader onClose={onClose} />
+                <div className="mx-3 h-px bg-gray-200 opacity-50 dark:bg-gray-700" />
                 <PanelBody updates={updates} />
             </motion.div>
         </>
@@ -112,23 +114,15 @@ export default function UpdatePanel({ updates, onClose }: Props) {
 
 function PanelHeader({ onClose }: { onClose: () => void }) {
     return (
-        <div className="flex shrink-0 items-center justify-between border-b border-solid border-[var(--ifm-color-emphasis-200)] px-4 py-3">
+        <div className="mb-2 flex shrink-0 items-center justify-between px-4 pt-3">
             <div className="flex items-center gap-2 text-[0.9rem] font-semibold text-[var(--ifm-color-emphasis-800)]">
-                <span
-                    className="flex size-7 items-center justify-center rounded-lg text-sm"
-                    style={{
-                        background: `color-mix(in srgb, var(--ifm-color-primary) 12%, transparent)`,
-                        color: 'var(--ifm-color-primary)',
-                    }}
-                >
-                    <Icon icon="ri:history-line" />
-                </span>
+                <Icon icon="ri:history-line" style={{ color: 'var(--ifm-color-primary)' }} />
                 <span>最近更新</span>
             </div>
             <button
                 onClick={onClose}
                 className={cn(
-                    'flex size-7 cursor-pointer items-center justify-center rounded-[0.375rem] border-none bg-transparent text-base transition-colors',
+                    'flex size-7 cursor-pointer items-center justify-center rounded-md border-none bg-transparent text-base transition-colors',
                     'text-[var(--ifm-color-emphasis-500)] hover:bg-[var(--ifm-hover-overlay)]',
                 )}
                 aria-label="收起"
@@ -141,7 +135,7 @@ function PanelHeader({ onClose }: { onClose: () => void }) {
 
 function PanelBody({ updates }: { updates: UpdateItem[] }) {
     return (
-        <div className="max-h-[min(360px,calc(100vh-12rem))] overflow-y-auto p-3 flex-1 min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="max-h-[min(360px,calc(100vh-12rem))] min-h-0 flex-1 overflow-y-auto p-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {updates.map((item, i) => (
                 <UpdateItemRow key={`${item.type}-${item.permalink}`} item={item} index={i} />
             ))}

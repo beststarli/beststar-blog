@@ -2,7 +2,7 @@ import { Icon } from '@iconify/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import ChatPanel from './ChatPanel'
-import styles from './styles.module.css'
+import { cn } from '@site/src/lib/utils'
 
 interface Props {
     isOpen?: boolean
@@ -66,10 +66,19 @@ export default function AiCopilot({ isOpen: controlledOpen, onOpenChange }: Prop
                                 onClick={() => setIsOpen(true)}
                                 whileHover={{ scale: 1.08 }}
                                 whileTap={{ scale: 0.92 }}
-                                className={styles.fab}
+                                className={cn(
+                                    'flex size-10 cursor-pointer items-center justify-center rounded-full border border-solid shadow-lg transition-shadow lg:size-12 lg:rounded-2xl lg:shadow-blog',
+                                    'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800',
+                                    'hover:border-gray-300 hover:shadow-xl lg:hover:shadow-lg',
+                                    'dark:hover:border-gray-600',
+                                )}
                                 aria-label="打开 AI 助手"
                             >
-                                <Icon icon="ri:sparkling-2-line" />
+                                <Icon
+                                    icon="ri:sparkling-2-line"
+                                    className="text-lg lg:text-xl"
+                                    style={{ color: 'var(--ifm-color-primary)' }}
+                                />
                             </motion.button>
                         )}
                 </motion.div>
