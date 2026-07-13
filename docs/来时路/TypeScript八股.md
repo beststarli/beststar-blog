@@ -2705,3 +2705,1631 @@ declare module "lodash" {
 ```
 
 ## d.ts类型声明文件
+类型声明文件里面只有类型代码，没有具体的代码实现。它的文件名一般为[模块名].d.ts的形式，其中的d表示 declaration（声明）。
+
+类型声明文件也可以包括在项目的 tsconfig.json 文件里面，这样的话，编译器打包项目时，会自动将类型声明文件加入编译，而不必在每个脚本里面加载类型声明文件。比如，moment 模块的类型声明文件是moment.d.ts，使用 moment 模块的项目可以将其加入项目的 tsconfig.json 文件。
+```ts
+{
+  "compilerOptions": {},
+  "files": [
+    "src/index.ts",
+    "typings/moment.d.ts"
+  ]
+}
+```
+
+### 类型声明文件的来源
+TypeScript 编译器会自动根据编译目标target的值，加载对应的内置声明文件，所以不需要特别的配置。但是，可以使用编译选项lib，指定加载哪些内置声明文件。
+```ts
+{
+  "compilerOptions": {
+    "lib": ["dom", "es2021"]
+  }
+}
+```
+
+### declare关键字
+类型声明文件里面，变量的类型描述必须使用declare命令，否则会报错，因为变量声明语句是值相关代码。
+```ts
+declare let foo:string;
+```
+interface 类型有没有declare都可以，因为 interface 是完全的类型代码。
+```ts
+interface Foo {} // 正确
+declare interface Foo {} // 正确
+```
+
+### 模块发布
+当前模块如果包含自己的类型声明文件，可以在 package.json 文件里面添加一个types字段或typings字段，指明类型声明文件的位置。
+```ts
+{
+  "name": "awesome",
+  "author": "Vandelay Industries",
+  "version": "1.0.0",
+  "main": "./lib/main.js",
+  "types": "./lib/main.d.ts"
+}
+```
+
+注意，如果类型声明文件名为index.d.ts，且在项目的根目录中，那就不需要在package.json里面注明了。
+
+### 三斜杠命令
+如果类型声明文件的内容非常多，可以拆分成多个文件，然后入口文件使用三斜杠命令，加载其他拆分后的文件。举例来说，入口文件是main.d.ts，里面的接口定义在interfaces.d.ts，函数定义在functions.d.ts。那么，main.d.ts里面可以用三斜杠命令，加载后面两个文件。
+```ts
+/// <reference path="./interfaces.d.ts" />
+/// <reference path="./functions.d.ts" />
+```
+三斜杠命令（///）是一个 TypeScript 编译器命令，用来指定编译器行为。它只能用在文件的头部，如果用在其他地方，会被当作普通的注释。另外，若一个文件中使用了三斜线命令，那么在三斜线命令之前只允许使用单行注释、多行注释和其他三斜线命令，否则三斜杠命令也会被当作普通的注释。
+
+除了拆分类型声明文件，三斜杠命令也可以用于普通脚本加载类型声明文件。
+
+三斜杠命令主要包含三个参数，代表三种不同的命令：
+- path
+- types
+- lib
+
+#### `/// <reference path="" />`
+`/// <reference path="" />`是最常见的三斜杠命令，告诉编译器在编译时需要包括的文件，常用来声明当前脚本依赖的类型文件。
+```ts
+/// <reference path="./lib.ts" />
+
+let count = add(1, 2);
+```
+上面示例表示，当前脚本依赖于./lib.ts，里面是add()的定义。编译当前脚本时，还会同时编译./lib.ts。编译产物会有两个 JS 文件，一个当前脚本，另一个就是./lib.js。
+
+编译器会在预处理阶段，找出所有三斜杠引用的文件，将其添加到编译列表中，然后一起编译。path参数指定了所引入文件的路径。如果该路径是一个相对路径，则基于当前脚本的路径进行计算。使用该命令时，有以下两个注意事项：
+- path参数必须指向一个存在的文件，若文件不存在会报错。
+- path参数不允许指向当前文件。
+
+默认情况下，每个三斜杠命令引入的脚本，都会编译成单独的 JS 文件。如果希望编译后只产出一个合并文件，可以使用编译选项outFile。但是，outFile编译选项不支持合并 CommonJS 模块和 ES 模块，只有当编译参数module的值设为 None、System 或 AMD 时，才能编译成一个文件。
+
+如果打开了编译参数noResolve，则忽略三斜杠指令。将其当作一般的注释，原样保留在编译产物中。
+
+#### `/// <reference types="" />`
+types 参数用来告诉编译器当前脚本依赖某个 DefinitelyTyped 类型库，通常安装在node_modules/@types目录。types 参数的值是类型库的名称，也就是安装到node_modules/@types目录中的子目录的名字。
+```ts
+/// <reference types="node" />
+```
+上面示例中，这个三斜杠命令表示编译时添加 Node.js 的类型库，实际添加的脚本是node_modules目录里面的@types/node/index.d.ts。
+
+可以看到，这个命令的作用类似于import命令。注意，这个命令只在你自己手写类型声明文件（.d.ts文件）时，才有必要用到，也就是说，只应该用在.d.ts文件中，普通的.ts脚本文件不需要写这个命令。如果是普通的.ts脚本，可以使用tsconfig.json文件的types属性指定依赖的类型库。
+
+#### `/// <reference lib="" />`
+`/// <reference lib="..." />`命令允许脚本文件显式包含内置 lib 库，等同于在tsconfig.json文件里面使用lib属性指定 lib 库。
+
+安装 TypeScript 软件包时，会同时安装一些内置的类型声明文件，即内置的 lib 库。这些库文件位于 TypeScript 安装目录的lib文件夹中，它们描述了 JavaScript 语言和引擎的标准 API。库文件并不是固定的，会随着 TypeScript 版本的升级而更新。库文件统一使用“lib.[description].d.ts”的命名方式，而`/// <reference lib="" />`里面的lib属性的值就是库文件名的description部分，比如lib="es2015"就表示加载库文件lib.es2015.d.ts。
+```ts
+/// <reference lib="es2017.string" />
+```
+上面示例中，es2017.string对应的库文件就是lib.es2017.string.d.ts。
+
+## 类型运算符
+### keyof运算符
+keyof 是一个单目运算符，接受一个对象类型作为参数，返回该对象的所有键名组成的联合类型。
+```ts
+type MyObj = {
+  foo: number,
+  bar: string,
+};
+type Keys = keyof MyObj; // 'foo'|'bar'
+
+interface T {
+  0: boolean;
+  a: string;
+  b(): void;
+}
+type KeyT = keyof T; // 0 | 'a' | 'b'
+```
+由于 JavaScript 对象的键名只有三种类型，所以对于任意对象的键名的联合类型就是string|number|symbol。
+```ts
+// string | number | symbol
+type KeyT = keyof any;
+```
+对于没有自定义键名的类型使用 keyof 运算符，返回never类型，表示不可能有这样类型的键名。
+```ts
+type KeyT = keyof object;  // never
+```
+由于 keyof 返回的类型是string|number|symbol，如果有些场合只需要其中的一种类型，那么可以采用交叉类型的写法。
+```ts
+type Capital<T extends string> = Capitalize<T>;
+
+type MyKeys<Obj extends object> = Capital<keyof Obj>; // 报错
+type MyKeys<Obj extends object> = Capital<string & keyof Obj>;  // 正确
+```
+如果对象属性名采用索引形式，keyof 会返回属性名的索引类型。
+```ts
+// 示例一
+interface T {
+  [prop: number]: number;
+}
+
+// number
+type KeyT = keyof T;
+
+// 示例二
+interface T {
+  [prop: string]: number;
+}
+
+// string|number
+type KeyT = keyof T;
+```
+如果 keyof 运算符用于数组或元组类型，得到的结果可能出人意料。keyof 会返回数组的所有键名，包括数字键名和继承的键名。
+```ts
+type Result = keyof ['a', 'b', 'c'];
+// 返回 number | "0" | "1" | "2"
+// | "length" | "pop" | "push" | ···
+```
+对于联合类型，keyof 返回成员共有的键名。
+```ts
+type A = { a: string; z: boolean };
+type B = { b: string; z: boolean };
+
+// 返回 'z'
+type KeyT = keyof (A | B);
+```
+对于交叉类型，keyof 返回所有键名。
+```ts
+type A = { a: string; x: boolean };
+type B = { b: string; y: number };
+
+// 返回 'a' | 'x' | 'b' | 'y'
+type KeyT = keyof (A & B);
+
+// 相当于
+keyof (A & B) ≡ keyof A | keyof B
+```
+keyof 取出的是键名组成的联合类型，如果想取出键值组成的联合类型，可以像下面这样写。
+```ts
+type MyObj = {
+  foo: number,
+  bar: string,
+};
+
+type Keys = keyof MyObj;
+
+type Values = MyObj[Keys]; // number|string
+```
+
+#### keyof运算符的用途
+keyof 运算符往往用于精确表达对象的属性类型。
+```ts
+function prop<Obj, K extends keyof Obj>(
+  obj:Obj, key:K
+):Obj[K] {
+  return obj[key];
+}
+```
+keyof 的另一个用途是用于属性映射，即将一个类型的所有属性逐一映射成其他值。
+```ts
+type NewProps<Obj> = {
+  [Prop in keyof Obj]: boolean;
+};
+
+// 用法
+type MyObj = { foo: number; };
+
+// 等于 { foo: boolean; }
+type NewObj = NewProps<MyObj>;
+```
+下面的例子是去掉 readonly 修饰符。[Prop in keyof Obj]是Obj类型的所有属性名，-readonly表示去除这些属性的只读特性。对应地，还有+readonly的写法，表示添加只读属性设置。
+```ts
+type Mutable<Obj> = {
+  -readonly [Prop in keyof Obj]: Obj[Prop];
+};
+
+// 用法
+type MyObj = {
+  readonly foo: number;
+}
+
+// 等于 { foo: number; }
+type NewObj = Mutable<MyObj>;
+```
+下面的例子是让可选属性变成必有的属性。[Prop in keyof Obj]后面的-?表示去除可选属性设置。对应地，还有+?的写法，表示添加可选属性设置。
+```ts
+type Concrete<Obj> = {
+  [Prop in keyof Obj]-?: Obj[Prop];
+};
+
+// 用法
+type MyObj = {
+  foo?: number;
+}
+
+// 等于 { foo: number; }
+type NewObj = Concrete<MyObj>;
+```
+
+### in运算符
+in运算符用来确定对象是否包含某个属性名。in运算符的左侧是一个字符串，表示属性名，右侧是一个对象。它的返回值是一个布尔值。
+```ts
+const obj = { a: 123 };
+
+if ('a' in obj)
+  console.log('found a');
+```
+TypeScript 语言的类型运算中，in运算符有不同的用法，用来取出（遍历）联合类型的每一个成员类型。[Prop in U]表示依次取出联合类型U的每一个成员。
+```ts
+type U = 'a'|'b'|'c';
+
+type Foo = {
+  [Prop in U]: number;
+};
+// 等同于
+type Foo = {
+  a: number,
+  b: number,
+  c: number
+};
+```
+
+### 方括号运算符
+方括号运算符（[]）用于取出对象的键值类型，比如T[K]会返回对象T的属性K的类型。
+```ts
+type Person = {
+  age: number;
+  name: string;
+  alive: boolean;
+};
+
+// Age 的类型是 number
+type Age = Person['age'];
+```
+方括号的参数如果是联合类型，那么返回的也是联合类型。
+```ts
+type Person = {
+  age: number;
+  name: string;
+  alive: boolean;
+};
+
+// number|string
+type T = Person['age'|'name'];
+
+// number|string|boolean
+type A = Person[keyof Person];
+```
+如果访问不存在的属性，会报错。
+```ts
+type T = Person['notExisted']; // 报错
+```
+方括号运算符的参数也可以是属性名的索引类型。
+```ts
+type Obj = {
+  [key:string]: number,
+};
+
+// number
+type T = Obj[string];
+```
+这个语法对于数组也适用，可以使用number作为方括号的参数。
+```ts
+// MyArray 的类型是 { [key:number]: string }
+const MyArray = ['a','b','c'];
+
+// 等同于 (typeof MyArray)[number]
+// 返回 string
+type Person = typeof MyArray[number];
+```
+方括号里面不能有值的运算。
+```ts
+// 示例一
+const key = 'age';
+type Age = Person[key]; // 报错
+
+// 示例二
+type Age = Person['a' + 'g' + 'e']; // 报错
+```
+
+### `extends ? :`条件运算符
+条件运算符`extends ? :`可以根据当前类型是否符合某种条件，返回不同的类型。
+```ts
+T extends U ? X : Y
+```
+上面式子中的extends用来判断，类型T是否可以赋值给类型U，即T是否为U的子类型，这里的T和U可以是任意类型。下面是另一个例子。
+```ts
+interface Animal {
+  live(): void;
+}
+interface Dog extends Animal {
+  woof(): void;
+}
+
+// number
+type T1 = Dog extends Animal ? number : string;
+
+// string
+type T2 = RegExp extends Animal ? number : string;
+```
+
+如果对泛型使用 extends 条件运算，有一个地方需要注意。当泛型的类型参数是一个联合类型时，那么条件运算符会展开这个类型参数，即`T<A|B> = T<A> | T<B>`，所以 extends 对类型参数的每个部分是分别计算的。
+```ts
+type Cond<T> = T extends U ? X : Y;
+
+type MyType = Cond<A|B>;
+// 等同于 Cond<A> | Cond<B>
+// 等同于 (A extends U ? X : Y) | (B extends U ? X : Y)
+```
+如果不希望联合类型被条件运算符展开，可以把extends两侧的操作数都放在方括号里面。
+```ts
+// 示例一
+type ToArray<Type> =
+  Type extends any ? Type[] : never;
+
+// 返回结果 string[]|number[]
+type T = ToArray<string|number>;
+
+// 示例二
+type ToArray<Type> =
+  [Type] extends [any] ? Type[] : never;
+
+// 返回结果 (string | number)[]
+type T = ToArray<string|number>;
+```
+
+条件运算符还可以嵌套使用。
+```ts
+type LiteralTypeName<T> =
+  T extends undefined ? "undefined" :
+  T extends null ? "null" :
+  T extends boolean ? "boolean" :
+  T extends number ? "number" :
+  T extends bigint ? "bigint" :
+  T extends string ? "string" :
+  never;
+```
+
+### infer关键字
+infer关键字用来定义泛型里面推断出来的类型参数，而不是外部传入的类型参数。它通常跟条件运算符一起使用，用在extends关键字后面的父类型之中。
+```ts
+type Flatten<Type> = Type extends Array<infer Item> ? Item : Type;
+```
+上面示例中，infer Item表示Item这个参数是 TypeScript 自己推断出来的，不用显式传入，而`Flatten<Type>`则表示Type这个类型参数是外部传入的。`Type extends Array<infer Item>`则表示，如果参数Type是一个数组，那么就将该数组的成员类型推断为Item，即Item是从Type推断出来的。一旦使用infer Item定义了Item，后面的代码就可以直接调用Item了。下面是上例的泛型`Flatten<Type>`的用法。
+```ts
+// string
+type Str = Flatten<string[]>;
+
+// number
+type Num = Flatten<number>;
+```
+如果不用infer定义类型参数，那么就要传入两个类型参数。
+```ts
+type Flatten<Type, Item> = Type extends Array<Item> ? Item : Type;
+```
+
+### is运算符
+函数返回布尔值的时候，可以使用is运算符，限定返回值与参数之间的关系。is运算符用来描述返回值属于true还是false。
+```ts
+function isFish(
+  pet: Fish|Bird
+):pet is Fish {
+  return (pet as Fish).swim !== undefined;
+}
+```
+is运算符总是用于描述函数的返回值类型，写法采用parameterName is Type的形式，即左侧为当前函数的参数名，右侧为某一种类型。它返回一个布尔值，表示左侧参数是否属于右侧的类型。
+```ts
+type A = { a: string };
+type B = { b: string };
+
+function isTypeA(x: A|B): x is A {
+  if ('a' in x) return true;
+  return false;
+}
+```
+
+is运算符可以用于类型保护。
+```ts
+function isCat(a:any): a is Cat {
+  return a.name === 'kitty';
+}
+
+let x:Cat|Dog;
+
+if (isCat(x)) {
+  x.meow(); // 正确，因为 x 肯定是 Cat 类型
+}
+```
+is运算符还有一种特殊用法，就是用在类（class）的内部，描述类的方法的返回值。
+```ts
+class Teacher {
+  isStudent():this is Student {
+    return false;
+  }
+}
+
+class Student {
+  isStudent():this is Student {
+    return true;
+  }
+}
+```
+
+### 模版字符串
+模板字符串可以引用的类型一共7种，分别是 string、number、bigint、boolean、null、undefined、Enum。引用这7种以外的类型会报错。
+```ts
+type Num = 123;
+type Obj = { n : 123 };
+
+type T1 = `${Num} received`; // 正确
+type T2 = `${Obj} received`; // 报错
+```
+模板字符串里面引用的类型，如果是一个联合类型，那么它返回的也是一个联合类型，即模板字符串可以展开联合类型。
+```ts
+type T = 'A'|'B';
+
+// "A_id"|"B_id"
+type U = `${T}_id`;
+```
+如果模板字符串引用两个联合类型，它会交叉展开这两个类型。
+```ts
+type T = 'A'|'B';
+
+type U = '1'|'2';
+
+// 'A1'|'A2'|'B1'|'B2'
+type V = `${T}${U}`;
+```
+
+### satisfies运算符
+satisfies运算符用来检测某个值是否符合指定类型。有时候，不方便将某个值指定为某种类型，但是希望这个值符合类型条件，这时候就可以用satisfies运算符对其进行检测。举例来说，有一个对象的属性名拼写错误。
+```ts
+type Colors = "red" | "green" | "blue";
+type RGB = [number, number, number];
+
+const palette: Record<Colors, string|RGB> = {
+  red: [255, 0, 0],
+  green: "#00ff00",
+  bleu: [0, 0, 255] // 报错
+};
+```
+这样的写法，虽然可以发现属性名的拼写错误，但是带来了新的问题。
+```ts
+const greenComponent = palette.green.substring(1, 6); // 报错
+```
+上面示例中，palette.green属性调用substring()方法会报错，原因是这个方法只有字符串才有，而palette.green的类型是string|RGB，除了字符串，还可能是元组RGB，而元组并不存在substring()方法，所以报错了。如果要避免报错，要么精确给出变量palette每个属性的类型，要么对palette.green的值进行类型缩小。两种做法都比较麻烦，也不是很有必要。这时就可以使用satisfies运算符，对palette进行类型检测，但是不改变 TypeScript 对palette的类型推断。
+```ts
+type Colors = "red" | "green" | "blue";
+type RGB = [number, number, number];
+
+const palette = {
+  red: [255, 0, 0],
+  green: "#00ff00",
+  bleu: [0, 0, 255] // 报错
+} satisfies Record<Colors, string|RGB>;
+
+const greenComponent = palette.green.substring(1); // 不报错
+```
+satisfies也可以检测属性值。
+```ts
+const palette = {
+  red: [255, 0, 0],
+  green: "#00ff00",
+  blue: [0, 0] // 报错
+} satisfies Record<Colors, string|RGB>;
+```
+
+
+## 类型映射
+映射（mapping）指的是，将一种类型按照映射规则，转换成另一种类型，通常用于对象类型。举例来说，现有一个类型A和另一个类型B。
+```ts
+type A = {
+  foo: number;
+  bar: number;
+};
+
+type B = {
+  foo: string;
+  bar: string;
+};
+```
+上面示例中，这两个类型的属性结构是一样的，但是属性的类型不一样。如果属性数量多的话，逐个写起来就很麻烦。使用类型映射，就可以从类型A得到类型B。
+```ts
+type A = {
+  foo: number;
+  bar: number;
+};
+
+type B = {
+  [prop in keyof A]: string;
+};
+```
+下面是复制原始类型的例子。
+```ts
+type A = {
+  foo: number;
+  bar: string;
+};
+
+type B = {
+  [prop in keyof A]: A[prop];
+};
+```
+为了增加代码复用性，可以把常用的映射写成泛型。
+```ts
+type ToBoolean<Type> = {
+  [Property in keyof Type]: boolean;
+};
+```
+通过映射，可以把某个对象的所有属性改成可选属性。
+```ts
+type A = {
+  a: string;
+  b: number;
+};
+
+type B = {
+  [Prop in keyof A]?: A[Prop];
+};
+```
+类型B在类型A的所有属性名后面添加问号，使得这些属性都变成了可选属性。事实上，TypeScript 的内置工具类型`Partial<T>`，就是这样实现的。
+
+TypeScript内置的工具类型`Readonly<T>`可以将所有属性改为只读属性，实现也是通过映射。
+```ts
+// 将 T 的所有属性改为只读属性
+type Readonly<T> = {
+  readonly [P in keyof T]: T[P];
+};
+
+type T = { a: string; b: number };
+
+type ReadonlyT = Readonly<T>;
+// {
+//   readonly a: string;
+//   readonly b: number;
+// }
+```
+
+### 映射修饰符
+映射会原样复制原始对象的可选属性和只读属性。
+```ts
+type A = {
+  a?: string;
+  readonly b: number;
+};
+
+type B = {
+  [Prop in keyof A]: A[Prop];
+};
+
+// 等同于
+type B = {
+  a?: string;
+  readonly b: number;
+};
+```
+如果要删改可选和只读这两个特性，并不是很方便。为了解决这个问题，TypeScript 引入了两个映射修饰符，用来在映射时添加或移除某个属性的?修饰符和readonly修饰符。注意，+?或-?要写在属性名的后面。
+- +修饰符：写成+?或+readonly，为映射属性添加?修饰符或readonly修饰符。
+- –修饰符：写成-?或-readonly，为映射属性移除?修饰符或readonly修饰符。
+```ts
+// 添加可选属性
+type Optional<Type> = {
+  [Prop in keyof Type]+?: Type[Prop];
+};
+
+// 移除可选属性
+type Concrete<Type> = {
+  [Prop in keyof Type]-?: Type[Prop];
+};
+```
+如果同时增删?和readonly这两个修饰符，写成下面这样。
+```ts
+// 增加
+type MyObj<T> = {
+  +readonly [P in keyof T]+?: T[P];
+};
+
+// 移除
+type MyObj<T> = {
+  -readonly [P in keyof T]-?: T[P];
+}
+```
+TypeScript 原生的工具类型`Required<T>`专门移除可选属性，就是使用-?修饰符实现的。
+
+注意，–?修饰符移除了可选属性以后，该属性就不能等于undefined了，实际变成必选属性了。但是，这个修饰符不会移除null类型。另外，+?修饰符可以简写成?，+readonly修饰符可以简写成readonly。
+```ts
+type A<T> = {
+  +readonly [P in keyof T]+?: T[P];
+};
+
+// 等同于
+type A<T> = {
+  readonly [P in keyof T]?: T[P];
+};
+```
+
+### 键名重映射
+#### 语法
+TypeScript 4.1 引入了键名重映射（key remapping），允许改变键名。
+```ts
+type A = {
+  foo: number;
+  bar: number;
+};
+
+type B = {
+  [p in keyof A as `${p}ID`]: number;
+};
+
+// 等同于
+type B = {
+  fooID: number;
+  barID: number;
+};
+```
+可以看到，键名重映射的语法是在键名映射的后面加上as + 新类型子句。这里的“新类型”通常是一个模板字符串，里面可以对原始键名进行各种操作。
+
+看一个例子：
+```ts
+interface Person {
+  name: string;
+  age: number;
+  location: string;
+}
+
+type Getters<T> = {
+  [P in keyof T
+    as `get${Capitalize<string & P>}`]: () => T[P];
+};
+
+type LazyPerson = Getters<Person>;
+// 等同于
+type LazyPerson = {
+  getName: () => string;
+  getAge: () => number;
+  getLocation: () => string;
+}
+```
+上面示例中，类型LazyPerson是类型Person的映射，并且把键名改掉了。它的修改键名的代码是一个模板字符串`get${Capitalize<string & P>}`，下面是各个部分的解释：
+- `get`：为键名添加的前缀。
+- `Capitalize<T>`：一个原生的工具泛型，用来将T的首字母变成大写。
+- `string & P`：一个交叉类型，其中的P是 keyof 运算符返回的键名联合类型string|number|symbol，但是`Capitalize<T>`只能接受字符串作为类型参数，因此string & P只返回P的字符串属性名。
+
+#### 属性过滤
+键名重映射还可以过滤掉某些属性。下面的例子是只保留字符串属性。
+```ts
+type User = {
+  name: string,
+  age: number
+}
+
+type Filter<T> = {
+  [K in keyof T
+    as T[K] extends string ? K : never]: string
+}
+
+type FilteredUser = Filter<User> // { name: string }
+```
+
+#### 联合类型的映射
+由于键名重映射可以修改键名类型，所以原始键名的类型不必是string|number|symbol，任意的联合类型都可以用来进行键名重映射。
+```ts
+type S = {
+  kind: 'square',
+  x: number,
+  y: number,
+};
+
+type C = {
+  kind: 'circle',
+  radius: number,
+};
+
+type MyEvents<Events extends { kind: string }> = {
+  [E in Events as E['kind']]: (event: E) => void;
+}
+
+type Config = MyEvents<S|C>;
+// 等同于
+type Config = {
+  square: (event:S) => void;
+  circle: (event:C) => void;
+}
+```
+
+## 类型工具
+### `Awaited<Type>`
+`Awaited<Type>`用来取出 Promise 的返回值类型，适合用在描述then()方法和 await 命令的参数类型。
+```ts
+// string
+type A = Awaited<Promise<string>>;
+```
+它也可以返回多重 Promise 的返回值类型。
+```ts
+// number
+type B = Awaited<Promise<Promise<number>>>;
+```
+如果它的类型参数不是 Promise 类型，那么就会原样返回。
+```ts
+// number | boolean
+type C = Awaited<boolean | Promise<number>>;
+```
+#### 实现
+`Awaited<Type>`的实现如下。
+```ts
+type Awaited<T> =
+  T extends null | undefined ? T :
+  T extends object & {
+    then(
+      onfulfilled: infer F,
+      ...args: infer _
+    ): any;
+  } ? F extends (
+    value: infer V,
+    ...args: infer _
+  ) => any ? Awaited<V> : never:
+  T;
+```
+
+### `ConstructorParameters<Type>`
+`ConstructorParameters<Type>`提取构造方法Type的参数类型，组成一个元组类型返回。
+```ts
+type T1 = ConstructorParameters<
+  new (x: string, y: number) => object
+>; // [x: string, y: number]
+
+type T2 = ConstructorParameters<
+  new (x?: string) => object
+>; // [x?: string | undefined]
+```
+它可以返回一些内置构造方法的参数类型。
+```ts
+type T1 = ConstructorParameters<
+  ErrorConstructor
+>; // [message?: string]
+
+type T2 = ConstructorParameters<
+  FunctionConstructor
+>; // string[]
+
+type T3 = ConstructorParameters<
+  RegExpConstructor
+>; // [pattern:string|RegExp, flags?:string]
+```
+如果参数类型不是构造方法，就会报错。
+```ts
+type T1 = ConstructorParameters<string>; // 报错
+type T2 = ConstructorParameters<Function>; // 报错
+```
+any类型和never类型是两个特殊值，分别返回unknown[]和never。
+```ts
+type T1 = ConstructorParameters<any>;  // unknown[]
+type T2 = ConstructorParameters<never>; // never
+```
+
+#### 实现
+`ConstructorParameters<Type>`的实现如下。
+```ts
+type ConstructorParameters<
+  T extends abstract new (...args: any) => any
+> = T extends abstract new (...args: infer P) 
+  => any ? P : never
+```
+
+### `Exclude<UnionType, ExcludedMembers>`
+`Exclude<UnionType, ExcludedMembers>`用来从联合类型UnionType里面，删除某些类型ExcludedMembers，组成一个新的类型返回。
+```ts
+type T1 = Exclude<'a'|'b'|'c', 'a'>; // 'b'|'c'
+type T2 = Exclude<'a'|'b'|'c', 'a'|'b'>; // 'c'
+type T3 = Exclude<string|(() => void), Function>; // string
+type T4 = Exclude<string | string[], any[]>; // string
+type T5 = Exclude<(() => void) | null, Function>; // null
+type T6 = Exclude<200 | 400, 200 | 201>; // 400
+type T7 = Exclude<number, boolean>; // number
+```
+
+#### 实现
+`Exclude<UnionType, ExcludedMembers>`的实现如下。
+```ts
+type Exclude<T, U> = T extends U ? never : T;
+```
+
+### `Extract<UnionType, Union>`
+`Extract<UnionType, Union>`用来从联合类型UnionType之中，提取指定类型Union，组成一个新类型返回。它与`Exclude<T, U>`正好相反。
+```ts
+type T1 = Extract<'a'|'b'|'c', 'a'>; // 'a'
+type T2 = Extract<'a'|'b'|'c', 'a'|'b'>; // 'a'|'b'
+type T3 = Extract<'a'|'b'|'c', 'a'|'d'>; // 'a'
+type T4 = Extract<string | string[], any[]>; // string[]
+type T5 = Extract<(() => void) | null, Function>; // () => void
+type T6 = Extract<200 | 400, 200 | 201>; // 200
+```
+如果参数类型Union不包含在联合类型UnionType之中，则返回never类型。
+```ts
+type T = Extract<string|number, boolean>; // never
+```
+
+#### 实现
+```ts
+type Extract<T, U> = T extends U ? T : never;
+```
+
+### `InstanceType<Type>`
+`InstanceType<Type>`提取构造函数的返回值的类型（即实例类型），参数Type是一个构造函数，等同于构造函数的`ReturnType<Type>`。
+```ts
+type T = InstanceType<
+  new () => object
+>; // object
+```
+由于 Class 作为类型，代表实例类型。要获取它的构造方法，必须把它当成值，然后用typeof运算符获取它的构造方法类型。
+```ts
+class C {
+  x = 0;
+  y = 0;
+}
+
+type T = InstanceType<typeof C>; // C
+```
+如果类型参数不是构造方法，就会报错。
+```ts
+type T1 = InstanceType<string>; // 报错
+type T2 = InstanceType<Function>; // 报错
+```
+如果类型参数是any或never两个特殊值，分别返回any和never。
+```ts
+type T1 = InstanceType<any>; // any
+type T2 = InstanceType<never>; // never
+```
+
+#### 实现
+```ts
+type InstanceType<
+  T extends abstract new (...args:any) => any
+> = T extends abstract new (...args: any) => infer R ? R :
+  any;
+```
+
+### `NonNullable<Type>`
+`NonNullable<Type>`用来从联合类型Type删除null类型和undefined类型，组成一个新类型返回，也就是返回Type的非空类型版本。
+```ts
+// string|number
+type T1 = NonNullable<string|number|undefined>;
+
+// string[]
+type T2 = NonNullable<string[]|null|undefined>;
+
+type T3 = NonNullable<boolean>; // boolean
+type T4 = NonNullable<number|null>; // number
+type T5 = NonNullable<string|undefined>; // string
+type T6 = NonNullable<null|undefined>; // never
+```
+
+#### 实现
+```ts
+type NonNullable<T> = T & {}
+```
+`T & {}`等同于求`T & Object`的交叉类型。由于 TypeScript 的非空值都属于Object的子类型，所以会返回自身；而null和undefined不属于Object，会返回never类型。
+
+### `Omit<Type, Keys>`
+`Omit<Type, Keys>`用来从对象类型Type中，删除指定的属性Keys，组成一个新的对象类型返回。
+```ts
+interface A {
+  x: number;
+  y: number;
+}
+
+type T1 = Omit<A, 'x'>;       // { y: number }
+type T2 = Omit<A, 'y'>;       // { x: number }
+type T3 = Omit<A, 'x' | 'y'>; // { }
+```
+指定删除的键名Keys可以是对象类型Type中不存在的属性，但必须兼容string|number|symbol。
+```ts
+interface A {
+  x: number;
+  y: number;
+}
+
+type T = Omit<A, 'z'>; // { x: number; y: number }
+```
+
+#### 实现
+```ts
+type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
+```
+
+### `OmitThisParameter<Type>`
+`OmitThisParameter<Type>`从函数类型中移除 this 参数。
+```ts
+function toHex(this: number) {
+  return this.toString(16);
+}
+
+type T = OmitThisParameter<typeof toHex>; // () => string
+```
+如果函数没有 this 参数，则返回原始函数类型。
+
+#### 实现
+```ts
+type OmitThisParameter<T> =
+  unknown extends ThisParameterType<T> ? T :
+  T extends (...args: infer A) => infer R ?
+  (...args: A) => R : T;
+```
+
+### `Parameters<Type>`
+`Parameters<Type>`从函数类型Type里面提取参数类型，组成一个元组返回。
+```ts
+type T1 = Parameters<() => string>; // []
+
+type T2 = Parameters<(s:string) => void>; // [s:string]
+
+type T3 = Parameters<<T>(arg: T) => T>;    // [arg: unknown]
+
+type T4 = Parameters<
+  (x:{ a: number; b: string }) => void
+>; // [x: { a: number, b: string }]
+
+type T5 = Parameters<
+  (a:number, b:number) => number
+>; // [a:number, b:number]
+```
+如果参数类型Type不是带有参数的函数形式，会报错。
+```ts
+// 报错
+type T1 = Parameters<string>;
+// 报错
+type T2 = Parameters<Function>;
+```
+由于any和never是两个特殊值，会返回unknown[]和never。
+```ts
+type T1 = Parameters<any>; // unknown[]
+type T2 = Parameters<never>; // never
+```
+`Parameters<Type>`主要用于从外部模块提供的函数类型中，获取参数类型。
+```ts
+interface SecretName {
+  first: string;
+  last: string;
+}
+
+interface SecretSanta {
+  name: SecretName;
+  gift: string;
+}
+
+export function getGift(
+  name: SecretName,
+  gift: string
+): SecretSanta {
+ // ...
+}
+```
+上面示例中，模块只输出了函数getGift()，没有输出参数SecretName和返回值SecretSanta。这时就可以通过`Parameters<T>`和`ReturnType<T>`拿到这两个接口类型。
+```ts
+type ParaT = Parameters<typeof getGift>[0]; // SecretName
+type ReturnT = ReturnType<typeof getGift>; // SecretSanta
+```
+
+#### 实现
+```ts
+type Parameters<T extends (...args: any) => any> = 
+  T extends (...args: infer P)
+  => any ? P : never
+```
+
+### `Partial<Type>`
+`Partial<Type>`返回一个新类型，将参数类型Type的所有属性变为可选属性。
+```ts
+interface A {
+  x: number;
+  y: number;
+}
+ 
+type T = Partial<A>; // { x?: number; y?: number; }
+```
+
+#### 实现
+```ts
+type Partial<T> = {
+  [P in keyof T]?: T[P];
+};
+```
+
+### `Pick<Type, Keys>`
+`Pick<Type, Keys>`返回一个新的对象类型，第一个参数Type是一个对象类型，第二个参数Keys是Type里面被选定的键名。
+```ts
+interface A {
+  x: number;
+  y: number;
+}
+
+type T1 = Pick<A, 'x'>; // { x: number }
+type T2 = Pick<A, 'y'>; // { y: number }
+type T3 = Pick<A, 'x'|'y'>;  // { x: number; y: number }
+```
+指定的键名Keys必须是对象类型Type里面已经存在的键名，否则会报错。
+```ts
+interface A {
+  x: number;
+  y: number;
+}
+
+type T = Pick<A, 'z'>; // 报错
+```
+
+#### 实现
+```ts
+type Pick<T, K extends keyof T> = {
+  [P in K]: T[P];
+};
+```
+
+### `Readonly<Type>`
+`Readonly<Type>`返回一个新类型，将参数类型Type的所有属性变为只读属性。
+```ts
+interface A {
+  x: number;
+  y?: number;
+}
+
+// { readonly x: number; readonly y?: number; }
+type T = Readonly<A>;
+```
+
+#### 实现
+```ts
+type Readonly<T> = {
+  readonly [P in keyof T]: T[P];
+};
+```
+可以自定义类型工具`Mutable<Type>`，将参数类型的所有属性变成可变属性。
+```ts
+type Mutable<T> = {
+  -readonly [P in keyof T]: T[P];
+};
+```
+-readonly表示去除属性的只读标志。相应地，+readonly就表示增加只读标志，等同于readonly。因此，`Readonly<Type>`的实现也可以写成下面这样。
+```ts
+type Readonly<T> = {
+  +readonly [P in keyof T]: T[P];
+};
+```
+`Readonly<Type>`可以与`Partial<Type>`结合使用，将所有属性变成只读的可选属性。
+```ts
+interface Person {
+  name: string;
+  age: number;
+}
+
+const worker: Readonly<Partial<Person>>
+  = { name: '张三' };
+
+worker.name = '李四'; // 报错
+```
+
+### `Record<Keys, Type>`
+`Record<Keys, Type>`返回一个对象类型，参数Keys用作键名，参数Type用作键值类型。
+```ts
+// { a: number }
+type T = Record<'a', number>;
+```
+参数Keys可以是联合类型，这时会依次展开为多个键。
+```ts
+// { a: number, b: number }
+type T = Record<'a'|'b', number>;
+```
+如果参数Type是联合类型，就表明键值是联合类型。
+```ts
+// { a: number|string }
+type T = Record<'a', number|string>;
+```
+参数Keys的类型必须兼容string|number|symbol，否则不能用作键名，会报错。
+
+#### 实现
+```ts
+type Record<K extends string|number|symbol, T>
+  = { [P in K]: T; }
+```
+
+### `Required<Type>`
+`Required<Type>`返回一个新类型，将参数类型Type的所有属性变为必选属性。它与`Partial<Type>`的作用正好相反。
+```ts
+interface A {
+  x?: number;
+  y: number;
+}
+
+type T = Required<A>; // { x: number; y: number; }
+```
+
+#### 实现
+```ts
+type Required<T> = {
+  [P in keyof T]-?: T[P];
+};
+```
+上面代码中，符号-?表示去除可选属性的“问号”，使其变成必选属性。相对应地，符号+?表示增加可选属性的“问号”，等同于?。因此，前面的`Partial<Type>`的定义也可以写成下面这样。
+```ts
+type Partial<T> = {
+  [P in keyof T]+?: T[P];
+};
+```
+
+### `ReadonlyArray<Type>`
+`ReadonlyArray<Type>`用来生成一个只读数组类型，类型参数Type表示数组成员的类型。
+```ts
+const values: ReadonlyArray<string> 
+  = ['a', 'b', 'c'];
+
+values[0] = 'x'; // 报错
+values.push('x'); // 报错
+values.pop(); // 报错
+values.splice(1, 1); // 报错
+```
+
+#### 实现
+```ts
+interface ReadonlyArray<T> {
+  readonly length: number;
+
+  readonly [n: number]: T;
+
+  // ...
+}
+```
+
+### `ReturnType<Type>`
+`ReturnType<Type>`提取函数类型Type的返回值类型，作为一个新类型返回。
+```ts
+ype T1 = ReturnType<() => string>; // string
+
+type T2 = ReturnType<() => {
+  a: string; b: number
+}>; // { a: string; b: number }
+
+type T3 = ReturnType<(s:string) => void>; // void
+
+type T4 = ReturnType<() => () => any[]>; // () => any[]
+
+type T5 = ReturnType<typeof Math.random>; // number
+
+type T6 = ReturnType<typeof Array.isArray>; // boolean
+```
+如果参数类型是泛型函数，返回值取决于泛型类型。如果泛型不带有限制条件，就会返回unknown。
+```ts
+type T1 = ReturnType<<T>() => T>; // unknown
+
+type T2 = ReturnType<
+  <T extends U, U extends number[]>() => T
+>; // number[]
+```
+如果类型不是函数，会报错。
+```ts
+type T1 = ReturnType<boolean>; // 报错
+type T2 = ReturnType<Function>; // 报错
+```
+any和never是两个特殊值，分别返回any和never。
+```ts
+type T1 = ReturnType<any>; // any
+type T2 = ReturnType<never>; // never
+```
+
+#### 实现
+```ts
+type ReturnType<
+  T extends (...args: any) => any
+> =
+  T extends (...args: any) => infer R ? R : any;
+```
+
+### `ThisParameterType<Type>`
+`ThisParameterType<Type>`提取函数类型中this参数的类型。
+```ts
+function toHex(this:number) {
+  return this.toString(16);
+}
+
+type T = ThisParameterType<typeof toHex>; // number
+```
+如果函数没有this参数，则返回unknown。
+
+#### 实现
+```ts
+type ThisParameterType<T> =
+  T extends (
+    this: infer U,
+    ...args: never
+  ) => any ? U : unknown;
+```
+
+### `ThisType<Type>`
+`ThisType<Type>`不返回类型，只用来跟其他类型组成交叉类型，用来提示 TypeScript 其他类型里面的this的类型。
+```ts
+interface HelperThisValue {
+  logError: (error:string) => void;
+}
+
+let helperFunctions:
+  { [name: string]: Function } &
+  ThisType<HelperThisValue>
+= {
+  hello: function() {
+    this.logError("Error: Something wrong!"); // 正确
+    this.update(); // 报错
+  }
+}
+```
+这里的ThisType的作用是提示 TypeScript，变量helperFunctions的this应该满足HelperThisValue的条件。所以，this.logError()可以正确调用，而this.update()会报错，因为HelperThisValue里面没有这个方法。
+
+注意，使用这个类型工具时，必须打开noImplicitThis设置。
+
+#### 实现
+`ThisType<Type>`的实现就是一个空接口。
+```ts
+interface ThisType<T> { }
+```
+
+### 字符串类型工具
+#### `Uppercase<StringType>`
+`Uppercase<StringType>`将字符串类型的每个字符转为大写。
+```ts
+type A = 'hello';
+
+// "HELLO"
+type B = Uppercase<A>;
+```
+
+#### `Lowercase<StringType>`
+`Lowercase<StringType>`将字符串类型的每个字符转为小写。
+```ts
+type A = 'HELLO';
+
+// "hello"
+type B = Lowercase<A>;
+```
+
+#### `Capitalize<StringType>`
+`Capitalize<StringType>`将字符串的第一个字符转为大写。
+```ts
+type A = 'hello';
+
+// "Hello"
+type B = Capitalize<A>;
+```
+
+#### `Uncapitalize<StringType>`
+`Uncapitalize<StringType>`将字符串的第一个字符转为小写。
+```ts
+type A = 'HELLO';
+
+// "hELLO"
+type B = Uncapitalize<A>;
+```
+
+## 注释指令
+### // @ts-nocheck
+`// @ts-nocheck`告诉编译器不对当前脚本进行类型检查，可以用于 TypeScript 脚本，也可以用于 JavaScript 脚本。
+```ts
+// @ts-nocheck
+
+const element = document.getElementById(123);
+```
+上面示例中，document.getElementById(123)存在类型错误，但是编译器不对该脚本进行类型检查，所以不会报错。
+
+### // @ts-check
+如果一个 JavaScript 脚本顶部添加了`// @ts-check`，那么编译器将对该脚本进行类型检查，不论是否启用了checkJs编译选项。
+```ts
+// @ts-check
+let isChecked = true;
+
+console.log(isChceked); // 报错
+```
+上面示例是一个 JavaScript 脚本，// @ts-check告诉 TypeScript 编译器对其进行类型检查，所以最后一行会报错，提示拼写错误。
+
+### // @ts-ignore
+`// @ts-ignore`告诉编译器不对下一行代码进行类型检查，可以用于 TypeScript 脚本，也可以用于 JavaScript 脚本。
+```ts
+let x:number;
+
+x = 0;
+
+// @ts-ignore
+x = false; // 不报错
+```
+上面示例中，最后一行是类型错误，变量x的类型是number，不能等于布尔值。但是因为前面加上了// @ts-ignore，编译器会跳过这一行的类型检查，所以不会报错。
+
+### // @ts-expect-error
+`// @ts-expect-error`主要用在测试用例，当下一行有类型错误时，它会压制 TypeScript 的报错信息（即不显示报错信息），把错误留给代码自己处理。
+```ts
+function doStuff(abc: string, xyz: string) {
+  assert(typeof abc === "string");
+  assert(typeof xyz === "string");
+  // do some stuff
+}
+
+expect(() => {
+  // @ts-expect-error
+  doStuff(123, 456);
+}).toThrow();
+```
+上面示例是一个测试用例，倒数第二行的doStuff(123, 456)的参数类型与定义不一致，TypeScript 引擎会报错。但是，测试用例本身测试的就是这个错误，已经有专门的处理代码，所以这里可以使用`// @ts-expect-error`，不显示引擎的报错信息。
+
+如果下一行没有类型错误，`// @ts-expect-error`则会显示一行提示。
+```ts
+// @ts-expect-error
+console.log(1 + 1);
+// 输出 Unused '@ts-expect-error' directive.
+```
+上面示例中，第二行是正确代码，这时系统会给出一个提示，表示@ts-expect-error没有用到。
+
+### JSDoc
+TypeScript 直接处理 JS 文件时，如果无法推断出类型，会使用 JS 脚本里面的 JSDoc 注释。使用 JSDoc 时，有两个基本要求：
+- JSDoc 注释必须以`/**`开始，其中星号（*）的数量必须为两个。若使用其他形式的多行注释，则 JSDoc 会忽略该条注释。
+- JSDoc 注释必须与它描述的代码处于相邻的位置，并且注释在上，代码在下。
+```ts
+/**
+ * @param {string} somebody
+ */
+function sayHello(somebody) {
+  console.log('Hello ' + somebody);
+}
+```
+上面示例中，注释里面的@param是一个 JSDoc 声明，表示下面的函数sayHello()的参数somebody类型为string。
+
+#### @typeof
+`@typedef`命令创建自定义类型，等同于 TypeScript 里面的类型别名。
+```ts
+/**
+ * @typedef {(number | string)} NumberLike
+ */
+```
+上面示例中，定义了一个名为NumberLike的新类型，它是由number和string构成的联合类型，等同于 TypeScript 的如下语句。
+```ts
+type NumberLike = string | number;
+```
+
+#### @type
+`@type`命令定义变量的类型。
+```ts
+/**
+ * @type {string}
+ */
+let a;
+```
+上面示例中，@type定义了变量a的类型为string。
+
+在`@type`命令中可以使用由`@typedef`命令创建的类型。
+```ts
+/**
+ * @typedef {(number | string)} NumberLike
+ */
+
+/**
+ * @type {NumberLike}
+ */
+let a = 0;
+```
+在`@type`命令中允许使用 TypeScript 类型及其语法。
+```ts
+/**@type {true | false} */
+let a;
+
+/** @type {number[]} */
+let b;
+
+/** @type {Array<number>} */
+let c;
+
+/** @type {{ readonly x: number, y?: string }} */
+let d;
+
+/** @type {(s: string, b: boolean) => number} */
+let e;
+```
+
+#### @param
+`@param`命令用于定义函数参数的类型。
+```ts
+/**
+ * @param {string}  x
+ */
+function foo(x) {}
+```
+如果是可选参数，需要将参数名放在方括号[]里面。
+```ts
+/**
+ * @param {string}  [x]
+ */
+function foo(x) {}
+```
+方括号里面，还可以指定参数默认值。
+```ts
+/**
+ * @param {string} [x="bar"]
+ */
+function foo(x) {}
+```
+
+#### @return，@returns 
+`@return`和`@returns`命令的作用相同，指定函数返回值的类型。
+```ts
+/**
+ * @return {boolean}
+ */
+function foo() {
+  return true;
+}
+
+/**
+ * @returns {number}
+ */
+function bar() {
+  return 0;
+}
+```
+
+#### @extends和类型修饰符
+`@extends`命令用于定义继承的基类。
+```ts
+/**
+ * @extends {Base}
+ */
+class Derived extends Base {
+}
+```
+`@public`、`@protected`、`@private`分别指定类的公开成员、保护成员和私有成员。`@readonly`指定只读成员。
+```ts
+class Base {
+  /**
+   * @public
+   * @readonly
+   */
+  x = 0;
+
+  /**
+   *  @protected
+   */
+  y = 0;
+}
+```
+
+## tsconfig.json
+tsconfig.json是 TypeScript 项目的配置文件，放在项目的根目录。反过来说，如果一个目录里面有tsconfig.json，TypeScript 就认为这是项目的根目录。
+
+如果项目源码是 JavaScript，但是想用 TypeScript 处理，那么配置文件的名字是jsconfig.json，它跟tsconfig的写法是一样的。
+
+tsconfig.json文件主要供tsc编译器使用，它的命令行参数--project或-p可以指定tsconfig.json的位置（目录或文件皆可）。
+```bash
+$ tsc -p ./dir
+```
+
+如果不指定配置文件的位置，tsc就会在当前目录下搜索tsconfig.json文件，如果不存在，就到上一级目录搜索，直到找到为止。
+
+tsconfig.json文件的格式，是一个 JSON 对象，最简单的情况可以只放置一个空对象{}。下面是一个示例。
+```json
+{
+  "compilerOptions": {
+    "outDir": "./built",
+    "allowJs": true,
+    "target": "es5"
+  },
+  "include": ["./src/**/*"]
+}
+```
+上面示例的四个属性的含义：
+- include：指定哪些文件需要编译。
+- allowJs：指定源目录的 JavaScript 文件是否原样拷贝到编译后的目录。
+- outDir：指定编译产物存放的目录。
+- target：指定编译产物的 JS 版本。
+
+tsconfig.json文件可以不必手写，使用 tsc 命令的--init参数自动生成。
+```bash
+$ tsc --init
+```
+上面命令生成的tsconfig.json文件，里面会有一些默认配置。
+
+也可以使用别人预先写好的 tsconfig.json 文件，npm 的@tsconfig名称空间下面有很多模块，都是写好的tsconfig.json样本，比如 @tsconfig/recommended和@tsconfig/node16。
+
+这些模块需要安装，以@tsconfig/deno为例。
+```bash
+$ npm install --save-dev @tsconfig/deno
+# 或者
+$ yarn add --dev @tsconfig/deno
+```
+安装以后，就可以在tsconfig.json里面引用这个模块，相当于继承它的设置，然后进行扩展。
+```ts
+{
+  "extends": "@tsconfig/deno/tsconfig.json"
+}
+```
+tsconfig.json的一级属性并不多，只有很少几个，但是compilerOptions属性有很多二级属性。详细不在此介绍。
+
+### exclude
+exclude属性是一个数组，必须与include属性一起使用，用来从编译列表中去除指定的文件。它也支持使用与include属性相同的通配符。
+```json
+{
+  "include": ["**/*"],
+  "exclude": ["**/*.spec.ts"]
+}
+```
+
+### extends
+tsconfig.json可以继承另一个tsconfig.json文件的配置。如果一个项目有多个配置，可以把共同的配置写成tsconfig.base.json，其他的配置文件继承该文件，这样便于维护和修改。
+
+extends属性用来指定所要继承的配置文件。它可以是本地文件。
+```json
+{
+  "extends": "../tsconfig.base.json"
+}
+```
+果extends属性指定的路径不是以./或../开头，那么编译器将在node_modules目录下查找指定的配置文件。
+
+extends属性也可以继承已发布的 npm 模块里面的 tsconfig 文件。
+```json
+{
+  "extends": "@tsconfig/node12/tsconfig.json"
+}
+```
+extends指定的tsconfig.json会先加载，然后加载当前的tsconfig.json。如果两者有重名的属性，后者会覆盖前者。
+
+### files
+files属性指定编译的文件列表，如果其中有一个文件不存在，就会报错。它是一个数组，排在前面的文件先编译。
+```json
+{
+  "files": ["a.ts", "b.ts"]
+}
+```
+
+### include
+include属性指定所要编译的文件列表，既支持逐一列出文件，也支持通配符。文件位置相对于当前配置文件而定。
+```json
+{
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}
+```
+include属性支持三种通配符：
+- ?：指代单个字符
+- *：指代任意字符，不含路径分隔符
+- **：指定任意目录层级。
+
+如果不指定文件后缀名，默认包括.ts、.tsx和.d.ts文件。如果打开了allowJs，那么还包括.js和.jsx。
+
+### references
+references属性是一个数组，数组成员为对象，适合一个大项目由许多小项目构成的情况，用来设置需要引用的底层项目。
+```json
+{
+  "references": [
+    { "path": "../core" },
+    { "path": "../utils" }
+  ]
+}
+```
+references数组成员对象的path属性，既可以是含有文件tsconfig.json的目录，也可以直接是该文件。
+
+与此同时，引用的底层项目的tsconfig.json必须启用composite属性。
+```json
+{
+  "compilerOptions": {
+    "composite": true
+  }
+}
+```
+
+### compilerOptions
+compilerOptions属性用来定制编译行为。这个属性可以省略，这时编译器将使用默认设置。
+
+## tsc命令
+tsc 是 TypeScript 官方的命令行编译器，用来检查代码，并将其编译成 JavaScript 代码。
+
+tsc 默认使用当前目录下的配置文件tsconfig.json，但也可以接受独立的命令行参数。命令行参数会覆盖tsconfig.json，比如命令行指定了所要编译的文件，那么 tsc 就会忽略tsconfig.json的files属性。
+
+tsc 的基本用法如下：
+```bash
+# 使用 tsconfig.json 的配置
+$ tsc
+
+# 只编译 index.ts
+$ tsc index.ts
+
+# 编译 src 目录的所有 .ts 文件
+$ tsc src/*.ts
+
+# 指定编译配置文件
+$ tsc --project tsconfig.production.json
+
+# 只生成类型声明文件，不编译出 JS 文件
+$ tsc index.js --declaration --emitDeclarationOnly
+
+# 多个 TS 文件编译成单个 JS 文件
+$ tsc app.ts util.ts --target esnext --outfile index.js
+```
