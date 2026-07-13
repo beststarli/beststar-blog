@@ -21,5 +21,6 @@ date: 2025-11-03
 - [情景与手撕题](/docs/category/情景与手撕题)
 - [算法](/docs/category/算法)
 - [AI](/docs/category/AI)
+- [来时路](/docs/category/来时路)
 - [未分类文档](/docs/category/未分类文档)
 
