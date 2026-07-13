@@ -16,7 +16,7 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "prebuild": "node scripts/fetch-album.mjs && node scripts/build-embeddings.mjs",
+    "prebuild": "node scripts/fetch-album.mjs && node scripts/build-embeddings-if-needed.mjs",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
