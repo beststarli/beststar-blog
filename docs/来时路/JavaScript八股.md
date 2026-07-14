@@ -545,7 +545,7 @@ Array.from(arrayLike)
 - `toSorted(compareFunction)`：排序后返回一个新数组，原数组不变。
 - `toSpliced(start, deleteCount, item1, item2, ...)`：从数组中添加或删除元素，并返回被删除的元素，原数组不变。
 - `with(index, value)`：返回一个新数组，替换指定index位置的元素为value，原数组不变。
-- `falt(depth)`：将嵌套的数组展开为一维数组，并返回一个新数组。
+- `flat(depth)`：将嵌套的数组展开为一维数组，并返回一个新数组。
 - `flatMap(callback)`：对数组中的每个元素执行一个函数，并将结果展开为一个新数组返回。
 ##### 迭代/高阶方法
 - `forEach(callback)`：对数组中的每个元素执行一个函数。
@@ -609,7 +609,7 @@ Array.prototype.slice.call(arrayLike)
 ```js
 Array.prototype.splice.call(arrayLike, 0)
 ```
-- 通过call调用数组的concat方法来实现转换：
+- 通过apply调用数组的concat方法来实现转换：
 ```js
 Array.prototype.concat.apply([], arrayLike)
 ```
