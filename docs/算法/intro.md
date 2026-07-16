@@ -11,6 +11,8 @@ date: 2025-11-03
 
 在这里记录算法学习过程中的笔记、面试题目、解题思路与代码。
 
+任何情况下优先推荐去看二刷中的代码写法。
+
 ## 相关链接
 - [Hello算法](https://www.hello-algo.com/)
 - [代码随想录](https://programmercarl.com/)
