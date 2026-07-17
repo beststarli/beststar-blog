@@ -1,5 +1,5 @@
 ---
-title: 实现add(3)(4)(5)
+title: 实现add链式调用
 description: 实现add(3)(4)(5)。
 sidebar_position: 40
 tags: [JavaScript,数据处理,手撕题]
