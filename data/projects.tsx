@@ -15,7 +15,7 @@ export type TagType =
 export type ProjectType = 'web' | 'app' | 'commerce' | 'personal' | 'toy' | 'other'
 
 export const projectTypeMap = {
-    web: '🖥️ 横向',
+    web: '🖥️ 项目',
     app: '💫 应用',
     commerce: '🛒 商业项目',
     personal: '👨‍💻 个人',
@@ -83,7 +83,7 @@ export const projects: Project[] = [
         preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/gridman.png',
         website: 'https://github.com/beststarli/gridman',
         source: 'https://github.com/beststarli/gridman',
-        tags: ['opensource', 'design', 'large', 'favorite'],
+        tags: ['opensource', 'design', 'product', 'large', 'favorite'],
         type: 'web',
     },
     {
@@ -102,7 +102,7 @@ export const projects: Project[] = [
         website: 'https://github.com/beststarli/bytedance-train',
         source: 'https://github.com/beststarli/bytedance-train',
         tags: ['opensource', 'product', 'design', 'large', 'personal', 'favorite'],
-        type: 'app',
+        type: 'web',
     },
     {
         title: '李嘉星的个人AI Agent',
