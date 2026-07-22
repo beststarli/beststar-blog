@@ -2846,5 +2846,2338 @@ Boolean(new Boolean(false)) // true
 
 ## 标准库
 ### Object对象
+#### Object的静态方法
+##### Object.keys()与Object.getOwnPropertyNames()
+Object.keys()方法返回一个数组，包含对象自身的所有可遍历（enumerable）的属性名。Object.getOwnPropertyNames()方法返回一个数组，包含对象自身的所有属性名（不管是否可遍历）。这两个方法都不会返回继承的属性。接收的参数都是一个对象。
+```js
+var a = ['Hello', 'World'];
+
+Object.keys(a) // ["0", "1"]
+Object.getOwnPropertyNames(a) // ["0", "1", "length"]
+```
+一般情况下，几乎总是使用Object.keys方法，遍历对象的属性。
+
+##### 对象属性模型的相关方法
+- Object.getOwnPropertyDescriptor()：获取某个属性的描述对象。
+- Object.defineProperty()：通过描述对象，定义某个属性。
+- Object.defineProperties()：通过描述对象，定义多个属性。
+
+##### 控制对象状态的方法
+- Object.preventExtensions()：防止对象扩展。
+- Object.isExtensible()：判断对象是否可扩展。
+- Object.seal()：禁止对象配置。
+- Object.isSealed()：判断一个对象是否可配置。
+- Object.freeze()：冻结一个对象。
+- Object.isFrozen()：判断一个对象是否被冻结。
+
+##### 原型链相关方法
+- Object.create()：该方法可以指定原型对象和属性，返回一个新的对象。
+- Object.getPrototypeOf()：获取对象的Prototype对象。
+
+#### Object的实例方法
+除了静态方法，还有不少方法定义在Object.prototype对象。它们称为实例方法，所有Object的实例对象都继承了这些方法。Object实例对象的方法，主要有以下六个。
+- Object.prototype.valueOf()：返回当前对象对应的值。
+- Object.prototype.toString()：返回当前对象对应的字符串形式。
+- Object.prototype.toLocaleString()：返回当前对象对应的本地字符串形式。
+- Object.prototype.hasOwnProperty()：判断某个属性是否为当前对象自身的属性，还是继承自原型对象的属性。
+- Object.prototype.isPrototypeOf()：判断当前对象是否为另一个对象的原型。
+- Object.prototype.propertyIsEnumerable()：判断某个属性是否可枚举。
+
+##### Object.prototype.valueOf()
+valueOf方法的作用是返回一个对象的“值”，默认情况下返回对象本身。
+```js
+var obj = new Object();
+obj.valueOf() === obj // true
+```
+valueOf方法的主要用途是，JavaScript 自动类型转换时会默认调用这个方法。所以可以通过自定义valueOf方法，来改变对象的默认行为。
+```js
+var obj = new Object();
+obj.valueOf = function () {
+  return 2;
+};
+
+1 + obj // 3
+```
+
+##### Object.prototype.toString()
+toString方法的作用是返回一个对象的字符串形式，默认情况下返回类型字符串。字符串[object Object]本身没有太大的用处，但是通过自定义toString方法，可以让对象在自动类型转换时，得到想要的字符串形式。
+```js
+var o1 = new Object();
+o1.toString() // "[object Object]"
+
+var o2 = {a:1};
+o2.toString() // "[object Object]"
+
+var obj = new Object();
+obj.toString = function () {
+  return 'hello';
+};
+obj + ' ' + 'world' // "hello world"
+```
+数组、字符串、函数、Date 对象都分别部署了自定义的toString方法，覆盖了Object.prototype.toString方法。
+```js
+[1, 2, 3].toString() // "1,2,3"
+
+'123'.toString() // "123"
+
+(function () {
+  return 123;
+}).toString()
+// "function () {
+//   return 123;
+// }"
+
+(new Date()).toString()
+// "Tue May 10 2016 09:11:31 GMT+0800 (CST)"
+```
+
+##### 应用toString()来判断数据类型
+Object.prototype.toString方法返回对象的类型字符串，因此可以用来判断一个值的类型。
+```js
+var obj = {};
+obj.toString() // "[object Object]"
+```
+上面代码调用空对象的toString方法，结果返回一个字符串[object Object]，其中第二个Object表示该值的构造函数。这是一个十分有用的判断数据类型的方法。
+
+由于实例对象可能会自定义toString方法，覆盖掉Object.prototype.toString方法，所以为了得到类型字符串，最好直接使用Object.prototype.toString方法。通过函数的call方法，可以在任意值上调用这个方法，帮助我们判断这个值的类型。
+```js
+Object.prototype.toString.call(value)
+```
+不同数据类型的Object.prototype.toString方法返回值如下。
+- 数值：返回[object Number]。
+- 字符串：返回[object String]。
+- 布尔值：返回[object Boolean]。
+- undefined：返回[object Undefined]。
+- null：返回[object Null]。
+- 数组：返回[object Array]。
+- arguments 对象：返回[object Arguments]。
+- 函数：返回[object Function]。
+- Error 对象：返回[object Error]。
+- Date 对象：返回[object Date]。
+- RegExp 对象：返回[object RegExp]。
+- 其他对象：返回[object Object]。
+
+利用这个特性，可以写出一个比typeof运算符更准确的类型判断函数。
+```js
+var type = function (o){
+  var s = Object.prototype.toString.call(o);
+  return s.match(/\[object (.*?)\]/)[1].toLowerCase();
+};
+
+type({}); // "object"
+type([]); // "array"
+type(5); // "number"
+type(null); // "null"
+type(); // "undefined"
+type(/abcd/); // "regex"
+type(new Date()); // "date"
+```
+在上面这个type函数的基础上，还可以加上专门判断某种类型数据的方法。
+```js
+var type = function (o){
+  var s = Object.prototype.toString.call(o);
+  return s.match(/\[object (.*?)\]/)[1].toLowerCase();
+};
+
+['Null',
+ 'Undefined',
+ 'Object',
+ 'Array',
+ 'String',
+ 'Number',
+ 'Boolean',
+ 'Function',
+ 'RegExp'
+].forEach(function (t) {
+  type['is' + t] = function (o) {
+    return type(o) === t.toLowerCase();
+  };
+});
+
+type.isObject({}) // true
+type.isNumber(NaN) // true
+type.isRegExp(/abc/) // true
+```
+
+##### Object.hasOwnProperty()
+Object.prototype.hasOwnProperty方法接受一个字符串作为参数，返回一个布尔值，表示该实例对象自身是否具有该属性。
+```js
+var obj = {
+  p: 123
+};
+
+obj.hasOwnProperty('p') // true
+obj.hasOwnProperty('toString') // false
+```
+
+### 属性描述对象
+JavaScript 提供了一个内部数据结构，用来描述对象的属性，控制它的行为，比如该属性是否可写、可遍历等等。这个内部数据结构称为“属性描述对象”（attributes object）。每个属性都有自己对应的属性描述对象，保存该属性的一些元信息。
+```js
+{
+  value: 123,
+  writable: false,
+  enumerable: true,
+  configurable: false,
+  get: undefined,
+  set: undefined
+}
+```
+- value是该属性的属性值，默认为undefined。
+- writable是一个布尔值，表示属性值（value）是否可改变（即是否可写），默认为true。
+- enumerable是一个布尔值，表示该属性是否可遍历，默认为true。如果设为false，会使得某些操作（比如for...in循环、Object.keys()）跳过该属性。
+- configurable是一个布尔值，表示属性的可配置性，默认为true。如果设为false，将阻止某些操作改写属性描述对象，比如无法删除该属性，也不得改变各种元属性（value属性除外）。也就是说，configurable属性控制了属性描述对象的可写性。
+- get是一个函数，表示该属性的取值函数（getter），默认为undefined。
+- set是一个函数，表示该属性的存值函数（setter），默认为undefined。
+
+#### Object.getOwnPropertyDescriptor()
+Object.getOwnPropertyDescriptor()方法可以获取属性描述对象。它的第一个参数是目标对象，第二个参数是一个字符串，对应目标对象的某个属性名。注意，Object.getOwnPropertyDescriptor()方法只能用于对象自身的属性，不能用于继承的属性。
+```js
+var obj = { p: 'a' };
+
+Object.getOwnPropertyDescriptor(obj, 'p')
+// Object { value: "a",
+//   writable: true,
+//   enumerable: true,
+//   configurable: true
+// }
+Object.getOwnPropertyDescriptor(obj, 'toString')
+// undefined
+```
+
+#### Object.getOwnPropertyNames()
+Object.getOwnPropertyNames方法返回一个数组，成员是参数对象自身的全部属性的属性名，不管该属性是否可遍历。这跟Object.keys的行为不同，Object.keys只返回对象自身的可遍历属性的全部属性名。
+```js
+Object.keys([]) // []
+Object.getOwnPropertyNames([]) // [ 'length' ]
+
+Object.keys(Object.prototype) // []
+Object.getOwnPropertyNames(Object.prototype)
+// ['hasOwnProperty',
+//  'valueOf',
+//  'constructor',
+//  'toLocaleString',
+//  'isPrototypeOf',
+//  'propertyIsEnumerable',
+//  'toString']
+```
+
+#### Object.defineProperty()和Object.defineProperties()
+Object.defineProperty()方法允许通过属性描述对象，定义或修改一个属性，然后返回修改后的对象。
+```js
+Object.defineProperty(object, propertyName, attributesObject)
+```
+Object.defineProperty方法接受三个参数：
+- object：属性所在的对象
+- propertyName：字符串，表示属性名
+- attributesObject：属性描述对象
+```js
+var obj = Object.defineProperty({}, 'p', {
+  value: 123,
+  writable: false,
+  enumerable: true,
+  configurable: false
+});
+
+obj.p // 123
+obj.p = 246;
+obj.p // 123
+```
+如果属性已经存在，Object.defineProperty()方法相当于更新该属性的属性描述对象。
+
+如果一次性定义或修改多个属性，可以使用Object.defineProperties()方法。
+```js
+var obj = Object.defineProperties({}, {
+  p1: { value: 123, enumerable: true },
+  p2: { value: 'abc', enumerable: true },
+  p3: { get: function () { return this.p1 + this.p2 },
+    enumerable:true,
+    configurable:true
+  }
+});
+
+obj.p1 // 123
+obj.p2 // "abc"
+obj.p3 // "123abc"
+```
+一旦定义了取值函数get（或存值函数set），就不能将writable属性设为true，或者同时定义value属性，否则会报错。
+```js
+var obj = {};
+
+Object.defineProperty(obj, 'p', {
+  value: 123,
+  get: function() { return 456; }
+});
+// TypeError: Invalid property.
+// A property cannot both have accessors and be writable or have a value
+
+Object.defineProperty(obj, 'p', {
+  writable: true,
+  get: function() { return 456; }
+});
+// TypeError: Invalid property descriptor.
+// Cannot both specify accessors and a value or writable attribute
+```
+Object.defineProperty()和Object.defineProperties()参数里面的属性描述对象，writable、configurable、enumerable这三个属性的默认值都为false。
 
 
+#### Object.prototype.propertyIsEnumerable()
+实例对象的propertyIsEnumerable()方法返回一个布尔值，用来判断某个属性是否可遍历。注意，这个方法只能用于判断对象自身的属性，对于继承的属性一律返回false。
+```js
+var obj = {};
+obj.p = 123;
+
+obj.propertyIsEnumerable('p') // true
+obj.propertyIsEnumerable('toString') // false
+```
+
+#### 元属性
+##### value
+value属性是目标属性的值。
+```js
+var obj = {};
+obj.p = 123;
+
+Object.getOwnPropertyDescriptor(obj, 'p').value
+// 123
+
+Object.defineProperty(obj, 'p', { value: 246 });
+obj.p // 246
+```
+##### writable
+writable属性是一个布尔值，决定了目标属性的值（value）是否可以被改变。
+```js
+var obj = {};
+
+Object.defineProperty(obj, 'a', {
+  value: 37,
+  writable: false
+});
+
+obj.a // 37
+obj.a = 25;
+obj.a // 37
+```
+注意，正常模式下，对writable为false的属性赋值不会报错，只会默默失败。但是，严格模式下会报错，即使对a属性重新赋予一个同样的值。
+```js
+'use strict';
+var obj = {};
+
+Object.defineProperty(obj, 'a', {
+  value: 37,
+  writable: false
+});
+
+obj.a = 37;
+// Uncaught TypeError: Cannot assign to read only property 'a' of object
+```
+如果原型对象的某个属性的writable为false，那么子对象将无法自定义这个属性。
+```js
+var proto = Object.defineProperty({}, 'foo', {
+  value: 'a',
+  writable: false
+});
+
+var obj = Object.create(proto);
+
+obj.foo = 'b';
+obj.foo // 'a'
+```
+但是，有一个规避方法，就是通过覆盖属性描述对象，绕过这个限制。原因是这种情况下，原型链会被完全忽视。
+```js
+var proto = Object.defineProperty({}, 'foo', {
+  value: 'a',
+  writable: false
+});
+
+var obj = Object.create(proto);
+Object.defineProperty(obj, 'foo', {
+  value: 'b'
+});
+
+obj.foo // "b"
+```
+
+##### enumerable
+enumerable（可遍历性）返回一个布尔值，表示目标属性是否可遍历。如果一个属性的enumerable为false，下面三个操作不会取到该属性。
+- for..in循环
+- Object.keys方法
+- JSON.stringify方法
+
+因此，enumerable可以用来设置“秘密”属性。
+```js
+var obj = {};
+
+Object.defineProperty(obj, 'x', {
+  value: 123,
+  enumerable: false
+});
+
+obj.x // 123
+
+for (var key in obj) {
+  console.log(key);
+}
+// undefined
+
+Object.keys(obj)  // []
+JSON.stringify(obj) // "{}"
+```
+注意，for...in循环包括继承的属性，Object.keys方法不包括继承的属性。如果需要获取对象自身的所有属性，不管是否可遍历，可以使用Object.getOwnPropertyNames方法。
+
+另外，JSON.stringify方法会排除enumerable为false的属性，有时可以利用这一点。如果对象的 JSON 格式输出要排除某些属性，就可以把这些属性的enumerable设为false。
+
+##### Configurable
+configurable(可配置性）返回一个布尔值，决定了是否可以修改属性描述对象。也就是说，configurable为false时，writable、enumerable和configurable都不能被修改了。
+```js
+var obj = Object.defineProperty({}, 'p', {
+  value: 1,
+  writable: false,
+  enumerable: false,
+  configurable: false
+});
+
+Object.defineProperty(obj, 'p', {writable: true})
+// TypeError: Cannot redefine property: p
+
+Object.defineProperty(obj, 'p', {enumerable: true})
+// TypeError: Cannot redefine property: p
+
+Object.defineProperty(obj, 'p', {configurable: true})
+// TypeError: Cannot redefine property: p
+
+Object.defineProperty(obj, 'p', {value: 2})
+// TypeError: Cannot redefine property: p
+```
+
+writable属性只有在false改为true时会报错，true改为false是允许的。
+```js
+var obj = Object.defineProperty({}, 'p', {
+  writable: true,
+  configurable: false
+});
+Object.defineProperty(obj, 'p', {writable: false})
+// 修改成功
+```
+value属性的情况比较特殊。只要writable和configurable有一个为true，就允许改动value。
+```js
+var o1 = Object.defineProperty({}, 'p', {
+  value: 1,
+  writable: true,
+  configurable: false
+});
+
+Object.defineProperty(o1, 'p', {value: 2})
+// 修改成功
+
+var o2 = Object.defineProperty({}, 'p', {
+  value: 1,
+  writable: false,
+  configurable: true
+});
+
+Object.defineProperty(o2, 'p', {value: 2})
+// 修改成功
+```
+另外，writable为false时，直接对目标属性赋值，不报错，但不会成功。如果是严格模式，还会报错。
+```js
+var obj = Object.defineProperty({}, 'p', {
+  value: 1,
+  writable: false,
+  configurable: false
+});
+
+obj.p = 2;
+obj.p // 1
+```
+
+#### 存取器
+除了直接定义以外，属性还可以用存取器（accessor）定义。其中，存值函数称为setter，使用属性描述对象的set属性；取值函数称为getter，使用属性描述对象的get属性。一旦对目标属性定义了存取器，那么存取的时候，都将执行对应的函数。利用这个功能，可以实现许多高级特性，比如定制属性的读取和赋值行为。
+```js
+var obj = Object.defineProperty({}, 'p', {
+  get: function () {
+    return 'getter';
+  },
+  set: function (value) {
+    console.log('setter: ' + value);
+  }
+});
+
+obj.p // "getter"
+obj.p = 123 // "setter: 123"
+```
+JavaScript 还提供了存取器的另一种写法。
+```js
+// 写法二
+var obj = {
+  get p() {
+    return 'getter';
+  },
+  set p(value) {
+    console.log('setter: ' + value);
+  }
+};
+```
+上面两种写法，虽然属性p的读取和赋值行为是一样的，但是有一些细微的区别。第一种写法，属性p的configurable和enumerable都为false，从而导致属性p是不可遍历的；第二种写法，属性p的configurable和enumerable都为true，因此属性p是可遍历的。实际开发中，写法二更常用。
+
+注意，取值函数get不能接受参数，存值函数set只能接受一个参数（即属性的值）。存取器往往用于，属性的值依赖对象内部数据的场合。
+```js
+var obj ={
+  $n : 5,
+  get next() { return this.$n++ },
+  set next(n) {
+    if (n >= this.$n) this.$n = n;
+    else throw new Error('新的值必须大于当前值');
+  }
+};
+
+obj.next // 5
+
+obj.next = 10;
+obj.next // 10
+
+obj.next = 5;
+// Uncaught Error: 新的值必须大于当前值
+```
+
+#### 对象的拷贝
+有时需要将一个对象的所有属性，拷贝到另一个对象，可以用下面的方法实现。
+```js
+var extend = function (to, from) {
+  for (var property in from) {
+    to[property] = from[property];
+  }
+
+  return to;
+}
+
+extend({}, {
+  a: 1
+})
+// {a: 1}
+```
+这个方法的问题在于，如果遇到存取器定义的属性，会只拷贝值。
+```js
+extend({}, {
+  get a() { return 1 }
+})
+// {a: 1}
+```
+为了解决这个问题，可以通过Object.defineProperty方法来拷贝属性。
+```js
+var extend = function (to, from) {
+  for (var property in from) {
+    if (!from.hasOwnProperty(property)) continue;
+    Object.defineProperty(
+      to,
+      property,
+      Object.getOwnPropertyDescriptor(from, property)
+    );
+  }
+
+  return to;
+}
+
+extend({}, { get a(){ return 1 } })
+// { get a(){ return 1 } })
+```
+
+#### 控制对象状态
+有时需要冻结对象的读写状态，防止对象被改变。JavaScript 提供了三种冻结方法，最弱的一种是Object.preventExtensions，其次是Object.seal，最强的是Object.freeze。
+##### Object.preventExtensions()
+Object.preventExtensions方法可以使得一个对象无法再添加新的属性。
+```js
+var obj = new Object();
+Object.preventExtensions(obj);
+
+Object.defineProperty(obj, 'p', {
+  value: 'hello'
+});
+// TypeError: Cannot define property:p, object is not extensible.
+
+obj.p = 1;
+obj.p // undefined
+```
+##### Object.isExtensible()
+Object.isExtensible方法用于检查一个对象是否使用了Object.preventExtensions方法。也就是说，检查是否可以为一个对象添加属性。
+```js
+var obj = new Object();
+
+Object.isExtensible(obj) // true
+Object.preventExtensions(obj);
+Object.isExtensible(obj) // false
+```
+##### Object.seal()
+Object.seal方法使得一个对象既无法添加新属性，也无法删除旧属性。
+```js
+var obj = { p: 'hello' };
+Object.seal(obj);
+
+delete obj.p;
+obj.p // "hello"
+
+obj.x = 'world';
+obj.x // undefined
+```
+Object.seal实质是把属性描述对象的configurable属性设为false，因此属性描述对象不再能改变了。
+```js
+var obj = {
+  p: 'a'
+};
+
+// seal方法之前
+Object.getOwnPropertyDescriptor(obj, 'p')
+// Object {
+//   value: "a",
+//   writable: true,
+//   enumerable: true,
+//   configurable: true
+// }
+
+Object.seal(obj);
+
+// seal方法之后
+Object.getOwnPropertyDescriptor(obj, 'p')
+// Object {
+//   value: "a",
+//   writable: true,
+//   enumerable: true,
+//   configurable: false
+// }
+
+Object.defineProperty(obj, 'p', {
+  enumerable: false
+})
+// TypeError: Cannot redefine property: p
+```
+##### Object.isSealed()
+Object.isSealed方法用于检查一个对象是否使用了Object.seal方法。如果使用了Object.seal方法，这时，Object.isExtensible方法也返回false。
+```js
+var obj = { p: 'a' };
+
+Object.seal(obj);
+Object.isSealed(obj) // true
+Object.isExtensible(obj) // false
+```
+##### Object.freeze()
+Object.freeze方法可以使得一个对象无法添加新属性、无法删除旧属性、也无法改变属性的值，使得这个对象实际上变成了常量。这些操作并不报错，只是默默地失败。如果在严格模式下，则会报错。
+```js
+var obj = {
+  p: 'hello'
+};
+
+Object.freeze(obj);
+
+obj.p = 'world';
+obj.p // "hello"
+
+obj.t = 'hello';
+obj.t // undefined
+
+delete obj.p // false
+obj.p // "hello"
+```
+
+##### Object.isFrozen()
+Object.isFrozen方法用于检查一个对象是否使用了Object.freeze方法。使用Object.freeze方法以后，Object.isSealed将会返回true，Object.isExtensible返回false。
+```js
+var obj = {
+  p: 'hello'
+};
+
+Object.freeze(obj);
+Object.isFrozen(obj) // true
+Object.isSealed(obj) // true
+Object.isExtensible(obj) // false
+```
+
+##### 局限性
+上面的三个方法锁定对象的可写性有一个漏洞：可以通过改变原型对象，来为对象增加属性。
+```js
+var obj = new Object();
+Object.preventExtensions(obj);
+
+var proto = Object.getPrototypeOf(obj);
+proto.t = 'hello';
+obj.t
+// hello
+```
+一种解决方案是，把obj的原型也冻结住。
+```js
+var obj = new Object();
+Object.preventExtensions(obj);
+
+var proto = Object.getPrototypeOf(obj);
+Object.preventExtensions(proto);
+
+proto.t = 'hello';
+obj.t // undefined
+```
+另外一个局限是，如果属性值是对象，上面这些方法只能冻结属性指向的对象，而不能冻结对象本身的内容。
+```js
+var obj = {
+  foo: 1,
+  bar: ['a', 'b']
+};
+Object.freeze(obj);
+
+obj.bar.push('c');
+obj.bar // ["a", "b", "c"]
+```
+
+### Array对象
+#### 实例方法
+##### join()
+join()方法以指定参数作为分隔符，将所有数组成员连接为一个字符串返回。如果不提供参数，默认用逗号分隔。如果数组成员是undefined或null或空位，会被转成空字符串。
+```js
+var a = [1, 2, 3, 4];
+
+a.join(' ') // '1 2 3 4'
+a.join(' | ') // "1 | 2 | 3 | 4"
+a.join() // "1,2,3,4"
+
+[undefined, null].join('#')
+// '#'
+
+['a',, 'b'].join('-')
+// 'a--b'
+```
+通过call方法，这个方法也可以用于字符串或类似数组的对象。
+```js
+Array.prototype.join.call('hello', '-')
+// "h-e-l-l-o"
+
+var obj = { 0: 'a', 1: 'b', length: 2 };
+Array.prototype.join.call(obj, '-')
+// 'a-b'
+```
+
+##### concat()
+concat方法用于多个数组的合并。它将新数组的成员，添加到原数组成员的后部，然后返回一个新数组，原数组不变。除了数组作为参数，concat也接受其他类型的值作为参数，添加到目标数组尾部。
+```js
+['hello'].concat(['world'])
+// ["hello", "world"]
+
+['hello'].concat(['world'], ['!'])
+// ["hello", "world", "!"]
+
+[].concat({a: 1}, {b: 2})
+// [{ a: 1 }, { b: 2 }]
+
+[2].concat({a: 1})
+// [2, {a: 1}]
+
+[1, 2, 3].concat(4, 5, 6)
+// [1, 2, 3, 4, 5, 6]
+```
+如果数组成员包括对象，concat方法返回当前数组的一个浅拷贝。所谓“浅拷贝”，指的是新数组拷贝的是对象的引用。
+```js
+var obj = { a: 1 };
+var oldArray = [obj];
+
+var newArray = oldArray.concat();
+
+obj.a = 2;
+newArray[0].a // 2
+```
+
+##### slice()
+slice()方法用于提取目标数组的一部分，返回一个新数组，原数组不变。slice()方法的一个重要应用，是将类似数组的对象转为真正的数组。
+```js
+Array.prototype.slice.call({ 0: 'a', 1: 'b', length: 2 })
+// ['a', 'b']
+
+Array.prototype.slice.call(document.querySelectorAll("div"));
+Array.prototype.slice.call(arguments);
+```
+
+##### splice()
+splice()方法用于删除原数组的一部分成员，并可以在删除的位置添加新的数组成员，返回值是被删除的元素。注意，该方法会改变原数组。splice的第一个参数是删除的起始位置（从0开始），第二个参数是被删除的元素个数。如果后面还有更多的参数，则表示这些就是要被插入数组的新元素。如果只是单纯地插入元素，splice方法的第二个参数可以设为0。
+```js
+arr.splice(start, count, addElement1, addElement2, ...);
+```
+如果只是单纯地插入元素，splice方法的第二个参数可以设为0。
+```js
+var a = [1, 1, 1];
+
+a.splice(1, 0, 2) // []
+a // [1, 2, 1, 1]
+```
+如果只提供第一个参数，等同于将原数组在指定位置拆分成两个数组。
+```js
+var a = [1, 2, 3, 4];
+a.splice(2) // [3, 4]
+a // [1, 2]
+```
+
+##### sort()
+sort方法对数组成员进行排序，默认是按照字典顺序排序。排序后，原数组将被改变。如果想让sort方法按照自定义方式排序，可以传入一个函数作为参数。sort的参数函数本身接受两个参数，表示进行比较的两个数组成员。如果该函数的返回值大于0，表示第一个成员排在第二个成员后面；其他情况下，都是第一个元素排在第二个元素前面。
+```js
+[
+  { name: "张三", age: 30 },
+  { name: "李四", age: 24 },
+  { name: "王五", age: 28  }
+].sort(function (o1, o2) {
+  return o1.age - o2.age;
+})
+// [
+//   { name: "李四", age: 24 },
+//   { name: "王五", age: 28  },
+//   { name: "张三", age: 30 }
+// ]
+```
+
+##### map()
+map()方法将数组的所有成员依次传入参数函数，然后把每一次的执行结果组成一个新数组返回。map()方法接受一个函数作为参数。该函数调用时，map()方法向它传入三个参数：当前成员、当前位置和数组本身。map()方法还可以接受第二个参数，用来绑定回调函数内部的this变量。
+```js
+[1, 2, 3].map(function(elem, index, arr) {
+  return elem * index;
+});
+// [0, 2, 6]
+
+var arr = ['a', 'b', 'c'];
+
+[1, 2].map(function (e) {
+  return this[e];
+}, arr)
+// ['b', 'c']
+```
+如果数组有空位，map()方法的回调函数在这个位置不会执行，会跳过数组的空位。
+```js
+var f = function (n) { return 'a' };
+
+[1, undefined, 2].map(f) // ["a", "a", "a"]
+[1, null, 2].map(f) // ["a", "a", "a"]
+[1, , 2].map(f) // ["a", , "a"]
+```
+
+##### forEach()
+forEach()方法与map()方法很相似，也是对数组的所有成员依次执行参数函数。但是，forEach()方法不返回值，只用来操作数据。这就是说，如果数组遍历的目的是为了得到返回值，那么使用map()方法，否则使用forEach()方法。forEach()的用法与map()方法一致，参数是一个函数，该函数同样接受三个参数：当前值、当前位置、整个数组。
+```js
+function log(element, index, array) {
+  console.log('[' + index + '] = ' + element);
+}
+
+[2, 5, 9].forEach(log);
+// [0] = 2
+// [1] = 5
+// [2] = 9
+```
+forEach()方法也可以接受第二个参数，绑定参数函数的this变量。
+```js
+var out = [];
+
+[1, 2, 3].forEach(function(elem) {
+  this.push(elem * elem);
+}, out);
+
+out // [1, 4, 9]
+```
+注意，forEach()方法无法中断执行，总是会将所有成员遍历完。如果希望符合某种条件时，就中断遍历，要使用for循环。forEach()方法也会跳过数组的空位。
+
+##### filter()
+filter()方法用于过滤数组成员，满足条件的成员组成一个新数组返回。它的参数是一个函数，所有数组成员依次执行该函数，返回结果为true的成员组成一个新数组返回。该方法不会改变原数组。filter()方法的参数函数可以接受三个参数：当前成员，当前位置和整个数组。
+```js
+[1, 2, 3, 4, 5].filter(function (elem, index, arr) {
+  return index % 2 === 0;
+});
+// [1, 3, 5]
+```
+filter()方法还可以接受第二个参数，用来绑定参数函数内部的this变量。
+```js
+var obj = { MAX: 3 };
+var myFilter = function (item) {
+  if (item > this.MAX) return true;
+};
+
+var arr = [2, 8, 3, 4, 1, 3, 2, 9];
+arr.filter(myFilter, obj) // [8, 4, 9]
+```
+
+##### some()和every()
+它们接受一个函数作为参数，所有数组成员依次执行该函数。该函数接受三个参数：当前成员、当前位置和整个数组，然后返回一个布尔值。
+- some方法是只要一个成员的返回值是true，则整个some方法的返回值就是true，否则返回false。
+- every方法是所有成员的返回值都是true，整个every方法才返回true，否则返回false。
+- 注意，对于空数组，some方法返回false，every方法返回true，回调函数都不会执行。
+```js
+var arr = [1, 2, 3, 4, 5];
+arr.some(function (elem, index, arr) {
+  return elem >= 3;
+});
+// true
+arr.every(function (elem, index, arr) {
+  return elem >= 3;
+});
+// false
+
+function isEven(x) { return x % 2 === 0 }
+[].some(isEven) // false
+[].every(isEven) // true
+```
+some和every方法还可以接受第二个参数，用来绑定参数函数内部的this变量。
+
+##### reduce()和reduceRight()
+reduce()方法和reduceRight()方法依次处理数组的每个成员，最终累计为一个值。它们的差别是，reduce()是从左到右处理（从第一个成员到最后一个成员），reduceRight()则是从右到左（从最后一个成员到第一个成员），其他完全一样。
+
+reduce()方法和reduceRight()方法的第一个参数都是一个函数。该函数接受以下四个参数。这四个参数之中，只有前两个是必须的，后两个则是可选的。
+- 累积变量。第一次执行时，默认为数组的第一个成员；以后每次执行时，都是上一轮的返回值。
+- 当前变量。第一次执行时，默认为数组的第二个成员；以后每次执行时，都是下一个成员。
+- 当前位置。一个整数，表示第二个参数（当前变量）的位置，默认为1。
+- 原数组。
+```js
+[1, 2, 3, 4, 5].reduce(function (
+  a,   // 累积变量，必须
+  b,   // 当前变量，必须
+  i,   // 当前位置，可选
+  arr  // 原数组，可选
+) {
+  // ... ...
+});
+```
+如果要对累积变量指定初值，可以把它放在reduce()方法和reduceRight()方法的第二个参数。
+```js
+[1, 2, 3, 4, 5].reduce(function (a, b) {
+  return a + b;
+}, 10);
+// 25
+```
+
+##### indexOf()和lastIndexOf()
+- indexOf方法返回给定元素在数组中第一次出现的位置，如果没有出现则返回-1。
+- lastIndexOf方法返回给定元素在数组中最后一次出现的位置，如果没有出现则返回-1。
+
+注意，这两个方法不能用来搜索NaN的位置，即它们无法确定数组成员是否包含NaN。这是因为这两个方法内部，使用严格相等运算符（===）进行比较，而NaN是唯一一个不等于自身的值。
+
+### 包装对象
+对象是 JavaScript 语言最主要的数据类型，三种原始类型的值——数值、字符串、布尔值——在一定条件下，也会自动转为对象，也就是原始类型的“包装对象”（wrapper）。
+
+所谓“包装对象”，指的是与数值、字符串、布尔值分别相对应的Number、String、Boolean三个原生对象。这三个原生对象可以把原始类型的值变成（包装成）对象。
+
+包装对象的设计目的，首先是使得“对象”这种类型可以覆盖 JavaScript 所有的值，整门语言有一个通用的数据模型，其次是使得原始类型的值也有办法调用自己的方法。
+
+```js
+var v1 = new Number(123);
+var v2 = new String('abc');
+var v3 = new Boolean(true);
+
+typeof v1 // "object"
+typeof v2 // "object"
+typeof v3 // "object"
+
+v1 === 123 // false
+v2 === 'abc' // false
+v3 === true // false
+```
+
+### Boolean对象
+注意，false对应的包装对象实例，布尔运算结果也是true。
+```js
+if (new Boolean(false)) {
+  console.log('true');
+} // true
+
+if (new Boolean(false).valueOf()) {
+  console.log('true');
+} // 无输出
+```
+使用双重的否运算符（!）也可以将任意值转为对应的布尔值。
+```js
+!!undefined // false
+!!null // false
+!!0 // false
+!!'' // false
+!!NaN // false
+
+!!1 // true
+!!'false' // true
+!![] // true
+!!{} // true
+!!function(){} // true
+!!/foo/ // true
+```
+最后，对于一些特殊值，Boolean对象前面加不加new，会得到完全相反的结果，必须小心。
+```js
+if (Boolean(false)) {
+  console.log('true');
+} // 无输出
+
+if (new Boolean(false)) {
+  console.log('true');
+} // true
+
+if (Boolean(null)) {
+  console.log('true');
+} // 无输出
+
+if (new Boolean(null)) {
+  console.log('true');
+} // true
+```
+
+### Number对象
+#### 实例对象
+##### Number.prototype.toString()   
+Number对象部署了自己的toString方法，用来将一个数值转为字符串形式。toString方法可以接受一个参数，表示输出的进制。如果省略这个参数，默认将数值先转为十进制，再输出字符串；否则，就根据参数指定的进制，将一个数字转化成某个进制的字符串。
+```js
+(10).toString(2) // "1010"
+(10).toString(8) // "12"
+(10).toString(16) // "a"
+```
+toString方法只能将十进制的数，转为其他进制的字符串。如果要将其他进制的数，转回十进制，需要使用parseInt方法。
+
+##### Number.prototype.toExponential()
+toExponential方法用于将一个数转为科学计数法形式。
+```js
+(10).toExponential()  // "1e+1"
+(10).toExponential(1) // "1.0e+1"
+(10).toExponential(2) // "1.00e+1"
+
+(1234).toExponential()  // "1.234e+3"
+(1234).toExponential(1) // "1.2e+3"
+(1234).toExponential(2) // "1.23e+3"
+```
+toExponential方法的参数是小数点后有效数字的位数，范围为0到100，超出这个范围，会抛出一个 RangeError 错误。
+
+##### Number.prototype.toPrecision() 
+Number.prototype.toPrecision()方法用于将一个数转为指定位数的有效数字。
+```js
+(12.34).toPrecision(1) // "1e+1"
+(12.34).toPrecision(2) // "12"
+(12.34).toPrecision(3) // "12.3"
+(12.34).toPrecision(4) // "12.34"
+(12.34).toPrecision(5) // "12.340"
+```
+该方法的参数为有效数字的位数，范围是1到100，超出这个范围会抛出 RangeError 错误。
+
+#### 自定义方法
+注意，数值的自定义方法，只能定义在它的原型对象Number.prototype上面，数值本身是无法自定义属性的。
+```js
+var n = 1;
+n.x = 1;
+n.x // undefined
+```
+
+### String对象
+String对象是 JavaScript 原生提供的三个包装对象之一，用来生成字符串对象。字符串对象是一个类似数组的对象（很像数组，但不是数组）。
+```js
+var s1 = 'abc';
+var s2 = new String('abc');
+
+typeof s1 // "string"
+typeof s2 // "object"
+
+s2.valueOf() // "abc"
+
+new String('abc')   // String {0: "a", 1: "b", 2: "c", length: 3}
+(new String('abc'))[1]  // "b"
+```
+
+#### 静态方法
+##### String.fromCharCode() 
+String对象提供的静态方法（即定义在对象本身，而不是定义在对象实例的方法），主要是String.fromCharCode()。该方法的参数是一个或多个数值，代表 Unicode 码点，返回值是这些码点组成的字符串。String.fromCharCode方法的参数为空，就返回空字符串；否则，返回参数对应的 Unicode 字符串。
+```js
+String.fromCharCode() // ""
+String.fromCharCode(97) // "a"
+String.fromCharCode(104, 101, 108, 108, 111)
+// "hello"
+```
+
+#### 实例方法
+##### String.prototype.charAt()
+charAt方法返回指定位置的字符，参数是从0开始编号的位置。这个方法完全可以用数组下标替代。
+```js
+var s = new String('abc');
+
+s.charAt(1) // "b"
+s.charAt(s.length - 1) // "c"
+```
+如果参数为负数，或大于等于字符串的长度，charAt返回空字符串。
+```js
+'abc'.charAt(-1) // ""
+'abc'.charAt(3) // ""
+```
+##### String.prototype.charCodeAt()
+charCodeAt()方法返回字符串指定位置的 Unicode 码点（十进制表示），相当于String.fromCharCode()的逆操作。如果没有任何参数，charCodeAt返回首字符的 Unicode 码点。如果参数为负数，或大于等于字符串的长度，charCodeAt返回NaN。
+```js
+'abc'.charCodeAt(1) // 98
+'abc'.charCodeAt() // 97
+'abc'.charCodeAt(-1) // NaN
+'abc'.charCodeAt(4) // NaN
+```
+##### String.prototype.substr()
+substr方法用于从原字符串取出子字符串并返回，不改变原字符串，跟slice和substring方法的作用相同。substr方法的第一个参数是子字符串的开始位置（从0开始计算），第二个参数是子字符串的长度。如果省略第二个参数，则表示子字符串一直到原字符串的结束。
+```js
+'JavaScript'.substr(4, 6) // "Script"
+'JavaScript'.substr(4) // "Script"
+```
+如果第一个参数是负数，表示倒数计算的字符位置。如果第二个参数是负数，将被自动转为0，因此会返回空字符串。
+```js
+'JavaScript'.substr(-6) // "Script"
+'JavaScript'.substr(4, -1) // ""
+```
+##### String.prototype.trim()
+trim方法用于去除字符串两端的空格，返回一个新字符串，不改变原字符串。该方法去除的不仅是空格，还包括制表符（\t、\v）、换行符（\n）和回车符（\r）。
+```js
+'  hello world  '.trim()    // "hello world"
+'\r\nabc \t'.trim() // 'abc'
+```
+
+##### String.prototype.match()
+match方法用于确定原字符串是否匹配某个子字符串，返回一个数组，成员为匹配的第一个字符串。如果没有找到匹配，则返回null。
+```js
+'cat, bat, sat, fat'.match('at') // ["at"]
+'cat, bat, sat, fat'.match('xt') // null
+```
+返回的数组还有index属性和input属性，分别表示匹配字符串开始的位置和原始字符串。
+```js
+var matches = 'cat, bat, sat, fat'.match('at');
+matches.index // 1
+matches.input // "cat, bat, sat, fat"
+```
+
+##### String.prototype.search()与String.prototype.replace()
+search方法的用法基本等同于match，但是返回值为匹配的第一个位置。如果没有找到匹配，则返回-1。
+```js
+'cat, bat, sat, fat'.search('at') // 1
+```
+replace方法用于替换匹配的子字符串，一般情况下只替换第一个匹配（除非使用带有g修饰符的正则表达式）。
+```js
+'aaa'.replace('a', 'b') // "baa"
+```
+
+### Math对象
+#### 静态属性
+Math对象的静态属性，提供以下一些数学常数。
+- Math.E：常数e。
+- Math.LN2：2 的自然对数。
+- Math.LN10：10 的自然对数。
+- Math.LOG2E：以 2 为底的e的对数。
+- Math.LOG10E：以 10 为底的e的对数。
+- Math.PI：常数π。
+- Math.SQRT1_2：0.5 的平方根。
+- Math.SQRT2：2 的平方根。
+
+#### 静态方法
+Math对象提供以下一些静态方法。
+- Math.abs()：绝对值
+- Math.ceil()：向上取整
+- Math.floor()：向下取整
+- Math.max()：最大值
+- Math.min()：最小值
+- Math.pow()：幂运算
+- Math.sqrt()：平方根
+- Math.log()：自然对数
+- Math.exp()：e的指数
+- Math.round()：四舍五入
+- Math.random()：随机数
+
+Math对象还提供一系列三角函数方法。
+- Math.sin()：返回参数的正弦（参数为弧度值）
+- Math.cos()：返回参数的余弦（参数为弧度值）
+- Math.tan()：返回参数的正切（参数为弧度值）
+- Math.asin()：返回参数的反正弦（返回值为弧度值）
+- Math.acos()：返回参数的反余弦（返回值为弧度值）
+- Math.atan()：返回参数的反正切（返回值为弧度值）
+
+### JSON对象
+#### JSON.stringify()
+JSON.stringify()方法用于将一个值转为 JSON 字符串。该字符串符合 JSON 格式，并且可以被JSON.parse()方法还原。如果对象的属性是undefined、函数或 XML 对象，该属性会被JSON.stringify()过滤。如果数组的成员是undefined、函数或 XML 对象，则这些值被转成null。
+```js
+JSON.stringify('abc') // ""abc""
+JSON.stringify(1) // "1"
+JSON.stringify(false) // "false"
+JSON.stringify([]) // "[]"
+JSON.stringify({}) // "{}"
+JSON.stringify([1, "false", false]) // '[1,"false",false]'
+JSON.stringify({ name: "张三" })    // '{"name":"张三"}'
+
+var obj = {
+  a: undefined,
+  b: function () {}
+};
+JSON.stringify(obj) // "{}"
+
+var arr = [undefined, function () {}];
+JSON.stringify(arr) // "[null,null]"
+```
+JSON.stringify()方法还可以接受一个数组，作为第二个参数，指定参数对象的哪些属性需要转成字符串。这个类似白名单的数组，只对对象的属性有效，对数组无效。
+```js
+var obj = {
+  'prop1': 'value1',
+  'prop2': 'value2',
+  'prop3': 'value3'
+};
+
+var selectedProperties = ['prop1', 'prop2'];
+
+JSON.stringify(obj, selectedProperties)
+// "{"prop1":"value1","prop2":"value2"}"
+```
+第二个参数还可以是一个函数，用来更改JSON.stringify()的返回值。这个处理函数是递归处理所有的键。如果处理函数返回undefined或没有返回值，则该属性会被忽略。
+```js
+function f(key, value) {
+  if (typeof value === "number") {
+    value = 2 * value;
+  }
+  return value;
+}
+
+JSON.stringify({ a: 1, b: 2 }, f)
+// '{"a": 2,"b": 4}'
+```
+JSON.stringify()还可以接受第三个参数，用于增加返回的 JSON 字符串的可读性。默认返回的是单行字符串，对于大型的 JSON 对象，可读性非常差。第三个参数使得每个属性单独占据一行，并且将每个属性前面添加指定的前缀（不超过10个字符）。
+```js
+// 默认输出
+JSON.stringify({ p1: 1, p2: 2 })
+// JSON.stringify({ p1: 1, p2: 2 })
+
+// 分行输出
+JSON.stringify({ p1: 1, p2: 2 }, null, '\t')
+// {
+// 	"p1": 1,
+// 	"p2": 2
+// }
+```
+
+#### JSON.parse()
+JSON.parse()方法用于将 JSON 字符串转换成对应的值。如果传入的字符串不是有效的 JSON 格式，JSON.parse()方法将报错。为了处理解析错误，可以将JSON.parse()方法放在try...catch代码块中。
+```js
+JSON.parse('{}') // {}
+JSON.parse('true') // true
+JSON.parse('"foo"') // "foo"
+JSON.parse('[1, 5, "false"]') // [1, 5, "false"]
+JSON.parse('null') // null
+
+var o = JSON.parse('{"name": "张三"}');
+o.name // 张三
+```
+JSON.parse()方法可以接受一个处理函数，作为第二个参数，用法与JSON.stringify()方法类似。
+
+JSON.parse()和JSON.stringify()可以结合使用，像下面这样写，实现对象的深拷贝。但是对象内部不能有 JSON 以及不允许的数据类型，比如函数、正则对象、日期对象等。
+```js
+JSON.parse(JSON.stringify(obj))
+```
+
+## 面向对象编程
+### 实例对象与new命令
+#### 构造函数
+构造函数的特点有两个。
+- 函数体内部使用了this关键字，代表了所要生成的对象实例。
+- 生成对象的时候，必须使用new命令。
+
+#### new命令
+##### new命令的原理
+使用new命令时，它后面的函数依次执行下面的步骤。
+1. 创建一个空对象，作为将要返回的对象实例。
+2. 将这个空对象的原型，指向构造函数的prototype属性。
+3. 将这个空对象赋值给函数内部的this关键字。
+4. 开始执行构造函数内部的代码。
+
+也就是说，构造函数内部，this指的是一个新生成的空对象，所有针对this的操作，都会发生在这个空对象上。构造函数之所以叫“构造函数”，就是说这个函数的目的，就是操作一个空对象（即this对象），将其“构造”为需要的样子。
+
+如果构造函数内部有return语句，而且return后面跟着一个对象，new命令会返回return语句指定的对象；否则，就会不管return语句，返回this对象。
+```js
+var Vehicle = function () {
+  this.price = 1000;
+  return 1000;
+};
+
+(new Vehicle()) === 1000
+// false
+```
+但是，如果return语句返回的是一个跟this无关的新对象，new命令会返回这个新对象。
+```js
+var Vehicle = function (){
+  this.price = 1000;
+  return { price: 2000 };
+};
+
+(new Vehicle()).price
+// 2000
+```
+
+##### new.target
+函数内部可以使用new.target属性。如果当前函数是new命令调用，new.target指向当前函数，否则为undefined。使用这个属性，可以判断函数调用的时候，是否使用new命令。
+```js
+function f() {
+  console.log(new.target === f);
+}
+
+f() // false
+new f() // true
+```
+
+##### Object.create() 创建实例对象
+构造函数作为模板，可以生成实例对象。但是，有时拿不到构造函数，只能拿到一个现有的对象。我们希望以这个现有的对象作为模板，生成新的实例对象，这时就可以使用Object.create()方法。
+```js
+var person1 = {
+  name: '张三',
+  age: 38,
+  greeting: function() {
+    console.log('Hi! I\'m ' + this.name + '.');
+  }
+};
+
+var person2 = Object.create(person1);
+
+person2.name // 张三
+person2.greeting() // Hi! I'm 张三.
+```
+
+### this关键字
+this可以用在构造函数之中，表示实例对象。除此之外，this还可以用在别的场合。但不管是什么场合，this都有一个共同点：它总是返回一个对象。
+
+this的指向是可变的。只要函数被赋给另一个变量，this的指向就会变。
+
+由于函数可以在不同的运行环境执行，所以需要有一种机制，能够在函数体内部获得当前的运行环境（context）。所以，this就出现了，它的设计目的就是在函数体内部，指代函数当前的运行环境。
+
+#### 使用场合
+##### 全局环境
+全局环境使用this，它指的就是顶层对象window。不管是不是在函数内部，只要是在全局环境下运行，this就是指顶层对象window。
+```js
+this === window // true
+
+function f() {
+  console.log(this === window);
+}
+f() // true
+```
+
+##### 构造函数
+构造函数中的this，指的是实例对象。
+```js
+var Obj = function (p) {
+  this.p = p;
+};
+
+var o = new Obj(1);
+o.p // 1
+```
+
+##### 对象的方法
+如果对象的方法里面包含this，this的指向就是方法运行时所在的对象。该方法赋值给另一个对象，就会改变this的指向。
+```js
+var obj ={
+  foo: function () {
+    console.log(this);
+  }
+};
+
+obj.foo() // obj
+```
+但是，下面这几种用法，都会改变this的指向。obj.foo就是一个值。这个值真正调用的时候，运行环境已经不是obj了，而是全局环境，所以this不再指向obj。
+```js
+// 情况一
+(obj.foo = obj.foo)() // window
+// 情况二
+(false || obj.foo)() // window
+// 情况三
+(1, obj.foo)() // window
+```
+可以这样理解，JavaScript 引擎内部，obj和obj.foo储存在两个内存地址，称为地址一和地址二。obj.foo()这样调用时，是从地址一调用地址二，因此地址二的运行环境是地址一，this指向obj。但是，上面三种情况，都是直接取出地址二进行调用，这样的话，运行环境就是全局环境，因此this指向全局环境。
+
+如果this所在的方法不在对象的第一层，这时this只是指向当前一层的对象，而不会继承更上面的层。
+```js
+var a = {
+  p: 'Hello',
+  b: {
+    m: function() {
+      console.log(this.p);
+    }
+  }
+};
+
+a.b.m() // undefined
+```
+
+#### 使用注意点
+##### 避免多层this
+由于this的指向是不确定的，所以切勿在函数中包含多层的this。使用一个变量固定this的值，然后内层函数调用这个变量，是非常常见的做法，请务必掌握。
+
+##### 避免数组处理方法中的this
+```js
+var o = {
+  v: 'hello',
+  p: [ 'a1', 'a2' ],
+  f: function f() {
+    this.p.forEach(function (item) {
+      console.log(this.v + ' ' + item);
+    });
+  }
+}
+
+o.f()
+// undefined a1
+// undefined a2
+```
+上面代码中，foreach方法的回调函数中的this，其实是指向window对象，因此取不到o.v的值。原因跟上一段的多层this是一样的，就是内层的this不指向外部，而指向顶层对象。
+
+解决这个问题的一种方法，就是前面提到的，使用中间变量固定this。
+```js
+var o = {
+  v: 'hello',
+  p: [ 'a1', 'a2' ],
+  f: function f() {
+    var that = this;
+    this.p.forEach(function (item) {
+      console.log(that.v+' '+item);
+    });
+  }
+}
+
+o.f()
+// hello a1
+// hello a2
+```
+另一种方法是将this当作foreach方法的第二个参数，固定它的运行环境。
+```js
+var o = {
+  v: 'hello',
+  p: [ 'a1', 'a2' ],
+  f: function f() {
+    this.p.forEach(function (item) {
+      console.log(this.v + ' ' + item);
+    }, this);
+  }
+}
+
+o.f()
+// hello a1
+// hello a2
+```
+
+#### 绑定this的方法
+有时，需要把this固定下来，避免出现意想不到的情况。JavaScript 提供了call、apply、bind这三个方法，来切换/固定this的指向。
+##### Function.prototype.call()
+函数实例的call方法，可以指定函数内部this的指向（即函数执行时所在的作用域），然后在所指定的作用域中，调用该函数。
+```js
+var obj = {};
+
+var f = function () {
+  return this;
+};
+
+f() === window // true
+f.call(obj) === obj // true
+```
+call方法的参数，应该是一个对象。如果参数为空、null和undefined，则默认传入全局对象。
+```js
+var n = 123;
+var obj = { n: 456 };
+
+function a() {
+  console.log(this.n);
+}
+
+a.call() // 123
+a.call(null) // 123
+a.call(undefined) // 123
+a.call(window) // 123
+a.call(obj) // 456
+```
+如果call方法的参数是一个原始值，那么这个原始值会自动转成对应的包装对象，然后传入call方法。
+```js
+var f = function () {
+  return this;
+};
+
+f.call(5)
+// Number {[[PrimitiveValue]]: 5}
+```
+call方法还可以接受多个参数。call的第一个参数就是this所要指向的那个对象，后面的参数则是函数调用时所需的参数。
+```js
+function add(a, b) {
+  return a + b;
+}
+
+add.call(this, 1, 2) // 3
+```
+
+##### Function.prototype.apply()
+apply方法的作用与call方法类似，也是改变this指向，然后再调用该函数。唯一的区别就是，它接收一个数组作为函数执行时的参数。apply方法的第一个参数也是this所要指向的那个对象，如果设为null或undefined，则等同于指定全局对象。第二个参数则是一个数组，该数组的所有成员依次作为参数，传入原函数。原函数的参数，在call方法中必须一个个添加，但是在apply方法中，必须以数组形式添加。
+```js
+function f(x, y){
+  console.log(x + y);
+}
+
+f.call(null, 1, 1) // 2
+f.apply(null, [1, 1]) // 2
+```
+
+##### Function.prototype.bind()
+bind()方法用于将函数体内的this绑定到某个对象，然后返回一个新函数。
+```js
+var counter = {
+  count: 0,
+  inc: function () {
+    this.count++;
+  }
+};
+
+// 注意此处inc不太括号，即不执行只是引用inc函数
+var func = counter.inc.bind(counter);
+func();
+counter.count // 1
+```
+bind()还可以接受更多的参数，将这些参数绑定原函数的参数。
+```js
+var add = function (x, y) {
+  return x * this.m + y * this.n;
+}
+
+var obj = {
+  m: 2,
+  n: 2
+};
+
+var newAdd = add.bind(obj, 5);
+newAdd(5) // 20
+```
+如果bind()方法的第一个参数是null或undefined，等于将this绑定到全局对象，函数运行时this指向顶层对象（浏览器为window）。
+
+**bind()使用时需要注意的问题**：
+- 每一次返回一个新函数：bind()方法每运行一次，就返回一个新函数，这会产生一些问题。比如React的类组件中，render方法每次执行时，都会返回一个新的函数，这会导致组件的重新渲染。
+- 结合回调函数使用：一个常见的错误是，将包含this的方法直接当作回调函数。解决方法就是使用bind()方法，将counter.inc()绑定counter。
+```js
+var counter = {
+  count: 0,
+  inc: function () {
+    'use strict';
+    this.count++;
+  }
+};
+
+function callIt(callback) {
+  callback();
+}
+
+callIt(counter.inc.bind(counter));
+counter.count // 1
+```
+- 结合call()方法使用：利用bind()方法，可以改写一些 JavaScript 原生方法的使用形式。
+
+### 对象的继承
+#### 原型对象
+##### 构造函数的缺点
+JavaScript 通过构造函数生成新对象，因此构造函数可以视为对象的模板。实例对象的属性和方法，可以定义在构造函数内部。通过构造函数为实例对象定义属性，虽然很方便，但是有一个缺点。同一个构造函数的多个实例之间，无法共享属性，从而造成对系统资源的浪费。
+```js
+function Cat(name, color) {
+  this.name = name;
+  this.color = color;
+  this.meow = function () {
+    console.log('喵喵');
+  };
+}
+
+var cat1 = new Cat('大毛', '白色');
+var cat2 = new Cat('二毛', '黑色');
+
+cat1.meow === cat2.meow
+// false
+```
+上面代码中，cat1和cat2是同一个构造函数的两个实例，它们都具有meow方法。由于meow方法是生成在每个实例对象上面，所以两个实例就生成了两次。也就是说，每新建一个实例，就会新建一个meow方法。这既没有必要，又浪费系统资源，因为所有meow方法都是同样的行为，完全应该共享。
+
+这个问题的解决方法，就是 JavaScript 的原型对象（prototype）。
+
+##### prototype属性的作用
+JavaScript 继承机制的设计思想就是，原型对象的所有属性和方法，都能被实例对象共享。也就是说，如果属性和方法定义在原型上，那么所有实例对象就能共享，不仅节省了内存，还体现了实例对象之间的联系。
+
+JavaScript 规定，每个函数都有一个prototype属性，指向一个对象。
+```js
+function f() {}
+typeof f.prototype // "object"
+```
+对于普通函数来说，该属性基本无用。但是，对于构造函数来说，生成实例的时候，该属性会自动成为实例对象的原型。原型对象的属性不是实例对象自身的属性。只要修改原型对象，变动就立刻会体现在所有实例对象上。
+```js
+function Animal(name) {
+  this.name = name;
+}
+Animal.prototype.color = 'white';
+
+var cat1 = new Animal('大毛');
+var cat2 = new Animal('二毛');
+
+cat1.color // 'white'
+cat2.color // 'white'
+
+Animal.prototype.color = 'yellow';
+
+cat1.color // "yellow"
+cat2.color // "yellow"
+```
+上面代码中，原型对象的color属性的值变为yellow，两个实例对象的color属性立刻跟着变了。这是因为实例对象其实没有color属性，都是读取原型对象的color属性。也就是说，当实例对象本身没有某个属性或方法的时候，它会到原型对象去寻找该属性或方法。这就是原型对象的特殊之处。如果实例对象自身就有某个属性或方法，它就不会再去原型对象寻找这个属性或方法。
+```js
+cat1.color = 'black';
+
+cat1.color // 'black'
+cat2.color // 'yellow'
+Animal.prototype.color // 'yellow';
+```
+
+原型对象的作用，就是定义所有实例对象共享的属性和方法。这也是它被称为原型对象的原因，而实例对象可以视作从原型对象衍生出来的子对象。
+
+#### 原型链
+JavaScript 规定，所有对象都有自己的原型对象（prototype）。一方面，任何一个对象，都可以充当其他对象的原型；另一方面，由于原型对象也是对象，所以它也有自己的原型。因此，就会形成一个“原型链”（prototype chain）：对象到原型，再到原型的原型……
+
+如果一层层地上溯，所有对象的原型最终都可以上溯到Object.prototype，即Object构造函数的prototype属性。也就是说，所有对象都继承了Object.prototype的属性。这就是所有对象都有valueOf和toString方法的原因，因为这是从Object.prototype继承的。
+
+Object.prototype对象向上追溯的原型是null。null没有任何属性和方法，也没有自己的原型。因此，原型链的尽头就是null。
+```js
+Object.getPrototypeOf(Object.prototype)
+// null
+```
+读取对象的某个属性时，JavaScript 引擎先寻找对象本身的属性，如果找不到，就到它的原型去找，如果还是找不到，就到原型的原型去找。如果直到最顶层的Object.prototype还是找不到，则返回undefined。如果对象自身和它的原型，都定义了一个同名属性，那么优先读取对象自身的属性，这叫做“覆盖”（overriding）。
+
+注意，一级级向上，在整个原型链上寻找某个属性，对性能是有影响的。所寻找的属性在越上层的原型对象，对性能的影响越大。如果寻找某个不存在的属性，将会遍历整个原型链。
+
+#### constructor属性
+prototype对象有一个constructor属性，默认指向prototype对象所在的构造函数。
+```js
+function P() {}
+P.prototype.constructor === P // true
+```
+
+由于constructor属性定义在prototype对象上面，意味着可以被所有实例对象继承。
+```js
+function P() {}
+var p = new P();
+
+p.constructor === P // true
+p.constructor === P.prototype.constructor // true
+p.hasOwnProperty('constructor') // false
+```
+
+constructor属性的作用是，可以得知某个实例对象，到底是哪一个构造函数产生的。
+```js
+function F() {};
+var f = new F();
+
+f.constructor === F // true
+f.constructor === RegExp // false
+```
+另一方面，有了constructor属性，就可以从一个实例对象新建另一个实例。
+```js
+function Constr() {}
+var x = new Constr();
+
+var y = new x.constructor();
+y instanceof Constr // true
+```
+
+constructor属性表示原型对象与构造函数之间的关联关系，如果修改了原型对象，一般会同时修改constructor属性，防止引用的时候出错。所以，修改原型对象时，一般要同时修改constructor属性的指向。
+```js
+function Person(name) {
+  this.name = name;
+}
+
+Person.prototype.constructor === Person // true
+
+Person.prototype = {
+  method: function () {}
+};
+
+Person.prototype.constructor === Person // false
+Person.prototype.constructor === Object // true
+```
+
+#### instanceof运算符
+instanceof运算符的左边是实例对象，右边是构造函数。它会检查右边构造函数的原型对象（prototype），是否在左边对象的原型链上。因此，下面两种写法是等价的。
+```js
+var v = new Vehicle();
+v instanceof Vehicle // true
+// 等同于
+Vehicle.prototype.isPrototypeOf(v)  // true
+```
+由于instanceof检查整个原型链，因此同一个实例对象，可能会对多个构造函数都返回true。
+```js
+var d = new Date();
+d instanceof Date // true
+d instanceof Object // true
+```
+
+由于任意对象（除了null）都是Object的实例，所以instanceof运算符可以判断一个值是否为非null的对象。
+```js
+var obj = { foo: 123 };
+obj instanceof Object // true
+null instanceof Object // false
+```
+instanceof的原理是检查右边构造函数的prototype属性，是否在左边对象的原型链上。有一种特殊情况，就是左边对象的原型链上，只有null对象。这时，instanceof判断会失真。
+```js
+var obj = Object.create(null);
+typeof obj // "object"
+obj instanceof Object // false
+```
+
+instanceof运算符只能用于对象，不适用原始类型的值。此外，对于undefined和null，instanceof运算符总是返回false。
+```js
+var s = 'hello';
+s instanceof String // false
+undefined instanceof Object // false
+null instanceof Object // false
+```
+
+#### 构造函数的继承
+让一个构造函数继承另一个构造函数，是非常常见的需求。这可以分成两步实现。第一步是在子类的构造函数中，调用父类的构造函数。
+```js
+function Sub(value) {
+  Super.call(this);
+  this.prop = value;
+}
+```
+第二步，是让子类的原型指向父类的原型，这样子类就可以继承父类原型。
+```js
+Sub.prototype = Object.create(Super.prototype);
+Sub.prototype.constructor = Sub;
+Sub.prototype.method = '...';
+```
+另外一种写法是Sub.prototype等于一个父类实例。
+```js
+Sub.prototype = new Super();
+```
+
+#### 多重继承
+JavaScript 不提供多重继承功能，即不允许一个对象同时继承多个对象。但是，可以通过变通方法，实现这个功能。
+```js
+function M1() {
+  this.hello = 'hello';
+}
+
+function M2() {
+  this.world = 'world';
+}
+
+function S() {
+  M1.call(this);
+  M2.call(this);
+}
+
+// 继承 M1
+S.prototype = Object.create(M1.prototype);
+// 继承链上加入 M2
+Object.assign(S.prototype, M2.prototype);
+
+// 指定构造函数
+S.prototype.constructor = S;
+
+var s = new S();
+s.hello // 'hello'
+s.world // 'world'
+```
+上面代码中，子类S同时继承了父类M1和M2。这种模式又称为 Mixin（混入）。
+
+#### 模块
+##### 基本实现方法
+模块是实现特定功能的一组属性和方法的封装。
+
+简单的做法是把模块写成一个对象，所有的模块成员都放到这个对象里面。使用的时候，就是调用这个对象的属性。但是，这样的写法会暴露所有模块成员，内部状态可以被外部改写。比如，外部代码可以直接改变内部计数器的值。
+```js
+// 封装
+var module1 = new Object({
+　_count : 0,
+　m1 : function (){
+　　//...
+　},
+　m2 : function (){
+  　//...
+　}
+});
+
+// 使用
+module1.m1();
+
+// 篡改
+module1._count = 5;
+```
+
+##### 封装私有变量：构造函数的写法
+我们可以利用构造函数，封装私有变量。
+```js
+function StringBuilder() {
+  var buffer = [];
+
+  this.add = function (str) {
+     buffer.push(str);
+  };
+
+  this.toString = function () {
+    return buffer.join('');
+  };
+}
+```
+上面代码中，buffer是模块的私有变量。一旦生成实例对象，外部是无法直接访问buffer的。但是，这种方法将私有变量封装在构造函数中，导致构造函数与实例对象是一体的，总是存在于内存之中，无法在使用完成后清除。这意味着，构造函数有双重作用，既用来塑造实例对象，又用来保存实例对象的数据，违背了构造函数与实例对象在数据上相分离的原则（即实例对象的数据，不应该保存在实例对象以外）。同时，非常耗费内存。事实上这就是一个闭包。
+
+```js
+function StringBuilder() {
+  this._buffer = [];
+}
+
+StringBuilder.prototype = {
+  constructor: StringBuilder,
+  add: function (str) {
+    this._buffer.push(str);
+  },
+  toString: function () {
+    return this._buffer.join('');
+  }
+};
+```
+这种方法将私有变量放入实例对象中，好处是看上去更自然，但是它的私有变量可以从外部读写，不是很安全。
+
+##### 封装私有变量：立即执行函数（IIFE）的写法
+另一种做法是使用“立即执行函数”（IIFE），将相关的属性和方法封装在一个函数作用域里面，可以达到不暴露私有成员的目的。这种写法外部代码无法读取内部的_count变量。
+```js
+var module1 = (function () {
+　var _count = 0;
+　var m1 = function () {
+　  //...
+　};
+　var m2 = function () {
+　　//...
+　};
+　return {
+　　m1 : m1,
+　　m2 : m2
+　};
+})();
+
+console.info(module1._count); //undefined
+```
+上面的module1就是 JavaScript 模块的基本写法。
+
+##### 模块的放大模式
+如果一个模块很大，必须分成几个部分，或者一个模块需要继承另一个模块，这时就有必要采用“放大模式”（augmentation）。
+```js
+var module1 = (function (mod){
+　mod.m3 = function () {
+　　//...
+　};
+　return mod;
+})(module1);
+```
+上面的代码为module1模块添加了一个新方法m3()，然后返回新的module1模块。
+
+在浏览器环境中，模块的各个部分通常都是从网上获取的，有时无法知道哪个部分会先加载。如果采用上面的写法，第一个执行的部分有可能加载一个不存在空对象，这时就要采用"宽放大模式"（Loose augmentation）。
+```js
+var module1 = (function (mod) {
+　//...
+　return mod;
+})(window.module1 || {});
+```
+与"放大模式"相比，“宽放大模式”就是“立即执行函数”的参数可以是空对象。
+
+### Object对象的相关方法
+#### Object.getPrototypeOf()
+Object.getPrototypeOf方法返回参数对象的原型。这是获取原型对象的标准方法。
+```js
+var F = function () {};
+var f = new F();
+Object.getPrototypeOf(f) === F.prototype // true
+```
+下面是几种特殊对象的原型。
+```js
+// 空对象的原型是 Object.prototype
+Object.getPrototypeOf({}) === Object.prototype // true
+
+// Object.prototype 的原型是 null
+Object.getPrototypeOf(Object.prototype) === null // true
+
+// 函数的原型是 Function.prototype
+function f() {}
+Object.getPrototypeOf(f) === Function.prototype // true
+```
+
+#### Object.setPrototypeOf()
+Object.setPrototypeOf方法为参数对象设置原型，返回该参数对象。它接受两个参数，第一个是现有对象，第二个是原型对象。
+```js
+var a = {};
+var b = {x: 1};
+Object.setPrototypeOf(a, b);
+
+Object.getPrototypeOf(a) === b // true
+a.x // 1
+```
+new命令可以使用Object.setPrototypeOf方法模拟。
+```js
+var F = function () {
+  this.foo = 'bar';
+};
+
+var f = new F();
+// 等同于
+var f = Object.setPrototypeOf({}, F.prototype);
+F.call(f);
+```
+上面代码中，new命令新建实例对象，其实可以分成两步。第一步，将一个空对象的原型设为构造函数的prototype属性（上例是F.prototype）；第二步，将构造函数内部的this绑定这个空对象，然后执行构造函数，使得定义在this上面的方法和属性（上例是this.foo），都转移到这个空对象上。
+
+#### Object.create() 
+生成实例对象的常用方法是，使用new命令让构造函数返回一个实例。但是很多时候，只能拿到一个实例对象，它可能根本不是由构建函数生成的，那么能不能从一个实例对象，生成另一个实例对象呢？
+
+JavaScript 提供了Object.create()方法，用来满足这种需求。该方法接受一个对象作为参数，然后以它为原型，返回一个实例对象。该实例完全继承原型对象的属性。
+```js
+// 原型对象
+var A = {
+  print: function () {
+    console.log('hello');
+  }
+};
+
+// 实例对象
+var B = Object.create(A);
+
+Object.getPrototypeOf(B) === A // true
+B.print() // hello
+B.print === A.print // true
+```
+实际上，Object.create()方法可以用下面的代码代替。
+```js
+if (typeof Object.create !== 'function') {
+  Object.create = function (obj) {
+    function F() {}
+    F.prototype = obj;
+    return new F();
+  };
+}
+```
+如果想要生成一个不继承任何属性（比如没有toString()和valueOf()方法）的对象，可以将Object.create()的参数设为null。
+```js
+var obj = Object.create(null);
+
+obj.valueOf()
+// TypeError: Object [object Object] has no method 'valueOf'
+```
+使用Object.create()方法的时候，必须提供对象原型，即参数不能为空，或者不是对象，否则会报错。
+```js
+Object.create()
+// TypeError: Object prototype may only be an Object or null
+Object.create(123)
+// TypeError: Object prototype may only be an Object or null
+```
+Object.create()方法生成的新对象，动态继承了原型。在原型上添加或修改任何方法，会立刻反映在新对象之上。
+```js
+var obj1 = { p: 1 };
+var obj2 = Object.create(obj1);
+
+obj1.p = 2;
+obj2.p // 2
+```
+除了对象的原型，Object.create()方法还可以接受第二个参数。该参数是一个属性描述对象，它所描述的对象属性，会添加到实例对象，作为该对象自身的属性。
+```js
+var obj = Object.create({}, {
+  p1: {
+    value: 123,
+    enumerable: true,
+    configurable: true,
+    writable: true,
+  },
+  p2: {
+    value: 'abc',
+    enumerable: true,
+    configurable: true,
+    writable: true,
+  }
+});
+
+// 等同于
+var obj = Object.create({});
+obj.p1 = 123;
+obj.p2 = 'abc';
+```
+Object.create()方法生成的对象，继承了它的原型对象的构造函数。
+```js
+function A() {}
+var a = new A();
+var b = Object.create(a);
+
+b.constructor === A // true
+b instanceof A // true
+```
+
+#### Object.prototype.isPrototypeOf()
+实例对象的isPrototypeOf方法，用来判断该对象是否为参数对象的原型。由于Object.prototype处于原型链的最顶端，所以对各种实例都返回true，只有直接继承自null的对象除外。
+```js
+Object.prototype.isPrototypeOf({}) // true
+Object.prototype.isPrototypeOf([]) // true
+Object.prototype.isPrototypeOf(/xyz/) // true
+Object.prototype.isPrototypeOf(Object.create(null)) // false
+```
+
+#### Object.prototype.__proto__ 
+实例对象的__proto__属性（前后各两个下划线），返回该对象的原型。该属性可读写。
+```js
+var obj = {};
+var p = {};
+
+obj.__proto__ = p;
+Object.getPrototypeOf(obj) === p // true
+```
+上面代码通过__proto__属性，将p对象设为obj对象的原型。
+
+根据语言标准，__proto__属性只有浏览器才需要部署，其他环境可以没有这个属性。它前后的两根下划线，表明它本质是一个内部属性，不应该对使用者暴露。因此，应该尽量少用这个属性，而是用Object.getPrototypeOf()和Object.setPrototypeOf()，进行原型对象的读写操作。
+
+#### Object.getOwnPropertyNames()
+Object.getOwnPropertyNames方法返回一个数组，成员是参数对象本身的所有属性的键名，不包含继承的属性键名。
+```js
+Object.getOwnPropertyNames(Date)
+// ["parse", "arguments", "UTC", "caller", "name", "prototype", "now", "length"]
+```
+对象本身的属性之中，有的是可以遍历的（enumerable），有的是不可以遍历的。Object.getOwnPropertyNames方法返回所有键名，不管是否可以遍历。只获取那些可以遍历的属性，使用Object.keys方法。
+```js
+Object.keys(Date) // []
+```
+
+#### Object.prototype.hasOwnProperty()
+对象实例的hasOwnProperty方法返回一个布尔值，用于判断某个属性定义在对象自身，还是定义在原型链上。
+```js
+Date.hasOwnProperty('length') // true
+Date.hasOwnProperty('toString') // false
+```
+hasOwnProperty方法是 JavaScript 之中唯一一个处理对象属性时，不会遍历原型链的方法。
+
+#### in 运算符和 for...in 循环
+in运算符返回一个布尔值，表示一个对象是否具有某个属性。它不区分该属性是对象自身的属性，还是继承的属性。in运算符常用于检查一个属性是否存在。
+```js
+'length' in Date // true
+'toString' in Date // true
+```
+获得对象的所有可遍历属性（不管是自身的还是继承的），可以使用for...in循环。
+```js
+var o1 = { p1: 123 };
+
+var o2 = Object.create(o1, {
+  p2: { value: "abc", enumerable: true }
+});
+
+for (p in o2) {
+  console.info(p);
+}
+// p2
+// p1
+```
+为了在for...in循环中获得对象自身的属性，可以采用hasOwnProperty方法判断一下。
+```js
+for ( var name in object ) {
+  if ( object.hasOwnProperty(name) ) {
+    /* loop code */
+  }
+}
+```
+获得对象的所有属性（不管是自身的还是继承的，也不管是否可枚举），可以使用下面的函数。
+```js
+function inheritedPropertyNames(obj) {
+  var props = {};
+  while(obj) {
+    Object.getOwnPropertyNames(obj).forEach(function(p) {
+      props[p] = true;
+    });
+    obj = Object.getPrototypeOf(obj);
+  }
+  return Object.getOwnPropertyNames(props);
+}
+```
+
+#### 对象的拷贝
+如果要拷贝一个对象，需要做到下面两件事情。
+- 确保拷贝后的对象，与原对象具有同样的原型。
+- 确保拷贝后的对象，与原对象具有同样的实例属性。
+
+下面就是根据上面两点，实现的对象拷贝函数。
+```js
+function copyObject(orig) {
+  var copy = Object.create(Object.getPrototypeOf(orig));
+  copyOwnPropertiesFrom(copy, orig);
+  return copy;
+}
+
+function copyOwnPropertiesFrom(target, source) {
+  Object
+    .getOwnPropertyNames(source)
+    .forEach(function (propKey) {
+      var desc = Object.getOwnPropertyDescriptor(source, propKey);
+      Object.defineProperty(target, propKey, desc);
+    });
+  return target;
+}
+```
+
+另一种更简单的写法，是利用 ES2017 才引入标准的Object.getOwnPropertyDescriptors方法。
+```js
+function copyObject(orig) {
+  return Object.create(
+    Object.getPrototypeOf(orig),
+    Object.getOwnPropertyDescriptors(orig)
+  );
+```
+
+### 严格模式
+严格模式是从 ES5 进入标准的，主要目的有以下几个。
+- 明确禁止一些不合理、不严谨的语法，减少 JavaScript 语言的一些怪异行为。
+- 增加更多报错的场合，消除代码运行的一些不安全之处，保证代码运行的安全。
+- 提高编译器效率，提升运行速度。
+- 为未来新版本的 JavaScript 语法做好铺垫。
+
+总之，严格模式体现了 JavaScript 更合理、更安全、更严谨的发展方向。
+
+#### 显式报错
+严格模式使得 JavaScript 的语法变得更严格，更多的操作会显式报错。其中有些操作，在正常模式下只会默默地失败，不会报错。
+##### 只读属性不可写
+严格模式下，对只读属性赋值，或者删除不可配置（non-configurable）属性都会报错。
+##### 只设置了取值器的属性不可写
+严格模式下，对一个只有取值器（getter）、没有存值器（setter）的属性赋值，会报错。
+##### 禁止扩展的对象不可扩展
+严格模式下，对禁止扩展的对象添加新属性，会报错。
+##### eval、arguments 不可用作标识名
+严格模式下，使用eval或者arguments作为标识名，将会报错。
+##### 函数不能有重名的参数
+正常模式下，如果函数有多个重名的参数，可以用arguments[i]读取。严格模式下，这属于语法错误。
+##### 禁止八进制的前缀0表示法
+正常模式下，整数的第一位如果是0，表示这是八进制数，比如0100等于十进制的64。严格模式禁止这种表示法，整数第一位为0，将报错。
+
+#### 增强的安全措施
+##### 全局变量显式声明
+正常模式中，如果一个变量没有声明就赋值，默认是全局变量。严格模式禁止这种用法，全局变量必须显式声明。因此，严格模式下，变量都必须先声明，然后再使用。
+##### 禁止 this 关键字指向全局对象 
+正常模式下，函数内部的this可能会指向全局对象，严格模式禁止这种用法，避免无意间创造全局变量。这种限制对于构造函数尤其有用。使用构造函数时，有时忘了加new，这时this不再指向全局对象，而是报错。
+
+严格模式下，函数直接调用时（不使用new调用），函数内部的this表示undefined（未定义），因此可以用call、apply和bind方法，将任意值绑定在this上面。正常模式下，this指向全局对象，如果绑定的值是非对象，将被自动转为对象再绑定上去，而null和undefined这两个无法转成对象的值，将被忽略。
+
+##### 禁止使用 fn.callee、fn.caller
+函数内部不得使用fn.caller、fn.arguments，否则会报错。这意味着不能在函数内部得到调用栈了。
+
+##### 禁止使用 arguments.callee、arguments.caller
+arguments.callee和arguments.caller是两个历史遗留的变量，从来没有标准化过，现在已经取消了。正常模式下调用它们没有什么作用，但是不会报错。严格模式明确规定，函数内部使用arguments.callee、arguments.caller将会报错。
+
+##### 禁止删除变量
+严格模式下无法删除变量，如果使用delete命令删除一个变量，会报错。只有对象的属性，且属性的描述对象的configurable属性设置为true，才能被delete命令删除。
+
+#### 静态绑定
+JavaScript 语言的一个特点，就是允许“动态绑定”，即某些属性和方法到底属于哪一个对象，不是在编译时确定的，而是在运行时（runtime）确定的。
+
+严格模式对动态绑定做了一些限制。某些情况下，只允许静态绑定。也就是说，属性和方法到底归属哪个对象，必须在编译阶段就确定。这样做有利于编译效率的提高，也使得代码更容易阅读，更少出现意外。
+##### 禁止使用 with 语句
+严格模式下，使用with语句将报错。因为with语句无法在编译时就确定，某个属性到底归属哪个对象，从而影响了编译效果。
+##### 创设 eval 作用域
+正常模式下，JavaScript 语言有两种变量作用域（scope）：全局作用域和函数作用域。严格模式创设了第三种作用域：eval作用域。
+
+正常模式下，eval语句的作用域，取决于它处于全局作用域，还是函数作用域。严格模式下，eval语句本身就是一个作用域，不再能够在其所运行的作用域创设新的变量了，也就是说，eval所生成的变量只能用于eval内部。
+
+##### arguments 不再追踪参数的变化
+变量arguments代表函数的参数。严格模式下，函数内部改变参数与arguments的联系被切断了，两者不再存在联动关系。
+
+
+#### 向下一个版本的JavaScript过渡
+JavaScript 语言的下一个版本是 ECMAScript 6，为了平稳过渡，严格模式引入了一些 ES6 语法。
+##### 非函数代码块不得声明函数
+ES6 会引入块级作用域。为了与新版本接轨，ES5 的严格模式只允许在全局作用域或函数作用域声明函数。也就是说，不允许在非函数的代码块内声明函数。
+```js
+'use strict';
+if (true) {
+  function f1() { } // 语法错误
+}
+
+for (var i = 0; i < 5; i++) {
+  function f2() { } // 语法错误
+}
+```
+注意，如果是 ES6 环境，上面的代码不会报错，因为 ES6 允许在代码块之中声明函数。
+
+##### 保留字
+为了向将来 JavaScript 的新版本过渡，严格模式新增了一些保留字（implements、interface、let、package、private、protected、public、static、yield等）。使用这些词作为变量名将会报错。
+```js
+function package(protected) { // 语法错误
+  'use strict';
+  var implements; // 语法错误
+}
+```
+
+## 异步操作
+### 单线程模型
+单线程模型指的是，JavaScript 只在一个线程上运行。也就是说，JavaScript 同时只能执行一个任务，其他任务都必须在后面排队等待。
+
+JavaScript 只在一个线程上运行，不代表 JavaScript 引擎只有一个线程。事实上，JavaScript 引擎有多个线程，单个脚本只能在一个线程上运行（称为主线程），其他线程都是在后台配合。
+
+JavaScript 之所以采用单线程，而不是多线程，跟历史有关系。JavaScript 从诞生起就是单线程，原因是不想让浏览器变得太复杂，因为多线程需要共享资源、且有可能修改彼此的运行结果，对于一种网页脚本语言来说，这就太复杂了。如果 JavaScript 同时有两个线程，一个线程在网页 DOM 节点上添加内容，另一个线程删除了这个节点，这时浏览器应该以哪个线程为准？是不是还要有锁机制？所以，为了避免复杂性，JavaScript 一开始就是单线程，这已经成了这门语言的核心特征，将来也不会改变。
+
+这种模式的好处是实现起来比较简单，执行环境相对单纯；坏处是只要有一个任务耗时很长，后面的任务都必须排队等着，会拖延整个程序的执行。常见的浏览器无响应（假死），往往就是因为某一段 JavaScript 代码长时间运行（比如死循环），导致整个页面卡在这个地方，其他任务无法执行。JavaScript 语言本身并不慢，慢的是读写外部数据，比如等待 Ajax 请求返回结果。这个时候，如果对方服务器迟迟没有响应，或者网络不通畅，就会导致脚本的长时间停滞。
+
+如果排队是因为计算量大，CPU 忙不过来，倒也算了，但是很多时候 CPU 是闲着的，因为 IO 操作（输入输出）很慢（比如 Ajax 操作从网络读取数据），不得不等着结果出来，再往下执行。JavaScript 语言的设计者意识到，这时 CPU 完全可以不管 IO 操作，挂起处于等待中的任务，先运行排在后面的任务。等到 IO 操作返回了结果，再回过头，把挂起的任务继续执行下去。这种机制就是 JavaScript 内部采用的“事件循环”机制（Event Loop）。
+
+单线程模型虽然对 JavaScript 构成了很大的限制，但也因此使它具备了其他语言不具备的优势。如果用得好，JavaScript 程序是不会出现堵塞的，这就是 Node.js 可以用很少的资源，应付大流量访问的原因。
+
+为了利用多核 CPU 的计算能力，HTML5 提出 Web Worker 标准，允许 JavaScript 脚本创建多个线程，但是子线程完全受主线程控制，且不得操作 DOM。所以，这个新标准并没有改变 JavaScript 单线程的本质。
+
+### 同步任务与异步任务
+程序里面所有的任务，可以分成两类：同步任务（synchronous）和异步任务（asynchronous）。
+
+同步任务是那些没有被引擎挂起、在主线程上排队执行的任务。只有前一个任务执行完毕，才能执行后一个任务。
+
+异步任务是那些被引擎放在一边，不进入主线程、而进入任务队列的任务。只有引擎认为某个异步任务可以执行了（比如 Ajax 操作从服务器得到了结果），该任务（采用回调函数的形式）才会进入主线程执行。排在异步任务后面的代码，不用等待异步任务结束会马上运行，也就是说，异步任务不具有“堵塞”效应。
+
+举例来说，Ajax 操作可以当作同步任务处理，也可以当作异步任务处理，由开发者决定。如果是同步任务，主线程就等着 Ajax 操作返回结果，再往下执行；如果是异步任务，主线程在发出 Ajax 请求以后，就直接往下执行，等到 Ajax 操作有了结果，主线程再执行对应的回调函数。
+
+### 任务队列与事件循环
+JavaScript 运行时，除了一个正在运行的主线程，引擎还提供一个任务队列（task queue），里面是各种需要当前程序处理的异步任务。（实际上，根据异步任务的类型，存在多个任务队列。为了方便理解，这里假设只存在一个队列。）
+
+首先，主线程会去执行所有的同步任务。等到同步任务全部执行完，就会去看任务队列里面的异步任务。如果满足条件，那么异步任务就重新进入主线程开始执行，这时它就变成同步任务了。等到执行完，下一个异步任务再进入主线程开始执行。一旦任务队列清空，程序就结束执行。
+
+异步任务的写法通常是回调函数。一旦异步任务重新进入主线程，就会执行对应的回调函数。如果一个异步任务没有回调函数，就不会进入任务队列，也就是说，不会重新进入主线程，因为没有用回调函数指定下一步的操作。
+
+JavaScript 引擎怎么知道异步任务有没有结果，能不能进入主线程呢？答案就是引擎在不停地检查，一遍又一遍，只要同步任务执行完了，引擎就会去检查那些挂起来的异步任务，是不是可以进入主线程了。这种循环检查的机制，就叫做事件循环（Event Loop）。维基百科的定义是：“事件循环是一个程序结构，用于等待和发送消息和事件（a programming construct that waits for and dispatches events or messages in a program）”。
+
+### 异步操作模式
+#### 回调函数
+回调函数是异步操作最基本的方法。
+```js
+function f1(callback) {
+  // ...
+  callback();
+}
+
+function f2() {
+  // ...
+}
+
+f1(f2);
+```
+
+回调函数的优点是简单、容易理解和实现，缺点是不利于代码的阅读和维护，各个部分之间高度耦合（coupling），使得程序结构混乱、流程难以追踪（尤其是多个回调函数嵌套的情况），而且每个任务只能指定一个回调函数。
+
+#### 事件监听
+另一种思路是采用事件驱动模式。异步任务的执行不取决于代码的顺序，而取决于某个事件是否发生。
+
+这种方法的优点是比较容易理解，可以绑定多个事件，每个事件可以指定多个回调函数，而且可以“去耦合”（decoupling），有利于实现模块化。缺点是整个程序都要变成事件驱动型，运行流程会变得很不清晰。阅读代码的时候，很难看出主流程。
+
+#### 发布/订阅模式
+事件完全可以理解成“信号”，如果存在一个“信号中心”，某个任务执行完成，就向信号中心“发布”（publish）一个信号，其他任务可以向信号中心“订阅”（subscribe）这个信号，从而知道什么时候自己可以开始执行。这就叫做”发布/订阅模式”（publish-subscribe pattern），又称“观察者模式”（observer pattern）。
+
+这种方法的性质与“事件监听”类似，但是明显优于后者。因为可以通过查看“消息中心”，了解存在多少信号、每个信号有多少订阅者，从而监控程序的运行。
+
+### 异步操作的流程控制
+如果有多个异步操作，就存在一个流程控制的问题：如何确定异步操作执行的顺序，以及如何保证遵守这种顺序。
+```js
+function async(arg, callback) {
+  console.log('参数为 ' + arg +' , 1秒后返回结果');
+  setTimeout(function () { callback(arg * 2); }, 1000);
+}
+
+function final(value) {
+  console.log('完成: ', value);
+}
+
+async(1, function (value) {
+  async(2, function (value) {
+    async(3, function (value) {
+      async(4, function (value) {
+        async(5, function (value) {
+          async(6, final);
+        });
+      });
+    });
+  });
+});
+// 参数为 1 , 1秒后返回结果
+// 参数为 2 , 1秒后返回结果
+// 参数为 3 , 1秒后返回结果
+// 参数为 4 , 1秒后返回结果
+// 参数为 5 , 1秒后返回结果
+// 参数为 6 , 1秒后返回结果
+// 完成:  12
+```
+上面代码的async函数是一个异步任务，非常耗时，每次执行需要1秒才能完成，然后再调用回调函数。如果有六个这样的异步任务，需要全部完成后，才能执行最后的final函数。请问应该如何安排操作流程？六个回调函数的嵌套，不仅写起来麻烦，容易出错，而且难以维护。
+
+#### 串行执行
+我们可以编写一个流程控制函数，让它来控制异步任务，一个任务完成以后，再执行另一个。这就叫串行执行。
+```js
+var items = [ 1, 2, 3, 4, 5, 6 ];
+var results = [];
+
+function async(arg, callback) {
+  console.log('参数为 ' + arg +' , 1秒后返回结果');
+  setTimeout(function () { callback(arg * 2); }, 1000);
+}
+
+function final(value) {
+  console.log('完成: ', value);
+}
+
+function series(item) {
+  if(item) {
+    async( item, function(result) {
+      results.push(result);
+      return series(items.shift());
+    });
+  } else {
+    return final(results[results.length - 1]);
+  }
+}
+
+series(items.shift());
+```
+上面的写法需要六秒，才能完成整个脚本。
+
+#### 并行执行
+流程控制函数也可以是并行执行，即所有异步任务同时执行，等到全部完成以后，才执行final函数。
+```js
+var items = [ 1, 2, 3, 4, 5, 6 ];
+var results = [];
+
+function async(arg, callback) {
+  console.log('参数为 ' + arg +' , 1秒后返回结果');
+  setTimeout(function () { callback(arg * 2); }, 1000);
+}
+
+function final(value) {
+  console.log('完成: ', value);
+}
+
+items.forEach(function(item) {
+  async(item, function(result){
+    results.push(result);
+    if(results.length === items.length) {
+      final(results[results.length - 1]);
+    }
+  })
+});
+```
+上面代码中，forEach方法会同时发起六个异步任务，等到它们全部完成以后，才会执行final函数。
+
+相比而言，上面的写法只要一秒，就能完成整个脚本。这就是说，并行执行的效率较高，比起串行执行一次只能执行一个任务，较为节约时间。但是问题在于如果并行的任务较多，很容易耗尽系统资源，拖慢运行速度。因此有了第三种流程控制方式。
+
+#### 并行与串行的结合 
+所谓并行与串行的结合，就是设置一个门槛，每次最多只能并行执行n个异步任务，这样就避免了过分占用系统资源。
+```js
+var items = [ 1, 2, 3, 4, 5, 6 ];
+var results = [];
+var running = 0;
+var limit = 2;
+
+function async(arg, callback) {
+  console.log('参数为 ' + arg +' , 1秒后返回结果');
+  setTimeout(function () { callback(arg * 2); }, 1000);
+}
+
+function final(value) {
+  console.log('完成: ', value);
+}
+
+function launcher() {
+  while(running < limit && items.length > 0) {
+    var item = items.shift();
+    async(item, function(result) {
+      results.push(result);
+      running--;
+      if(items.length > 0) {
+        launcher();
+      } else if(running === 0) {
+        final(results);
+      }
+    });
+    running++;
+  }
+}
+
+launcher();
+```
+上面代码中，最多只能同时运行两个异步任务。变量running记录当前正在运行的任务数，只要低于门槛值，就再启动一个新的任务，如果等于0，就表示所有任务都执行完了，这时就执行final函数。
+
+这段代码需要三秒完成整个脚本，处在串行执行和并行执行之间。通过调节limit变量，达到效率和资源的最佳平衡。
+
+### 定时器
