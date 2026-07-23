@@ -6325,3 +6325,690 @@ xhr.onreadystatechange = function() {
 
 xhr.send(null)
 ```
+
+#### XMLHttpRequest.response
+XMLHttpRequest.response属性表示服务器返回的数据体（即 HTTP 回应的 body 部分）。它可能是任何数据类型，比如字符串、对象、二进制对象等等，具体的类型由XMLHttpRequest.responseType属性决定。该属性只读。
+
+如果本次请求没有成功或者数据不完整，该属性等于null。但是，如果responseType属性等于text或空字符串，在请求没有结束之前（readyState等于3的阶段），response属性包含服务器已经返回的部分数据。
+```js
+var xhr = new XMLHttpRequest()
+
+xhr.onreadystatechange = function() {
+    if (xhr.readState === 4) {
+        handler(xhr.response)
+    }
+}
+```
+
+#### XMLHttpRequest.responseType
+XMLHttpRequest.responseType属性是一个字符串，表示服务器返回数据的类型。这个属性是可写的，可以在调用open()方法之后、调用send()方法之前，设置这个属性的值，告诉浏览器如何解读返回的数据。如果responseType设为空字符串，就等同于默认值text。XMLHttpRequest.responseType属性可以等于以下值。
+- ""（空字符串）：等同于text，表示服务器返回文本数据。
+- "arraybuffer"：ArrayBuffer 对象，表示服务器返回二进制数组。
+- "blob"：Blob 对象，表示服务器返回二进制对象。
+- "document"：Document 对象，表示服务器返回一个文档对象。
+- "json"：JSON 对象。
+- "text"：字符串。
+
+text类型适合大多数情况，而且直接处理文本也比较方便。document类型适合返回 HTML / XML 文档的情况，这意味着，对于那些打开 CORS 的网站，可以直接用 Ajax 抓取网页，然后不用解析 HTML 字符串，直接对抓取回来的数据进行 DOM 操作。blob类型适合读取二进制数据，比如图片文件。
+```js
+var xhr = new XMLHttpRequest()
+
+xhr.open('GET', 'http://example.com/file.json', true)
+xhr.responseType = 'blob'
+
+xhr.onload = function(e) {
+    if (this.statue === 200) {
+        var blob = new Blob([xhr.reponse], {type: 'image/png'})
+        // 或者写成
+        // var blob = xhr.response
+    }
+}
+
+xhr.send()
+```
+如果将这个属性设为ArrayBuffer，就可以按照数组的方式处理二进制数据。
+```js
+var xhr = new XMLHttpRequest();
+xhr.open('GET', '/path/to/image.png', true);
+xhr.responseType = 'arraybuffer';
+
+xhr.onload = function(e) {
+  var uInt8Array = new Uint8Array(this.response);
+  for (var i = 0, len = uInt8Array.length; i < len; ++i) {
+    // var byte = uInt8Array[i];
+  }
+};
+
+xhr.send();
+```
+如果将这个属性设为json，浏览器就会自动对返回数据调用JSON.parse()方法。也就是说，从xhr.response属性（注意，不是xhr.responseText属性）得到的不是文本，而是一个 JSON 对象。
+
+#### XMLHttpRequest.responseText
+XMLHttpRequest.responseText属性返回从服务器接收到的字符串，该属性为只读。只有 HTTP 请求完成接收以后，该属性才会包含完整的数据。
+```js
+var xhr = new XMLHttpRequest()
+xhr.open('GET', 'http://example.com/file.json', true)
+xhr.responseType = 'text'
+xhr.onload = function(e) {
+    if (xhr.status === 200 && xhr.readyState === 4) {
+        console.log(xhr.responseText)
+    }
+}
+xhr.send(null)
+```
+
+#### XMLHttpRequest.responseXML
+XMLHttpRequest.responseXML属性返回从服务器接收到的 HTML 或 XML 文档对象，该属性为只读。如果本次请求没有成功，或者收到的数据不能被解析为 XML 或 HTML，该属性等于null。
+
+该属性生效的前提是 HTTP 回应的Content-Type头信息等于text/xml或application/xml。这要求在发送请求前，XMLHttpRequest.responseType属性要设为document。如果 HTTP 回应的Content-Type头信息不等于text/xml和application/xml，但是想从responseXML拿到数据（即把数据按照 DOM 格式解析），那么需要手动调用XMLHttpRequest.overrideMimeType()方法，强制进行 XML 解析。
+
+该属性得到的数据，是直接解析后的文档 DOM 树。
+```js
+var xhr = new XMLHttpRequest()
+xhr.open('GET', 'http://example.com/file.xml', true)
+xhr.responseType = 'document'
+xhr.onload = function() {
+    if (xhr.status === 200 && xhr.readyState === 4) {
+        console.log(xhr.responseXML)
+    }
+}
+xhr.send(null)
+```
+
+#### XMLHttpRequest.responseURL
+XMLHttpRequest.responseURL属性是字符串，表示发送数据的服务器的网址。
+```js
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'http://example.com/test', true);
+xhr.onload = function () {
+  // 返回 http://example.com/test
+  console.log(xhr.responseURL);
+};
+xhr.send(null);
+```
+注意，这个属性的值与open()方法指定的请求网址不一定相同。如果服务器端发生跳转，这个属性返回最后实际返回数据的网址。另外，如果原始 URL 包括锚点（fragment），该属性会把锚点剥离。
+
+#### XMLHttpRequest.status与XMLHttpRequest.statusText
+XMLHttpRequest.status属性返回一个整数，表示服务器回应的 HTTP 状态码。一般来说，如果通信成功的话，这个状态码是200；如果服务器没有返回状态码，那么这个属性默认是200。请求发出之前，该属性为0。该属性只读。
+- 200, OK，访问正常
+- 301, Moved Permanently，永久移动
+- 302, Moved temporarily，暂时移动
+- 304, Not Modified，未修改
+- 307, Temporary Redirect，暂时重定向
+- 401, Unauthorized，未授权
+- 403, Forbidden，禁止访问
+- 404, Not Found，未发现指定网址
+- 500, Internal Server Error，服务器发生错误
+
+XMLHttpRequest.statusText属性返回一个字符串，表示服务器发送的状态提示。不同于status属性，该属性包含整个状态信息，比如“OK”和“Not Found”。在请求发送之前（即调用open()方法之前），该属性的值是空字符串；如果服务器没有返回状态提示，该属性的值默认为“OK”。该属性为只读属性。
+
+
+#### XMLHttpRequest.timeout与XMLHttpRequestEventTarget.ontimeout
+XMLHttpRequest.timeout属性用来设置一个整数，表示多少毫秒后，如果请求仍然没有得到结果，就会自动终止。如果该属性等于0，就表示没有时间限制。
+
+XMLHttpRequestEventTarget.ontimeout属性用于设置一个监听函数，如果发生 timeout 事件，就会执行这个监听函数。
+```js
+var xhr = new XMLHttpRequest()
+var url = '/server'
+
+xhr.ontimeout = function() {
+    console.error('The request for ' + url + ' timed out.')
+}
+
+xhr.onload = function() {
+    if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+            // 处理服务器返回的数据
+        } else {
+            console.error(xhr.statusText)
+        }
+    }
+}
+
+xhr.open('GET', url, true)
+xhr.timeout = 10 * 1000
+xhr.send(null)
+```
+
+#### 事件监听属性
+XMLHttpRequest 对象可以对以下事件指定监听函数。
+- XMLHttpRequest.onloadstart：loadstart 事件（HTTP 请求发出）的监听函数
+- XMLHttpRequest.onprogress：progress事件（正在发送和加载数据）的监听函数
+- XMLHttpRequest.onabort：abort 事件（请求中止，比如用户调用了abort()方法）的监听函数
+- XMLHttpRequest.onerror：error 事件（请求失败）的监听函数
+- XMLHttpRequest.onload：load 事件（请求成功完成）的监听函数
+- XMLHttpRequest.ontimeout：timeout 事件（用户指定的时限超过了，请求还未完成）的监听函数
+- XMLHttpRequest.onloadend：loadend 事件（请求完成，不管成功或失败）的监听函数
+```js
+xhr.onload = function() {
+ var responseText = xhr.responseText;
+ console.log(responseText);
+ // process the response.
+};
+
+xhr.onabort = function () {
+  console.log('The request was aborted');
+};
+
+xhr.onprogress = function (event) {
+  console.log(event.loaded);
+  console.log(event.total);
+};
+
+xhr.onerror = function() {
+  console.log('There was an error!');
+};
+```
+progress事件的监听函数有一个事件对象参数，该对象有三个属性：loaded属性返回已经传输的数据量，total属性返回总的数据量，lengthComputable属性返回一个布尔值，表示加载的进度是否可以计算。所有这些监听函数里面，只有progress事件的监听函数有参数，其他函数都没有参数。
+
+如果发生网络错误（比如服务器无法连通），onerror事件无法获取报错信息。也就是说，可能没有错误对象，所以这样只能显示报错的提示。
+
+#### XMLHttpRequest.withCredentials
+XMLHttpRequest.withCredentials属性是一个布尔值，表示跨域请求时，用户信息（比如 Cookie 和认证的 HTTP 头信息）是否会包含在请求之中，默认为false，即向example.com发出跨域请求时，不会发送example.com设置在本机上的 Cookie（如果有的话）。
+
+如果需要跨域 AJAX 请求发送 Cookie，需要withCredentials属性设为true。注意，同源的请求不需要设置这个属性。
+```js
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'http://example.com/test', true);
+xhr.withCredentials = true;
+xhr.send(null);
+```
+为了让这个属性生效，服务器必须显式返回Access-Control-Allow-Credentials这个头信息。
+
+withCredentials属性打开的话，跨域请求不仅会发送 Cookie，还会设置远程主机指定的 Cookie。反之也成立，如果withCredentials属性没有打开，那么跨域的 AJAX 请求即使明确要求浏览器设置 Cookie，浏览器也会忽略。
+
+注意，脚本总是遵守同源政策，无法从document.cookie或者 HTTP 回应的头信息之中，读取跨域的 Cookie，withCredentials属性不影响这一点。
+
+#### XMLHttpRequest.upload
+XMLHttpRequest 不仅可以发送请求，还可以发送文件，这就是 AJAX 文件上传。发送文件以后，通过XMLHttpRequest.upload属性可以得到一个对象，通过观察这个对象，可以得知上传的进展。主要方法就是监听这个对象的各种事件：loadstart、loadend、load、abort、error、progress、timeout。
+
+假定网页上有一个`<progress>`元素。文件上传时，对upload属性指定progress事件的监听函数，即可获得上传的进度。
+```js
+function upload(blobOrFile) {
+    var xhr = new XMLHttpRequest()
+    xhr.open('POST', '/server', true)
+    xhr.onload = function(e) {}
+
+    var processBar = document.querySelector('progressBar')
+    xhr.upload.onprogress = function(e) {
+        if (e.lengthComputable) {
+            processBar.value = (e.loaded / e.total) * 100
+            processBar.textContent = processBar.value // 显示百分比
+        }
+    }
+    xhr.send(blobOrFile)
+}
+
+upload(new Blob(['Hello World'], {type: 'text/plain'}))
+```
+
+### XMLHttpRequest的实例方法
+#### XMLHttpRequest.open()
+XMLHttpRequest.open()方法用于指定 HTTP 请求的参数，或者说初始化 XMLHttpRequest 实例对象。它一共可以接受五个参数。
+```js
+void open(
+   string method,
+   string url,
+   optional boolean async,
+   optional string user,
+   optional string password
+);
+```
+- method：表示 HTTP 动词方法，比如GET、POST、PUT、DELETE、HEAD等。
+- url: 表示请求发送目标 URL。
+- async: 布尔值，表示请求是否为异步，默认为true。如果设为false，则send()方法只有等到收到服务器返回了结果，才会进行下一步操作。该参数可选。由于同步 AJAX 请求会造成浏览器失去响应，许多浏览器已经禁止在主线程使用，只允许 Worker 里面使用。所以，这个参数轻易不应该设为false。
+- user：表示用于认证的用户名，默认为空字符串。该参数可选。
+- password：表示用于认证的密码，默认为空字符串。该参数可选。
+
+如果对使用过open()方法的 AJAX 请求，再次使用这个方法，等同于调用abort()，即终止请求。
+
+#### XMLHttpRequest.send()
+XMLHttpRequest.send()方法用于实际发出 HTTP 请求。它的参数是可选的，如果不带参数，就表示 HTTP 请求只有一个 URL，没有数据体，典型例子就是 GET 请求；如果带有参数，就表示除了头信息，还带有包含具体数据的信息体，典型例子就是 POST 请求。POST请求的例子：
+```js
+var xhr = new XMLHttpRequest()
+var data = 'email='
+    + encodeURIComponent(email)
+    + '&password='
+    + encodeURIComponent(password)
+xhr.open('POST', 'http://example.com/file.json', true)
+xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+xhr.send(data)
+```
+注意，所有 XMLHttpRequest 的监听事件，都必须在send()方法调用之前设定。
+
+send方法的参数就是发送的数据。多种格式的数据，都可以作为它的参数。如果send()发送 DOM 对象，在发送之前，数据会先被串行化。如果发送二进制数据，最好是发送ArrayBufferView或Blob对象，这使得通过 Ajax 上传文件成为可能。
+```js
+void send();
+void send(ArrayBufferView data);
+void send(Blob data);
+void send(Document data);
+void send(String data);
+void send(FormData data);
+```
+
+#### XMLHttpRequest.setRequestHeader()
+XMLHttpRequest.setRequestHeader()方法用于设置浏览器发送的 HTTP 请求的头信息。该方法必须在open()之后、send()之前调用。如果该方法多次调用，设定同一个字段，则每一次调用的值会被合并成一个单一的值发送。该方法接受两个参数。第一个参数是字符串，表示头信息的字段名，第二个参数是字段值。
+```js
+xhr.setRequestHeader('Content-Type', 'application/json');
+xhr.setRequestHeader('Content-Length', JSON.stringify(data).length);
+xhr.send(JSON.stringify(data));
+```
+
+#### XMLHttpRequest.overrideMimeType()
+XMLHttpRequest.overrideMimeType()方法用来指定 MIME 类型，覆盖服务器返回的真正的 MIME 类型，从而让浏览器进行不一样的处理。举例来说，服务器返回的数据类型是text/xml，由于种种原因浏览器解析不成功报错，这时就拿不到数据了。为了拿到原始数据，我们可以把 MIME 类型改成text/plain，这样浏览器就不会去自动解析，从而我们就可以拿到原始文本了。
+
+修改服务器返回的数据类型，不是正常情况下应该采取的方法。如果希望服务器返回指定的数据类型，可以用responseType属性告诉服务器，就像下面的例子。只有在服务器无法返回某种数据类型时，才使用overrideMimeType()方法。
+```js
+var xhr = new XMLHttpRequest();
+xhr.onload = function(e) {
+  var arraybuffer = xhr.response;
+  // ...
+}
+xhr.open('GET', url);
+xhr.responseType = 'arraybuffer';
+xhr.send();
+```
+
+#### XMLHttpRequest.getResponseHeader()
+XMLHttpRequest.getResponseHeader()方法返回 HTTP 头信息指定字段的值，如果还没有收到服务器回应或者指定字段不存在，返回null。该方法的参数不区分大小写。如果有多个字段同名，它们的值会被连接为一个字符串，每个字段之间使用“逗号+空格”分隔。
+```js
+function getHeaderTime() {
+  console.log(this.getResponseHeader("Last-Modified"));
+}
+
+var xhr = new XMLHttpRequest();
+xhr.open('HEAD', 'yourpage.html');
+xhr.onload = getHeaderTime;
+xhr.send();
+```
+
+#### XMLHttpRequest.getAllResponseHeaders()
+XMLHttpRequest.getAllResponseHeaders()方法返回一个字符串，表示服务器发来的所有 HTTP 头信息。格式为字符串，每个头信息之间使用CRLF分隔（回车+换行），如果没有收到服务器回应，该属性为null。如果发生网络错误，该属性为空字符串。
+```js
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'foo.txt', true);
+xhr.send();
+
+xhr.onreadystatechange = function () {
+  if (this.readyState === 4) {
+    var headers = xhr.getAllResponseHeaders();
+  }
+}
+```
+上面代码用于获取服务器返回的所有头信息。它可能是下面这样的字符串。
+```js
+date: Fri, 08 Dec 2017 21:04:30 GMT\r\n
+content-encoding: gzip\r\n
+x-content-type-options: nosniff\r\n
+server: meinheld/0.6.1\r\n
+x-frame-options: DENY\r\n
+content-type: text/html; charset=utf-8\r\n
+connection: keep-alive\r\n
+strict-transport-security: max-age=63072000\r\n
+vary: Cookie, Accept-Encoding\r\n
+content-length: 6502\r\n
+x-xss-protection: 1; mode=block\r\n
+```
+
+#### XMLHttpRequest.abort()
+XMLHttpRequest.abort()方法用来终止已经发出的 HTTP 请求。调用这个方法以后，readyState属性变为4，status属性变为0。
+```js
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'http://www.example.com/page.php', true);
+setTimeout(function () {
+  if (xhr) {
+    xhr.abort();
+    xhr = null;
+  }
+}, 5000);
+```
+上面代码在发出5秒之后，终止一个 AJAX 请求。
+
+### XMLHttpRequest实例的事件
+#### readyStateChange事件
+readyState属性的值发生改变，就会触发 readyStateChange 事件。可以通过onReadyStateChange属性，指定这个事件的监听函数，对不同状态进行不同处理。尤其是当状态变为4的时候，表示通信成功，这时回调函数就可以处理服务器传送回来的数据。
+
+#### load 事件、error 事件、abort 事件、loadend 事件
+load 事件表示服务器传来的数据接收完毕，error 事件表示请求出错，abort 事件表示请求被中断（比如用户取消请求）。abort、load和error这三个事件，会伴随一个loadend事件，表示请求结束，但不知道其是否成功。
+```js
+var xhr = new XMLHttpRequest();
+
+xhr.addEventListener('load', transferComplete);
+xhr.addEventListener('error', transferFailed);
+xhr.addEventListener('abort', transferCanceled);
+
+xhr.open();
+
+function transferComplete() {
+  console.log('数据接收完毕');
+}
+
+function transferFailed() {
+  console.log('数据接收出错');
+}
+
+function transferCanceled() {
+  console.log('用户取消接收');
+}
+
+xhr.addEventListener('loadend', loadEnd);
+
+function loadEnd(e) {
+  console.log('请求结束，状态未知');
+}
+```
+
+## 同源限制
+浏览器安全的基石是“同源政策”（same-origin policy）。所谓“同源”指的是“三个相同”。
+- 协议相同
+- 域名相同
+- 端口相同
+
+标准规定端口不同的网址不是同源（比如8000端口和8001端口不是同源），但是浏览器没有遵守这条规定。实际上，同一个网域的不同端口，是可以互相读取 Cookie 的。
+
+同源政策的目的，是为了保证用户信息的安全，防止恶意的网站窃取数据。
+
+### 限制范围
+随着互联网的发展，同源政策越来越严格。目前，如果非同源，共有三种行为受到限制。
+- 无法读取非同源网页的 Cookie、LocalStorage 和 IndexedDB。
+- 无法接触非同源网页的 DOM。
+- 无法向非同源地址发送 AJAX 请求（可以发送，但浏览器会拒绝接受响应）。
+
+### Cookie 
+Cookie 是服务器写入浏览器的一小段信息，只有同源的网页才能共享。如果两个网页一级域名相同，只是次级域名不同，浏览器允许通过设置document.domain共享 Cookie。举例来说，A 网页的网址是http://w1.example.com/a.html，B 网页的网址是http://w2.example.com/b.html，那么只要设置相同的document.domain，两个网页就可以共享 Cookie。因为浏览器通过document.domain属性来检查是否同源。
+
+另外，服务器也可以在设置 Cookie 的时候，指定 Cookie 的所属域名为一级域名，比如example.com。
+```js
+Set-Cookie: key=value; domain=example.com; path=/
+```
+这样的话，二级域名和三级域名不用做任何设置，都可以读取这个 Cookie。
+
+### iframe 和多窗口通信
+iframe元素可以在当前网页之中，嵌入其他网页。每个iframe元素形成自己的窗口，即有自己的window对象。iframe窗口之中的脚本，可以获得父窗口和子窗口。但是，只有在同源的情况下，父窗口和子窗口才能通信；如果跨域，就无法拿到对方的 DOM。
+
+如果两个窗口一级域名相同，只是二级域名不同，那么设置上一节介绍的document.domain属性，就可以规避同源政策，拿到 DOM。
+
+对于完全不同源的网站，目前有两种方法，可以解决跨域窗口的通信问题。
+- 片段识别符（fragment identifier）
+- 跨文档通信API（Cross-document messaging）
+
+#### 片段识别符
+片段标识符（fragment identifier）指的是，URL 的#号后面的部分，比如http://example.com/x.html#fragment的#fragment。如果只是改变片段标识符，页面不会重新刷新。
+
+父窗口可以把信息，写入子窗口的片段标识符。子窗口通过监听hashchange事件得到通知。
+```js
+// 父窗口
+var src = originURL + '#' + data;
+document.getElementById('myIFrame').src = src;
+```
+```js
+// 子窗口
+window.onhashchange = checkMessage;
+
+function checkMessage() {
+  var message = window.location.hash;
+  // ...
+}
+```
+同样的，子窗口也可以改变父窗口的片段标识符。
+```js
+parent.location.href = target + '#' + hash;
+```
+
+#### window.postMessage()
+上面的这种方法属于破解，HTML5 为了解决这个问题，引入了一个全新的API：跨文档通信 API（Cross-document messaging）。这个 API 为window对象新增了一个window.postMessage方法，允许跨窗口通信，不论这两个窗口是否同源。举例来说，父窗口aaa.com向子窗口bbb.com发消息，调用postMessage方法就可以了。
+```js
+// 父窗口打开一个子窗口
+var popup = window.open('http://bbb.com', 'title');
+// 父窗口向子窗口发消息
+popup.postMessage('Hello World!', 'http://bbb.com');
+```
+postMessage方法的第一个参数是具体的信息内容，第二个参数是接收消息的窗口的源（origin），即“协议 + 域名 + 端口”。也可以设为*，表示不限制域名，向所有窗口发送。
+
+子窗口向父窗口发送消息的写法类似。
+```js
+// 子窗口向父窗口发消息
+window.opener.postMessage('Nice to see you', 'http://aaa.com');
+```
+父窗口和子窗口都可以通过message事件，监听对方的消息。
+```js
+// 父窗口和子窗口都可以用下面的代码，
+// 监听 message 消息
+window.addEventListener('message', function (e) {
+  console.log(e.data);
+},false);
+```
+
+message事件的参数是事件对象event，提供以下三个属性。
+- event.source：发送消息的窗口
+- event.origin: 消息发送者的源（origin），即协议、域名、端口。
+- event.data: 消息内容
+
+#### LocalStorage
+通过window.postMessage，读写其他窗口的 LocalStorage 也成为了可能。下面是一个例子，主窗口写入 iframe 子窗口的localStorage。子窗口将父窗口发来的消息，写入自己的 LocalStorage。
+```js
+window.onmessage = function(e) {
+  if (e.origin !== 'http://bbb.com') {
+    return;
+  }
+  var payload = JSON.parse(e.data);
+  localStorage.setItem(payload.key, JSON.stringify(payload.data));
+};
+```
+
+加强版的子窗口接收消息的代码如下：
+```js
+window.onmessage = function(e) {
+    if (e.origin !== 'http://bbb.com') {
+        return;
+    }
+    var payload = JSON.parse(e.data);
+    switch (payload.method) {
+        case 'set':
+            localStorage.setItem(payload.key, JSON.stringify(payload.data));
+            break;
+        case 'get':
+            var parent = window.parent
+            var data = localStorage.getItem(payload.key)
+            parent.postMessage(data, 'http://aaa.com')
+            break
+        case 'remove':
+            localStorage.removeItem(payload.key)
+            break
+    }
+}
+```
+加强版的父窗口发送消息的代码如下：
+```js
+var win = document.getElementsByTagName('iframe')[0].contentWindow;
+var obj = { name: 'Jack'}
+// 存入对象
+win.postMessage(
+    JSON.stringify({
+        key: 'storage',
+        method: 'set',
+        data: obj
+    }),
+    'http://bbb.com'
+)
+// 读取对象
+win.postMessage(
+    JSON.stringify({
+        key: 'storage',
+        method: 'get'
+    }),
+    "*"
+)
+window.onmessage = function(e) {
+    if (e.origin != 'http://aaa.com') {
+        return 
+    }
+    console.log(JSON.parse(e.data).name)
+}
+```
+
+### AJAX
+同源政策规定，AJAX 请求只能发给同源的网址，否则就报错。除了架设服务器代理（浏览器请求同源服务器，再由后者请求外部服务），有三种方法规避这个限制。
+- JSONP
+- WebSocket
+- CORS
+
+#### JSONP
+JSONP 是服务器与客户端跨源通信的常用方法。最大特点就是简单易用，没有兼容性问题，老式浏览器全部支持，服务端改造非常小。它的做法如下。
+1. 第一步，网页添加一个`<script>`元素，向服务器请求一个脚本，这不受同源政策限制，可以跨域请求。
+```js
+<script src="http://api.foo.com?callback=bar"></script>
+```
+请求的脚本网址有一个callback参数（?callback=bar），用来告诉服务器，客户端的回调函数名称（bar）。
+2. 第二步，服务器收到请求后，拼接一个字符串，将 JSON 数据放在函数名里面，作为字符串返回（bar({...})）。
+3. 第三步，客户端会将服务器返回的字符串，作为代码解析，因为浏览器认为，这是`<script>`标签请求的脚本内容。这时，客户端只要定义了bar()函数，就能在该函数体内，拿到服务器返回的 JSON 数据。
+
+由于`<script>`元素请求的脚本，直接作为代码运行。这时，只要浏览器定义了foo函数，该函数就会立即调用。作为参数的 JSON 数据被视为 JavaScript 对象，而不是字符串，因此避免了使用JSON.parse的步骤。
+
+#### WebSocket
+WebSocket 是一种通信协议，使用ws://（非加密）和wss://（加密）作为协议前缀。该协议不实行同源政策，只要服务器支持，就可以通过它进行跨源通信。
+
+下面是一个例子，浏览器发出的 WebSocket 请求的头信息
+```js
+GET /chat HTTP/1.1
+Host: server.example.com
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Key: x3JJHMbDL1EzLkh9GBhXDw==
+Sec-WebSocket-Protocol: chat, superchat
+Sec-WebSocket-Version: 13
+Origin: http://example.com
+```
+上面代码中，有一个字段是Origin，表示该请求的请求源（origin），即发自哪个域名。正是因为有了Origin这个字段，所以 WebSocket 才没有实行同源政策。因为服务器可以根据这个字段，判断是否许可本次通信。如果该域名在白名单内，服务器就会做出如下回应。
+```js
+HTTP/1.1 101 Switching Protocols
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Accept: HSmrc0sMlYUkAGmm5OPpG2HaGWk=
+Sec-WebSocket-Protocol: chat
+```
+
+#### CORS
+CORS 是跨源资源分享（Cross-Origin Resource Sharing）的缩写。它是 W3C 标准，属于跨源 AJAX 请求的根本解决方法。相比 JSONP 只能发GET请求，CORS 允许任何类型的请求。
+
+## CORS通信
+CORS 是一个 W3C 标准，全称是“跨源资源共享”（Cross-origin resource sharing），或者通俗地称为“跨域资源共享”。它允许浏览器向跨源的服务器，发出XMLHttpRequest请求，从而克服了 AJAX 只能同源使用的限制。CORS 需要浏览器和服务器同时支持。目前，所有浏览器都支持该功能。
+
+整个 CORS 通信过程，都是浏览器自动完成，不需要用户参与。对于开发者来说，CORS 通信与普通的 AJAX 通信没有差别，代码完全一样。浏览器一旦发现 AJAX 请求跨源，就会自动添加一些附加的头信息，有时还会多出一次附加的请求，但用户不会有感知。因此，实现 CORS 通信的关键是服务器。只要服务器实现了 CORS 接口，就可以跨源通信。
+
+### 两种请求
+CORS 请求分成两类：简单请求（simple request）和非简单请求（not-so-simple request）。
+
+只要同时满足以下两大条件，就属于简单请求。
+- 请求方法是以下三种方法之一。
+    - HEAD
+    - GET
+    - POST
+- HTTP 的头信息不超出以下几种字段。
+    - Accept
+    - Accept-Language
+    - Content-Language
+    - Last-Event-ID
+    - Content-Type：只限于三个值application/x-www-form-urlencoded、multipart/form-data、text/plain
+
+凡是不同时满足上面两个条件，就属于非简单请求。一句话，简单请求就是简单的 HTTP 方法与简单的 HTTP 头信息的结合。这样划分的原因是，表单在历史上一直可以跨源发出请求。简单请求就是表单请求，浏览器沿袭了传统的处理方式，不把行为复杂化，否则开发者可能转而使用表单，规避 CORS 的限制。对于非简单请求，浏览器会采用新的处理方式。
+
+### 简单请求
+对于简单请求，浏览器直接发出 CORS 请求。具体来说，就是在头信息之中，增加一个Origin字段。浏览器发现这次跨源 AJAX 请求是简单请求，就自动在头信息之中，添加一个Origin字段。
+```js
+GET /cors HTTP/1.1
+Origin: http://api.bob.com
+Host: api.alice.com
+Accept-Language: en-US
+Connection: keep-alive
+User-Agent: Mozilla/5.0...
+```
+Origin字段用来说明，本次请求来自哪个域（协议 + 域名 + 端口）。服务器根据这个值，决定是否同意这次请求。如果Origin指定的源，不在许可范围内，服务器会返回一个正常的 HTTP 回应。浏览器发现，这个回应的头信息没有包含Access-Control-Allow-Origin字段，就知道出错了，从而抛出一个错误，被XMLHttpRequest的onerror回调函数捕获。注意，这种错误无法通过状态码识别，因为 HTTP 回应的状态码有可能是200。
+
+如果Origin指定的域名在许可范围内，服务器返回的响应，会多出几个头信息字段。
+```js
+Access-Control-Allow-Origin: http://api.bob.com
+Access-Control-Allow-Credentials: true
+Access-Control-Expose-Headers: FooBar
+Content-Type: text/html; charset=utf-8
+```
+三个与 CORS 请求相关的字段，都以Access-Control-开头。
+- Access-Control-Allow-Origin该字段是必须的。它的值要么是请求时Origin字段的值，要么是一个*，表示接受任意域名的请求。
+- Access-Control-Allow-Credentials该字段可选。它的值是一个布尔值，表示是否允许发送 Cookie。默认情况下，Cookie 不包括在 CORS 请求之中。设为true，即表示服务器明确许可，浏览器可以把 Cookie 包含在请求中，一起发给服务器。这个值也只能设为true，如果服务器不要浏览器发送 Cookie，不发送该字段即可。
+- Access-Control-Expose-Headers该字段可选。CORS 请求时，XMLHttpRequest对象的getResponseHeader()方法只能拿到6个服务器返回的基本字段：Cache-Control、Content-Language、Content-Type、Expires、Last-Modified、Pragma。如果想拿到其他字段，就必须在Access-Control-Expose-Headers里面指定。
+
+#### withCredentials 属性
+CORS 请求默认不包含 Cookie 信息（以及 HTTP 认证信息等），这是为了降低 CSRF 攻击的风险。但是某些场合，服务器可能需要拿到 Cookie，这时需要服务器显式指定Access-Control-Allow-Credentials字段，告诉浏览器可以发送 Cookie。
+```js
+Access-Control-Allow-Credentials: true
+```
+同时，开发者必须在 AJAX 请求中打开withCredentials属性。
+```js
+var xhr = new XMLHttpRequest();
+xhr.withCredentials = true;
+```
+否则，即使服务器要求发送 Cookie，浏览器也不会发送。或者，服务器要求设置 Cookie，浏览器也不会处理。但是，有的浏览器默认将withCredentials属性设为true。这导致如果省略withCredentials设置，这些浏览器可能还是会一起发送 Cookie。这时，可以显式关闭withCredentials。
+
+需要注意的是，如果服务器要求浏览器发送 Cookie，Access-Control-Allow-Origin就不能设为星号，必须指定明确的、与请求网页一致的域名。同时，Cookie 依然遵循同源政策，只有用服务器域名设置的 Cookie 才会上传，其他域名的 Cookie 并不会上传，且（跨源）原网页代码中的document.cookie也无法读取服务器域名下的 Cookie。
+
+### 非简单请求
+#### 预检请求
+非简单请求是那种对服务器提出特殊要求的请求，比如请求方法是PUT或DELETE，或者Content-Type字段的类型是application/json。
+
+非简单请求的 CORS 请求，会在正式通信之前，增加一次 HTTP 查询请求，称为“预检”请求（preflight）。浏览器先询问服务器，当前网页所在的域名是否在服务器的许可名单之中，以及可以使用哪些 HTTP 方法和头信息字段。只有得到肯定答复，浏览器才会发出正式的XMLHttpRequest请求，否则就报错。这是为了防止这些新增的请求，对传统的没有 CORS 支持的服务器形成压力，给服务器一个提前拒绝的机会，这样可以防止服务器收到大量DELETE和PUT请求，这些传统的表单不可能跨源发出的请求。事实上这个预检请求就是OPTIONS请求。
+
+```js
+var url = 'http://api.alice.com/cors';
+var xhr = new XMLHttpRequest();
+xhr.open('PUT', url, true);
+xhr.setRequestHeader('X-Custom-Header', 'value');
+xhr.send();
+```
+上面代码中，HTTP 请求的方法是PUT，并且发送一个自定义头信息X-Custom-Header。浏览器发现，这是一个非简单请求，就自动发出一个“预检”请求，要求服务器确认可以这样请求。下面是这个“预检”请求的 HTTP 头信息。
+```js
+OPTIONS /cors HTTP/1.1
+Origin: http://api.bob.com
+Access-Control-Request-Method: PUT
+Access-Control-Request-Headers: X-Custom-Header
+Host: api.alice.com
+Accept-Language: en-US
+Connection: keep-alive
+User-Agent: Mozilla/5.0...
+```
+“预检”请求用的请求方法是OPTIONS，表示这个请求是用来询问的。头信息里面，关键字段是Origin，表示请求来自哪个源。除了Origin字段，“预检”请求的头信息包括两个特殊字段。
+- Access-Control-Request-Method该字段是必须的，用来列出浏览器的 CORS 请求会用到哪些 HTTP 方法，上例是PUT。
+- Access-Control-Request-Headers该字段是一个逗号分隔的字符串，指定浏览器 CORS 请求会额外发送的头信息字段，上例是X-Custom-Header。
+
+#### 预检请求的回应
+服务器收到“预检”请求以后，检查了Origin、Access-Control-Request-Method和Access-Control-Request-Headers字段以后，确认允许跨源请求，就可以做出回应。
+
+```js
+HTTP/1.1 200 OK
+Date: Mon, 01 Dec 2008 01:15:39 GMT
+Server: Apache/2.0.61 (Unix)
+Access-Control-Allow-Origin: http://api.bob.com
+Access-Control-Allow-Methods: GET, POST, PUT
+Access-Control-Allow-Headers: X-Custom-Header
+Content-Type: text/html; charset=utf-8
+Content-Encoding: gzip
+Content-Length: 0
+Keep-Alive: timeout=2, max=100
+Connection: Keep-Alive
+```
+上面的 HTTP 回应中，关键的是Access-Control-Allow-Origin字段，表示http://api.bob.com可以请求数据。该字段也可以设为星号，表示同意任意跨源请求。
+
+如果服务器否定了“预检”请求，会返回一个正常的 HTTP 回应，但是没有任何 CORS 相关的头信息字段，或者明确表示请求不符合条件。
+
+服务器回应的其他 CORS 相关字段如下。
+```js
+Access-Control-Allow-Methods: GET, POST, PUT
+Access-Control-Allow-Headers: X-Custom-Header
+Access-Control-Allow-Credentials: true
+Access-Control-Max-Age: 1728000
+```
+- Access-Control-Allow-Methods，该字段必需，它的值是逗号分隔的一个字符串，表明服务器支持的所有跨源请求的方法。注意，返回的是所有支持的方法，而不单是浏览器请求的那个方法。这是为了避免多次“预检”请求。
+- Access-Control-Allow-Headers，如果浏览器请求包括Access-Control-Request-Headers字段，则Access-Control-Allow-Headers字段是必需的。它也是一个逗号分隔的字符串，表明服务器支持的所有头信息字段，不限于浏览器在“预检”中请求的字段。
+- Access-Control-Allow-Credentials，该字段与简单请求时的含义相同。
+- Access-Control-Max-Age，该字段可选，用来指定本次预检请求的有效期，单位为秒。上面结果中，有效期是20天（1728000秒），即允许缓存该条回应1728000秒（即20天），在此期间，不用发出另一条预检请求。
+
+#### 浏览器的正常请求和回应
