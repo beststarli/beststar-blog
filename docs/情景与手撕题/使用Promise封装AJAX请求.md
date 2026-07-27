@@ -8,6 +8,7 @@ date: 2026-07-06
 
 
 ## 代码实现
+### 写法一
 ```js
 // Promise封装实现
 function getJSON(url) {
@@ -41,4 +42,36 @@ function getJSON(url) {
   })
   return promise
 }
+```
+
+### 写法二
+该写法出自[阮一峰ES6教程](https://wangdoc.com/es6/promise#%E5%9F%BA%E6%9C%AC%E7%94%A8%E6%B3%95)
+```js
+const gerJSON = function(url) {
+  const promise = new Promise(function(resolve, reject) {
+    const handler = function() {
+      if (this.readyState !== 4) {
+        return
+      }
+      if (this.status === 200) {
+        resolve(this.response)
+      } else {
+        reject(new Error(this.statusText))
+      }
+    }
+
+    const client = new XMLHttpRequest()
+    client.open('GET', url)
+    client.onreadystatechange = handler
+    client.setRequestHeader('Accept', 'application/json')
+    client.send()
+  })
+  return promise
+}
+
+getJSON('/posts.json').then(function(json) {
+  console.log('Contents: ' + json)
+}, function(error) {
+  console.log('出错了', error)
+})
 ```
