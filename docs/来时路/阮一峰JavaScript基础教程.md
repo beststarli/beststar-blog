@@ -4325,7 +4325,7 @@ xhr.onerror = function(e) {
     console.error(xhr.statusText)
 }
 
-xhr.opne('GET', 'http://example.com/file.json', true)
+xhr.open('GET', 'http://example.com/file.json', true)
 xhr.send(null)
 ```
 
@@ -5260,6 +5260,76 @@ decodeURIComponent()用于URL 片段的解码。它是encodeURIComponent()方法
 decodeURIComponent('%E6%98%A5%E8%8A%82')
 // "春节"
 ```
+
+### URL接口
+URL()作为构造函数，可以生成 URL 实例。它接受一个表示 URL 的字符串作为参数。如果参数不是合法的 URL，会报错。
+```js
+var url = new URL('http://www.example.com/index.html');
+url.href
+// "http://www.example.com/index.html"
+```
+除了字符串，URL()的参数也可以是另一个 URL 实例。这时，URL()会自动读取该实例的href属性，作为实际参数。
+
+如果 URL 字符串是一个相对路径，那么需要表示绝对路径的第二个参数，作为计算基准。
+```js
+var url1 = new URL('index.html', 'http://example.com');
+url1.href
+// "http://example.com/index.html"
+
+var url2 = new URL('page2.html', 'http://example.com/page1.html');
+url2.href
+// "http://example.com/page2.html"
+
+var url3 = new URL('..', 'http://example.com/a/b.html')
+url3.href
+// "http://example.com/"
+```
+
+#### 实例属性
+URL 实例的属性与Location对象的属性基本一致，返回当前 URL 的信息。
+- URL.href：返回整个 URL
+- URL.protocol：返回协议，以冒号:结尾
+- URL.hostname：返回域名
+- URL.host：返回域名与端口，包含:号，默认的80和443端口会省略
+- URL.port：返回端口
+- URL.origin：返回协议、域名和端口
+- URL.pathname：返回路径，以斜杠/开头
+- URL.search：返回查询字符串，以问号?开头
+- URL.searchParams：返回一个URLSearchParams实例，该属性是Location对象没有的
+- URL.hash：返回片段识别符，以井号#开头
+- URL.password：返回域名前面的密码
+- URL.username：返回域名前面的用户名
+
+这些属性里面，只有origin属性是只读的，其他属性都可写，并且会立即生效。改变 URL 实例的pathname属性和hash属性，都会实时反映在 URL 实例当中。
+
+#### 静态方法
+- URL.createObjectURL()方法用来为上传/下载的文件、流媒体文件生成一个 URL 字符串。这个字符串代表了File对象或Blob对象的 URL。
+- URL.revokeObjectURL()方法用来释放URL.createObjectURL()方法生成的 URL 实例。它的参数就是URL.createObjectURL()方法返回的 URL 字符串。
+
+#### URLSearchParams 对象
+URLSearchParams对象是浏览器的原生对象，用来构造、解析和处理 URL 的查询字符串（即 URL 问号后面的部分）。它本身也是一个构造函数，可以生成实例。参数可以为查询字符串，起首的问号?有没有都行，也可以是对应查询字符串的数组或对象。
+```js
+// 方法一：传入字符串
+var params = new URLSearchParams('?foo=1&bar=2');
+// 等同于
+var params = new URLSearchParams(document.location.search);
+
+// 方法二：传入数组
+var params = new URLSearchParams([['foo', 1], ['bar', 2]]);
+
+// 方法三：传入对象
+var params = new URLSearchParams({'foo' : 1 , 'bar' : 2});
+```
+
+- URLSearchParams.toString()方法返回实例的字符串形式。
+- URLSearchParams.append()方法用来追加一个查询参数。它接受两个参数，第一个为键名，第二个为键值，没有返回值。不会识别是否键名已经存在。
+- URLSearchParams.delete()方法用来删除指定的查询参数。它接受键名作为参数。
+- URLSearchParams.has()方法返回一个布尔值，表示查询字符串是否包含指定的键名。
+- URLSearchParams.set()方法用来设置查询字符串的键值。它接受两个参数，第一个是键名，第二个是键值。如果是已经存在的键，键值会被改写，否则会被追加。
+- URLSearchParams.get()方法用来读取查询字符串里面的指定键。它接受键名作为参数。
+- URLSearchParams.getAll()方法返回一个数组，成员是指定键的所有键值。它接受键名作为参数。
+- URLSearchParams.sort()方法对查询字符串里面的键进行排序，规则是按照 Unicode 码点从小到大排列。该方法没有返回值，或者说返回值是undefined。
+- URLSearchParams.keys()，URLSearchParams.values()，URLSearchParams.entries()三个方法都返回一个遍历器对象，供for...of循环遍历。它们的区别在于，keys方法返回的是键名的遍历器，values方法返回的是键值的遍历器，entries返回的是键值对的遍历器。
 
 ## ArrayBuffer对象
 ArrayBuffer 对象表示一段二进制数据，用来模拟内存里面的数据。通过这个对象，JavaScript 可以读写二进制数据。这个对象可以看作内存数据的表达。浏览器原生提供ArrayBuffer()构造函数，用来生成实例。它接受一个整数作为参数，表示这段二进制数据占用多少个字节。

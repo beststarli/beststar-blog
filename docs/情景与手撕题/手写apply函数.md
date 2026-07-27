@@ -16,6 +16,7 @@ apply函数的实现步骤：
 7. 返回结果。
 
 ## 代码实现
+### 对象与参数合并
 ```js
 // apply函数实现
 Function.prototype.myApply = function(context) {
@@ -38,4 +39,23 @@ Function.prototype.myApply = function(context) {
   delete context.fn
   return result
 }
+```
+
+### 对象与参数分离
+```js
+Function.prototype.myApply = function (context, args) {
+  // TODO：与 myCall 类似，但参数来自数组/类数组
+  if (typeof this !== 'function') {
+    return
+  }
+  let result = null
+  // 处理null和undefined的情况
+  context = (context === null || context === undefined) ? globalThis : Object(context)
+  // 处理类数组参数
+  args = Array.from(args)
+  context.fn = this
+  result = context.fn(...args)
+  delete context.fn
+  return result
+};
 ```

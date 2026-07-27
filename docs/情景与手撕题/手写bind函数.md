@@ -13,6 +13,7 @@ apply函数的实现步骤：
 4. 函数内部使用apply来绑定函数调用，需要判断函数作为构造函数的情况，这个时候需要传入当前函数的this给apply调用，其余情况都传入指定的上下文对象。
 
 ## 代码实现
+### 对象与参数合并
 ```js
 // bind函数实现
 Function.prototype.myBind = function(context) {
@@ -28,4 +29,20 @@ Function.prototype.myBind = function(context) {
     return fn.apply(this instanceof Fn ? this : context, args.concat(...arguments))
   }
 }
+```
+
+### 对象与参数分离
+返回新函数；支持预设部分参数并与后续调用时的参数合并；context 为 null 或 undefined 时的绑定须符合规范。
+```js
+Function.prototype.myBind = function (context, ...presetArgs) {
+  // TODO：返回新函数，合并 presetArgs 与后续入参并调用原函数
+  if (typeof this !== 'function') {
+    return 
+  }
+  const fn = this
+  context = (context === null || context === undefined) ? globalThis : context
+  return function(...args) {
+    return fn.apply(context, presetArgs.concat(args))
+  }
+};
 ```

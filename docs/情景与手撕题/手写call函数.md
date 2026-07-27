@@ -16,6 +16,7 @@ call函数的实现步骤：
 7. 返回结果。
 
 ## 代码实现
+### 对象与参数合并
 ```js
 // call函数实现
 Function.prototype.myCall = function(context) {
@@ -38,4 +39,20 @@ Function.prototype.myCall = function(context) {
   delete context.fn
   return result
 }
+```
+
+### 对象与参数分离
+```js
+Function.prototype.myCall = function (context, ...args) {
+  // TODO：临时把函数挂到 context 上调用，注意 null/undefined 时与 globalThis 
+  if (typeof this !== 'function') {
+    return
+  }
+  let result = null
+  context = (context === null || context === undefined) ? globalThis : Object(context)
+  context.fn = this
+  result = context.fn(...args)
+  delete context.fn
+  return result
+};
 ```
