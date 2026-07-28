@@ -2,7 +2,7 @@
 title: 使用setTimeout实现setInterval
 description: 使用setTimeout实现setInterval。
 sidebar_position: 56
-tags: [JavaScript,场景题,手撕题]
+tags: [JavaScript,计时器,场景题,手撕题]
 date: 2026-07-07
 ---
 
@@ -12,8 +12,9 @@ setInterval的作用是每隔一段指定时间执行一个函数，但是这个
 
 实现思路是使用递归函数，不断地去执行setTimeout从而达到setInterval的效果。
 ## 代码实现
+### 第一版
 ```js
-function mySetInterval(fn, timeout) {
+function mySetInterval(fn, delay) {
   // 控制器，控制定时器是否继续执行
   let timer = {
     flag: true
@@ -22,12 +23,29 @@ function mySetInterval(fn, timeout) {
   function interval() {
     if (timer.flag) {
       fn()
-      setTimeout(interval, timeout)
+      setTimeout(interval, delay)
     }
   }
   // 启动定时器
-  setTimeout(interval, timeout)
+  setTimeout(interval, delay)
   // 返回控制器
   return timer
+}
+```
+
+### 第二版
+返回一个cancel函数，可以中止计时器
+```js
+function mySetInterval(fn, delay) {
+  // TODO：递归 setTimeout，并返回 cancel 函数
+  let timerID = null
+  function schedule() {
+    timerID = setTimeout(() => {
+      fn()
+      schedule()
+    }, delay)
+  }
+  schedule()
+  return () => clearTimeout(timerID)
 }
 ```

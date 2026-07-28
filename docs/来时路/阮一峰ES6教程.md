@@ -2792,3 +2792,989 @@ class DistributedEdit extends mix(Loggable, Serializable) {
   // ...
 }
 ```
+
+## Module的语法
+在 ES6 之前，社区制定了一些模块加载方案，最主要的有 CommonJS 和 AMD 两种。前者用于服务器，后者用于浏览器。ES6 在语言标准的层面上，实现了模块功能，而且实现得相当简单，完全可以取代 CommonJS 和 AMD 规范，成为浏览器和服务器通用的模块解决方案。
+
+ES6 模块的设计思想是尽量的静态化，使得编译时就能确定模块的依赖关系，以及输入和输出的变量。CommonJS 和 AMD 模块，都只能在运行时确定这些东西。比如，CommonJS 模块就是对象，输入时必须查找对象属性。
+```js
+// CommonJS模块
+let { stat, exists, readfile } = require('fs');
+
+// 等同于
+let _fs = require('fs');
+let stat = _fs.stat;
+let exists = _fs.exists;
+let readfile = _fs.readfile;
+```
+上面代码的实质是整体加载fs模块（即加载fs的所有方法），生成一个对象（_fs），然后再从这个对象上面读取 3 个方法。这种加载称为“运行时加载”，因为只有运行时才能得到这个对象，导致完全没办法在编译时做“静态优化”。
+
+ES6 模块不是对象，而是通过export命令显式指定输出的代码，再通过import命令输入。
+```js
+// ES6模块
+import { stat, exists, readFile } from 'fs';
+```
+上面代码的实质是从fs模块加载 3 个方法，其他方法不加载。这种加载称为“编译时加载”或者静态加载，即 ES6 可以在编译时就完成模块加载，效率要比 CommonJS 模块的加载方式高。当然，这也导致了没法引用 ES6 模块本身，因为它不是对象。
+
+由于 ES6 模块是编译时加载，使得静态分析成为可能。有了它，就能进一步拓宽 JavaScript 的语法，比如引入宏（macro）和类型检验（type system）这些只能靠静态分析实现的功能。
+
+除了静态加载带来的各种好处，ES6 模块还有以下好处。
+- 不再需要UMD模块格式了，将来服务器和浏览器都会支持 ES6 模块格式。目前，通过各种工具库，其实已经做到了这一点。
+- 将来浏览器的新 API 就能用模块格式提供，不再必须做成全局变量或者navigator对象的属性。
+- 不再需要对象作为命名空间（比如Math对象），未来这些功能可以通过模块提供。
+
+### export命令
+export语句输出的接口，与其对应的值是动态绑定关系，即通过该接口，可以取到模块内部实时的值。
+```js
+export var foo = 'bar';
+setTimeout(() => foo = 'baz', 500);
+```
+这一点与 CommonJS 规范完全不同。CommonJS 模块输出的是值的缓存，不存在动态更新。
+
+export命令可以出现在模块的任何位置，只要处于模块顶层就可以。如果处于块级作用域内，就会报错，import命令也是如此。这是因为处于条件代码块之中，就没法做静态优化了，违背了 ES6 模块的设计初衷。
+
+### import命令
+import命令具有提升效果，会提升到整个模块的头部，首先执行。
+
+### 模块的整体加载
+除了指定加载某个输出值，还可以使用整体加载，即用星号（*）指定一个对象，所有输出值都加载在这个对象上面。
+
+注意，模块整体加载所在的那个对象，应该是可以静态分析的，所以不允许运行时改变。下面的写法都是不允许的。
+
+### export default 命令
+`export default`命令用于指定模块的默认输出。显然，一个模块只能有一个默认输出，因此`export default`命令只能使用一次。所以，import命令后面才不用加大括号，因为只可能唯一对应`export default`命令。
+
+本质上，export default就是输出一个叫做default的变量或方法，然后系统允许你为它取任意名字。所以，下面的写法是有效的。正是因为export default命令其实只是输出一个叫做default的变量，所以它后面不能跟变量声明语句。同样地，因为export default命令的本质是将后面的值，赋给default变量，所以可以直接将一个值写在export default之后。
+
+### import()函数
+import命令会被 JavaScript 引擎静态分析，先于模块内的其他语句执行（import命令叫做“连接” binding 其实更合适）。所以，下面的代码会报错。
+```js
+// 报错
+if (x === 2) {
+  import MyModual from './myModual';
+}
+```
+这样的设计，固然有利于编译器提高效率，但也导致无法在运行时加载模块。在语法上，条件加载就不可能实现。如果import命令要取代 Node 的require方法，这就形成了一个障碍。因为require是运行时加载模块，import命令无法取代require的动态加载功能。
+```js
+const path = './' + fileName;
+const myModual = require(path);
+```
+
+ES2020提案 引入import()函数，支持动态加载模块。
+```js
+import(specifier)
+```
+上面代码中，import函数的参数specifier，指定所要加载的模块的位置。import命令能够接受什么参数，import()函数就能接受什么参数，两者区别主要是后者为动态加载。import()返回一个 Promise 对象。
+
+import()函数可以用在任何地方，不仅仅是模块，非模块的脚本也可以使用。它是运行时执行，也就是说，什么时候运行到这一句，就会加载指定的模块。另外，import()函数与所加载的模块没有静态连接关系，这点也是与import语句不相同。import()类似于 Node.js 的require()方法，区别主要是前者是异步加载，后者是同步加载。
+
+由于import()返回 Promise对象，所以需要使用then()方法指定处理函数。考虑到代码的清晰，更推荐使用await命令。
+```js
+async function renderWidget() {
+  const container = document.getElementById('widget');
+  if (container !== null) {
+    // 等同于
+    // import("./widget").then(widget => {
+    //   widget.render(container);
+    // });
+    const widget = await import('./widget.js');
+    widget.render(container);
+  }
+}
+
+renderWidget();
+```
+
+适用场合：
+- 按需加载。import()可以在需要的时候，再加载某个模块。
+- 条件加载。import()可以放在if代码块，根据不同的情况，加载不同的模块。
+- 动态的模块路径。import()允许模块路径动态生成。
+
+## Module的加载实现
+### 浏览器加载
+#### 传统方法
+HTML 网页中，浏览器通过`<script>`标签加载 JavaScript 脚本。默认情况下，浏览器是同步加载 JavaScript 脚本，即渲染引擎遇到`<script>`标签就会停下来，等到执行完脚本，再继续向下渲染。如果是外部脚本，还必须加入脚本下载的时间。
+
+如果脚本体积很大，下载和执行的时间就会很长，因此造成浏览器堵塞，用户会感觉到浏览器“卡死”了，没有任何响应。这显然是很不好的体验，所以浏览器允许脚本异步加载，下面就是两种异步加载的语法。
+```js
+<script src="path/to/myModule.js" defer></script>
+<script src="path/to/myModule.js" async></script>
+```
+`<script>`标签打开defer或async属性，脚本就会异步加载。渲染引擎遇到这一行命令，就会开始下载外部脚本，但不会等它下载和执行，而是直接执行后面的命令。
+
+defer与async的区别是：defer要等到整个页面在内存中正常渲染结束（DOM 结构完全生成，以及其他脚本执行完成），才会执行；async一旦下载完，渲染引擎就会中断渲染，执行这个脚本以后，再继续渲染。一句话，defer是“渲染完再执行”，async是“下载完就执行”。另外，如果有多个defer脚本，会按照它们在页面出现的顺序加载，而多个async脚本是不能保证加载顺序的。
+
+#### 加载规则
+浏览器加载 ES6 模块，也使用`<script>`标签，但是要加入type="module"属性。
+```js
+<script type="module" src="./foo.js"></script>
+```
+浏览器对于带有type="module"的`<script>`，都是异步加载，不会造成堵塞浏览器，即等到整个页面渲染完，再执行模块脚本，等同于打开了`<script>`标签的defer属性。
+
+如果网页有多个`<script type="module">`，它们会按照在页面出现的顺序依次执行。
+
+`<script>`标签的async属性也可以打开，这时只要加载完成，渲染引擎就会中断渲染立即执行。执行完成后，再恢复渲染。
+```js
+<script type="module" src="./foo.js" async></script>
+```
+一旦使用了async属性，`<script type="module">`就不会按照在页面出现的顺序执行，而是只要该模块加载完成，就执行该模块。
+
+ES6 模块也允许内嵌在网页中，语法行为与加载外部脚本完全一致。
+```js
+<script type="module">
+  import utils from "./utils.js";
+
+  // other code
+</script>
+```
+对于外部的模块脚本，有几点需要注意。
+- 代码是在模块作用域之中运行，而不是在全局作用域运行。模块内部的顶层变量，外部不可见。
+- 模块脚本自动采用严格模式，不管有没有声明use strict。
+- 模块之中，可以使用import命令加载其他模块（.js后缀不可省略，需要提供绝对 URL 或相对 URL），也可以使用export命令输出对外接口。
+- 模块之中，顶层的this关键字返回undefined，而不是指向window。也就是说，在模块顶层使用this关键字，是无意义的。
+- 同一个模块如果加载多次，将只执行一次。
+
+### ES6 模块与 CommonJS 模块的差异
+它们有三个重大差异。
+- CommonJS 模块输出的是一个值的拷贝，ES6 模块输出的是值的引用。
+- CommonJS 模块是运行时加载，ES6 模块是编译时输出接口。
+- CommonJS 模块的require()是同步加载模块，ES6 模块的import命令是异步加载，有一个独立的模块依赖的解析阶段。
+
+第二个差异是因为 CommonJS 加载的是一个对象（即module.exports属性），该对象只有在脚本运行完才会生成。而 ES6 模块不是对象，它的对外接口只是一种静态定义，在代码静态解析阶段就会生成。
+
+CommonJS 模块输出的是值的拷贝，也就是说，一旦输出一个值，模块内部的变化就影响不到这个值。
+```js
+// lib.js
+var counter = 3;
+function incCounter() {
+  counter++;
+}
+module.exports = {
+  counter: counter,
+  incCounter: incCounter,
+};
+
+// main.js
+var mod = require('./lib');
+
+console.log(mod.counter);  // 3
+mod.incCounter();
+console.log(mod.counter); // 3
+```
+ES6 模块的运行机制与 CommonJS 不一样。JS 引擎对脚本静态分析的时候，遇到模块加载命令import，就会生成一个只读引用。等到脚本真正执行时，再根据这个只读引用，到被加载的那个模块里面去取值。换句话说，ES6 的import有点像 Unix 系统的“符号连接”，原始值变了，import加载的值也会跟着变。因此，ES6 模块是动态引用，并且不会缓存值，模块里面的变量绑定其所在的模块。
+```js
+// lib.js
+export let counter = 3;
+export function incCounter() {
+  counter++;
+}
+
+// main.js
+import { counter, incCounter } from './lib';
+console.log(counter); // 3
+incCounter();
+console.log(counter); // 4
+```
+由于 ES6 输入的模块变量，只是一个“符号连接”，所以这个变量是只读的，对它进行重新赋值会报错。
+
+### Node.js 的模块加载方法
+JavaScript 现在有两种模块。一种是 ES6 模块，简称 ESM；另一种是 CommonJS 模块，简称 CJS。
+
+CommonJS 模块是 Node.js 专用的，与 ES6 模块不兼容。语法上面，两者最明显的差异是，CommonJS 模块使用require()和module.exports，ES6 模块使用import和export。
+
+它们采用不同的加载方案。从 Node.js v13.2 版本开始，Node.js 已经默认打开了 ES6 模块支持。Node.js 要求 ES6 模块采用.mjs后缀文件名。也就是说，只要脚本文件里面使用import或者export命令，那么就必须采用.mjs后缀名。Node.js 遇到.mjs文件，就认为它是 ES6 模块，默认启用严格模式，不必在每个模块文件顶部指定"use strict"。
+
+如果不希望将后缀名改成.mjs，可以在项目的package.json文件中，指定type字段为module。
+```js
+{
+   "type": "module"
+}
+```
+
+如果这时还要使用 CommonJS 模块，那么需要将 CommonJS 脚本的后缀名都改成.cjs。如果没有type字段，或者type字段为commonjs，则.js脚本会被解释成 CommonJS 模块。
+
+总结为一句话：.mjs文件总是以 ES6 模块加载，.cjs文件总是以 CommonJS 模块加载，.js文件的加载取决于package.json里面type字段的设置。
+
+注意，ES6 模块与 CommonJS 模块尽量不要混用。require命令不能加载.mjs文件，会报错，只有import命令才可以加载.mjs文件。反过来，.mjs文件里面也不能使用require命令，必须使用import。
+
+#### package.json 的 main 字段
+package.json文件有两个字段可以指定模块的入口文件：main和exports。比较简单的模块，可以只使用main字段，指定模块加载的入口文件。
+```js
+// ./node_modules/es-module-package/package.json
+{
+  "type": "module",
+  "main": "./src/index.js"
+}
+```
+上面代码指定项目的入口脚本为./src/index.js，它的格式为 ES6 模块。如果没有type字段，index.js就会被解释为 CommonJS 模块。
+
+然后，import命令就可以加载这个模块。
+```js
+// ./my-app.mjs
+
+import { something } from 'es-module-package';
+// 实际加载的是 ./node_modules/es-module-package/src/index.js
+```
+上面代码中，运行该脚本以后，Node.js 就会到./node_modules目录下面，寻找es-module-package模块，然后根据该模块package.json的main字段去执行入口文件。
+
+这时，如果用 CommonJS 模块的require()命令去加载es-module-package模块会报错，因为 CommonJS 模块不能处理export命令。
+
+
+#### package.json 的 exports 字段 
+exports字段的优先级高于main字段。它有多种用法。
+##### 子目录别名
+package.json文件的exports字段可以指定脚本或子目录的别名。
+```js
+// ./node_modules/es-module-package/package.json
+{
+  "exports": {
+    "./submodule": "./src/submodule.js"
+  }
+}
+```
+上面的代码指定src/submodule.js别名为submodule，然后就可以从别名加载这个文件。
+```js
+import submodule from 'es-module-package/submodule';
+// 加载 ./node_modules/es-module-package/src/submodule.js
+```
+如果没有指定别名，就不能用“模块+脚本名”这种形式加载脚本。
+```js
+// 报错
+import submodule from 'es-module-package/private-module.js';
+
+// 不报错
+import submodule from './node_modules/es-module-package/private-module.js';
+```
+
+##### main的别名
+exports字段的别名如果是.，就代表模块的主入口，优先级高于main字段，并且可以直接简写成exports字段的值。
+```js
+{
+  "exports": {
+    ".": "./main.js"
+  }
+}
+
+// 等同于
+{
+  "exports": "./main.js"
+}
+```
+由于exports字段只有支持 ES6 的 Node.js 才认识，所以可以搭配main字段，来兼容旧版本的 Node.js。
+```js
+{
+  "main": "./main-legacy.cjs",
+  "exports": {
+    ".": "./main-modern.cjs"
+  }
+}
+```
+上面代码中，老版本的 Node.js （不支持 ES6 模块）的入口文件是main-legacy.cjs，新版本的 Node.js 的入口文件是main-modern.cjs。
+
+##### 条件加载
+利用.这个别名，可以为 ES6 模块和 CommonJS 指定不同的入口。
+```js
+{
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": "./main.cjs",
+      "default": "./main.js"
+    }
+  }
+}
+```
+上面代码中，别名.的require条件指定require()命令的入口文件（即 CommonJS 的入口），default条件指定其他情况的入口（即 ES6 的入口）。上面的写法可以简写如下。
+```js
+{
+  "exports": {
+    "require": "./main.cjs",
+    "default": "./main.js"
+  }
+}
+```
+注意，如果同时还有其他别名，就不能采用简写，否则会报错。
+```js
+{
+  // 报错
+  "exports": {
+    "./feature": "./lib/feature.js",
+    "require": "./main.cjs",
+    "default": "./main.js"
+  }
+}
+```
+
+#### CommonJS 模块加载 ES6 模块
+CommonJS 的require()命令不能加载 ES6 模块，会报错，只能使用import()这个方法加载。
+```js
+(async () => {
+  await import('./my-app.mjs');
+})();
+```
+上面代码可以在 CommonJS 模块中运行。
+
+require()不支持 ES6 模块的一个原因是，它是同步加载，而 ES6 模块内部可以使用顶层await命令，导致无法被同步加载。
+
+#### ES6 模块加载 CommonJS 模块
+ES6 模块的import命令可以加载 CommonJS 模块，但是只能整体加载，不能只加载单一的输出项。
+```js
+// 正确
+import packageMain from 'commonjs-package';
+
+// 报错
+import { method } from 'commonjs-package';
+```
+这是因为 ES6 模块需要支持静态代码分析，而 CommonJS 模块的输出接口是module.exports，是一个对象，无法被静态分析，所以只能整体加载。
+
+加载单一的输出项，可以写成下面这样。
+```js
+import packageMain from 'commonjs-package';
+const { method } = packageMain;
+```
+
+#### 同时支持两种格式的模块
+一个模块同时要支持 CommonJS 和 ES6 两种格式，也很容易。
+
+如果原始模块是 ES6 格式，那么需要给出一个整体输出接口，比如export default obj，使得 CommonJS 可以用import()进行加载。
+
+如果原始模块是 CommonJS 格式，那么可以加一个包装层。
+```js
+import cjsModule from '../index.js';
+export const foo = cjsModule.foo;
+```
+上面代码先整体输入 CommonJS 模块，然后再根据需要输出具名接口。
+
+你可以把这个文件的后缀名改为`.mjs`，或者将它放在一个子目录，再在这个子目录里面放一个单独的`package.json`文件，指明`{ type: "module" }`。
+
+另一种做法是在package.json文件的exports字段，指明两种格式模块各自的加载入口。
+```js
+"exports"：{
+  "require": "./index.js"，
+  "import": "./esm/wrapper.js"
+}
+```
+上面代码指定require()和import，加载该模块会自动切换到不一样的入口文件。
+
+#### Node.js 的内置模块
+Node.js 的内置模块可以整体加载，也可以加载指定的输出项。
+```js
+// 整体加载
+import EventEmitter from 'events';
+const e = new EventEmitter();
+
+// 加载指定的输出项
+import { readFile } from 'fs';
+readFile('./foo.txt', (err, source) => {
+  if (err) {
+    console.error(err);
+  } else {
+    console.log(source);
+  }
+});
+```
+
+#### 加载路径
+ES6 模块的加载路径必须给出脚本的完整路径，不能省略脚本的后缀名。import命令和package.json文件的main字段如果省略脚本的后缀名，会报错。
+```js
+// ES6 模块中将报错
+import { something } from './index';
+```
+为了与浏览器的import加载规则相同，Node.js 的.mjs文件支持 URL 路径。
+```js
+import './foo.mjs?query=1'; // 加载 ./foo 传入参数 ?query=1
+```
+目前，Node.js 的import命令只支持加载本地模块（file:协议）和data:协议，不支持加载远程模块。另外，脚本路径只支持相对路径，不支持绝对路径（即以/或//开头的路径）。
+
+#### 内部变量
+ES6 模块应该是通用的，同一个模块不用修改，就可以用在浏览器环境和服务器环境。为了达到这个目标，Node.js 规定 ES6 模块之中不能使用 CommonJS 模块的特有的一些内部变量。
+
+首先，就是this关键字。ES6 模块之中，顶层的this指向undefined；CommonJS 模块的顶层this指向当前模块，这是两者的一个重大差异。
+
+其次，以下这些顶层变量在 ES6 模块之中都是不存在的。
+- arguments
+- require
+- module
+- exports
+- __filename
+- __dirname
+
+### 循环加载
+“循环加载”（circular dependency）指的是，a脚本的执行依赖b脚本，而b脚本的执行又依赖a脚本。
+```js
+// a.js
+var b = require('b');
+
+// b.js
+var a = require('a');
+```
+通常，“循环加载”表示存在强耦合，如果处理不好，还可能导致递归加载，使得程序无法执行，因此应该避免出现。
+
+但是实际上，这是很难避免的，尤其是依赖关系复杂的大项目，很容易出现a依赖b，b依赖c，c又依赖a这样的情况。这意味着，模块加载机制必须考虑“循环加载”的情况。
+
+对于 JavaScript 语言来说，目前最常见的两种模块格式 CommonJS 和 ES6，处理“循环加载”的方法是不一样的，返回的结果也不一样。
+
+#### CommonJS 模块的加载原理
+CommonJS 的一个模块，就是一个脚本文件。require命令第一次加载该脚本，就会执行整个脚本，然后在内存生成一个对象。
+```js
+{
+  id: '...',
+  exports: { ... },
+  loaded: true,
+  ...
+}
+```
+上面代码就是 Node 内部加载模块后生成的一个对象。该对象的id属性是模块名，exports属性是模块输出的各个接口，loaded属性是一个布尔值，表示该模块的脚本是否执行完毕。其他还有很多属性，这里都省略了。
+
+以后需要用到这个模块的时候，就会到exports属性上面取值。即使再次执行require命令，也不会再次执行该模块，而是到缓存之中取值。也就是说，CommonJS 模块无论加载多少次，都只会在第一次加载时运行一次，以后再加载，就返回第一次运行的结果，除非手动清除系统缓存。
+
+#### CommonJS 模块的循环加载
+CommonJS 模块的重要特性是加载时执行，即脚本代码在require的时候，就会全部执行。一旦出现某个模块被"循环加载"，就只输出已经执行的部分，还未执行的部分不会输出。
+
+总之，CommonJS 输入的是被输出值的拷贝，不是引用。另外，由于 CommonJS 模块遇到循环加载时，返回的是当前已经执行的部分的值，而不是代码全部执行后的值，两者可能会有差异。所以，输入变量的时候，必须非常小心。
+
+#### ES6模块的循环加载
+ES6 处理“循环加载”与 CommonJS 有本质的不同。ES6 模块是动态引用，如果使用import从一个模块加载变量（即import foo from 'foo'），那些变量不会被缓存，而是成为一个指向被加载模块的引用，需要开发者自己保证，真正取值的时候能够取到值。
+```js
+// a.mjs
+import {bar} from './b';
+console.log('a.mjs');
+console.log(bar);
+export let foo = 'foo';
+
+// b.mjs
+import {foo} from './a';
+console.log('b.mjs');
+console.log(foo);
+export let bar = 'bar';
+```
+上面代码中，a.mjs加载b.mjs，b.mjs又加载a.mjs，构成循环加载。执行a.mjs，结果如下。
+```js
+$ node --experimental-modules a.mjs
+b.mjs
+ReferenceError: foo is not defined
+```
+上面代码中，执行a.mjs以后会报错，foo变量未定义，这是为什么？首先，执行a.mjs以后，引擎发现它加载了b.mjs，因此会优先执行b.mjs，然后再执行a.mjs。接着，执行b.mjs的时候，已知它从a.mjs输入了foo接口，这时不会去执行a.mjs，而是认为这个接口已经存在了，继续往下执行。执行到第三行console.log(foo)的时候，才发现这个接口根本没定义，因此报错。
+
+解决这个问题的方法，就是让b.mjs运行的时候，foo已经有定义了。这可以通过将foo写成函数来解决。
+```js
+// a.mjs
+import {bar} from './b';
+console.log('a.mjs');
+console.log(bar());
+function foo() { return 'foo' }
+export {foo};
+
+// b.mjs
+import {foo} from './a';
+console.log('b.mjs');
+console.log(foo());
+function bar() { return 'bar' }
+export {bar};
+```
+这时再执行a.mjs就可以得到预期结果。
+```js
+$ node --experimental-modules a.mjs
+b.mjs
+foo
+a.mjs
+bar
+```
+这是因为函数具有提升作用，在执行import {bar} from './b'时，函数foo就已经有定义了，所以b.mjs加载的时候不会报错。这也意味着，如果把函数foo改写成函数表达式，也会报错。
+```js
+// a.mjs
+import {bar} from './b';
+console.log('a.mjs');
+console.log(bar());
+const foo = () => 'foo';
+export {foo};
+```
+上面代码的第四行，改成了函数表达式，就不具有提升作用，执行就会报错。
+
+
+## ArrayBuffer
+ArrayBuffer对象、TypedArray视图和DataView视图是 JavaScript 操作二进制数据的一个接口。这些对象早就存在，属于独立的规格（2011 年 2 月发布），ES6 将它们纳入了 ECMAScript 规格，并且增加了新的方法。它们都是以数组的语法处理二进制数据，所以统称为二进制数组。
+
+这个接口的原始设计目的，与 WebGL 项目有关。所谓 WebGL，就是指浏览器与显卡之间的通信接口，为了满足 JavaScript 与显卡之间大量的、实时的数据交换，它们之间的数据通信必须是二进制的，而不能是传统的文本格式。文本格式传递一个 32 位整数，两端的 JavaScript 脚本与显卡都要进行格式转化，将非常耗时。这时要是存在一种机制，可以像 C 语言那样，直接操作字节，将 4 个字节的 32 位整数，以二进制形式原封不动地送入显卡，脚本的性能就会大幅提升。
+
+二进制数组就是在这种背景下诞生的。它很像 C 语言的数组，允许开发者以数组下标的形式，直接操作内存，大大增强了 JavaScript 处理二进制数据的能力，使得开发者有可能通过 JavaScript 与操作系统的原生接口进行二进制通信。
+
+二进制数组由三类对象组成。
+- ArrayBuffer对象：代表内存之中的一段二进制数据，可以通过“视图”进行操作。“视图”部署了数组接口，这意味着，可以用数组的方法操作内存。
+- TypedArray视图：共包括 9 种类型的视图，比如Uint8Array（无符号 8 位整数）数组视图, Int16Array（16 位整数）数组视图, Float32Array（32 位浮点数）数组视图等等。
+- DataView视图：可以自定义复合格式的视图，比如第一个字节是 Uint8（无符号 8 位整数）、第二、三个字节是 Int16（16 位整数）、第四个字节开始是 Float32（32 位浮点数）等等，此外还可以自定义字节序。
+
+简单说，ArrayBuffer对象代表原始的二进制数据，TypedArray视图用来读写简单类型的二进制数据，DataView视图用来读写复杂类型的二进制数据。
+
+TypedArray视图支持的数据类型一共有12种。
+| 数据类型 | 字节长度 | 含义 | 对应的 C 语言类型 |
+|---------|---------|------|-----------------|
+| Int8 | 1 | 8 位带符号整数 | signed char |
+| Uint8 | 1 | 8 位不带符号整数 | unsigned char |
+| Uint8C | 1 | 8 位不带符号整数（自动过滤溢出） | unsigned char |
+| Int16 | 2 | 16 位带符号整数 | short |
+| Uint16 | 2 | 16 位不带符号整数 | unsigned short |
+| Int32 | 4 | 32 位带符号整数 | int |
+| Uint32 | 4 | 32 位不带符号整数 | unsigned int |
+| BigInt64 | 8 | 64 位带符号整数 | |
+| BigUint64 | 8 | 64 位无符号整数 | |
+| Float16 | 2 | 16 位浮点数 | |
+| Float32 | 4 | 32 位浮点数 | float |
+| Float64 | 8 | 64 位浮点数 | double |
+
+注意，二进制数组并不是真正的数组，而是类似数组的对象。
+
+很多浏览器操作的 API，用到了二进制数组操作二进制数据，下面是其中的几个。
+- Canvas
+- Fetch API
+- File API
+- WebSockets
+- XMLHttpRequest
+
+### ArrayBuffer对象
+ArrayBuffer对象代表储存二进制数据的一段内存，它不能直接读写，只能通过视图（TypedArray视图和DataView视图)来读写，视图的作用是以指定格式解读二进制数据。
+
+ArrayBuffer也是一个构造函数，可以分配一段可以存放数据的连续内存区域。
+```js
+const buf = new ArrayBuffer(32);
+```
+可以看到，ArrayBuffer构造函数的参数是所需要的内存大小（单位字节）。
+
+为了读写这段内容，需要为它指定视图。DataView视图的创建，需要提供ArrayBuffer对象实例作为参数。
+```js
+const buf = new ArrayBuffer(32);
+const dataView = new DataView(buf);
+dataView.getUint8(0) // 0
+```
+上面代码对一段 32 字节的内存，建立DataView视图，然后以不带符号的 8 位整数格式，从头读取 8 位二进制数据，结果得到 0，因为原始内存的ArrayBuffer对象，默认所有位都是 0。
+
+另一种TypedArray视图，与DataView视图的一个区别是，它不是一个构造函数，而是一组构造函数，代表不同的数据格式。
+```js
+const buffer = new ArrayBuffer(12);  // 12个byte长度的内存
+
+const x1 = new Int32Array(buffer);   // 一块分割为32个bit
+x1[0] = 1;
+const x2 = new Uint8Array(buffer);   // 一块分割为8个bit
+x2[0]  = 2;
+
+x1[0] // 2
+```
+
+上面代码对同一段内存，分别建立两种视图：32 位带符号整数（Int32Array构造函数）和 8 位不带符号整数（Uint8Array构造函数）。由于两个视图对应的是同一段内存，一个视图修改底层内存，会影响到另一个视图。
+
+TypedArray视图的构造函数，除了接受ArrayBuffer实例作为参数，还可以接受普通数组作为参数，直接分配内存生成底层的ArrayBuffer实例，并同时完成对这段内存的赋值。
+```js
+const typedArray = new Uint8Array([0,1,2]); // 数组中每个数字占据一个uint8的内存空间
+typedArray.length // 3
+
+typedArray[0] = 5;
+typedArray // [5, 1, 2]
+```
+
+#### ArrayBuffer.prototype.byteLength
+ArrayBuffer实例的byteLength属性，返回所分配的内存区域的字节长度。
+```js
+const buffer = new ArrayBuffer(32);
+buffer.byteLength   // 32
+```
+如果要分配的内存区域很大，有可能分配失败（因为没有那么多的连续空余内存），所以有必要检查是否分配成功。
+
+#### ArrayBuffer.prototype.slice()
+ArrayBuffer实例有一个slice方法，允许将内存区域的一部分，拷贝生成一个新的ArrayBuffer对象。
+```js
+const buffer = new ArrayBuffer(8);
+const newBuffer = buffer.slice(0, 3);
+```
+上面代码拷贝buffer对象的前 3 个字节（从 0 开始，到第 3 个字节前面结束），生成一个新的ArrayBuffer对象。slice方法其实包含两步，第一步是先分配一段新内存，第二步是将原来那个ArrayBuffer对象拷贝过去。
+
+slice方法接受两个参数，第一个参数表示拷贝开始的字节序号（含该字节），第二个参数表示拷贝截止的字节序号（不含该字节）。如果省略第二个参数，则默认到原ArrayBuffer对象的结尾。
+
+除了slice方法，ArrayBuffer对象不提供任何直接读写内存的方法，只允许在其上方建立视图，然后通过视图读写。
+
+#### ArrayBuffer.isView() 
+ArrayBuffer有一个静态方法isView，返回一个布尔值，表示参数是否为ArrayBuffer的视图实例。这个方法大致相当于判断参数，是否为TypedArray实例或DataView实例。
+```js
+const buffer = new ArrayBuffer(8);
+ArrayBuffer.isView(buffer) // false
+
+const v = new Int32Array(buffer);
+ArrayBuffer.isView(v) // true
+```
+
+### TypedArray 视图
+ArrayBuffer对象作为内存区域，可以存放多种类型的数据。同一段内存，不同数据有不同的解读方式，这就叫做“视图”（view）。ArrayBuffer有两种视图，一种是TypedArray视图，另一种是DataView视图。前者的数组成员都是同一个数据类型，后者的数组成员可以是不同的数据类型。
+
+目前，TypedArray视图一共包括 12 种类型，每一种视图都是一种构造函数。
+- Int8Array：8 位有符号整数，长度 1 个字节。
+- Uint8Array：8 位无符号整数，长度 1 个字节。
+- Uint8ClampedArray：8 位无符号整数，长度 1 个字节，溢出处理不同。
+- Int16Array：16 位有符号整数，长度 2 个字节。
+- Uint16Array：16 位无符号整数，长度 2 个字节。
+- Int32Array：32 位有符号整数，长度 4 个字节。
+- Uint32Array：32 位无符号整数，长度 4 个字节。
+- BigInt64Array: 64 位有符号整数，长度 8 个字节。
+- BigUint64Array：64 位无符号整数，长度 8 个字节。
+- Float16Array: 16 位浮点数，长度 2 个字节。
+- Float32Array：32 位浮点数，长度 4 个字节。
+- Float64Array：64 位浮点数，长度 8 个字节。
+
+这12个构造函数生成的数组，统称为TypedArray视图。它们很像普通数组，都有length属性，都能用方括号运算符（[]）获取单个元素，所有数组的方法，在它们上面都能使用。普通数组与 TypedArray 数组的差异主要在以下方面。
+- TypedArray 数组的所有成员，都是同一种类型。
+- TypedArray 数组的成员是连续的，不会有空位。
+- TypedArray 数组成员的默认值为 0。比如，new Array(10)返回一个普通数组，里面没有任何成员，只是 10 个空位；new Uint8Array(10)返回一个 TypedArray 数组，里面 10 个成员都是 0。
+- TypedArray 数组只是一层视图，本身不储存数据，它的数据都储存在底层的ArrayBuffer对象之中，要获取底层对象必须使用buffer属性。
+
+#### 构造函数
+TypedArray 数组提供12种构造函数，用来生成相应类型的数组实例。构造函数有多种用法。
+##### TypedArray(buffer, byteOffset=0, length?)
+同一个ArrayBuffer对象之上，可以根据不同的数据类型，建立多个视图。
+```js
+// 创建一个8字节的ArrayBuffer
+const b = new ArrayBuffer(8);
+
+// 创建一个指向b的Int32视图，开始于字节0，直到缓冲区的末尾
+const v1 = new Int32Array(b);
+
+// 创建一个指向b的Uint8视图，开始于字节2，直到缓冲区的末尾
+const v2 = new Uint8Array(b, 2);
+
+// 创建一个指向b的Int16视图，开始于字节2，长度为2
+const v3 = new Int16Array(b, 2, 2);
+```
+视图的构造函数可以接受三个参数：
+- 第一个参数（必需）：视图对应的底层ArrayBuffer对象。
+- 第二个参数（可选）：视图开始的字节序号，默认从 0 开始。
+- 第三个参数（可选）：视图包含的数据个数，默认直到本段内存区域结束。
+
+注意，第二个参数byteOffset必须与所要建立的数据类型一致，否则会报错。
+```js
+const buffer = new ArrayBuffer(8);
+const i16 = new Int16Array(buffer, 1);
+// Uncaught RangeError: start offset of Int16Array should be a multiple of 2
+```
+上面代码中，新生成一个 8 个字节的ArrayBuffer对象，然后在这个对象的第一个字节，建立带符号的 16 位整数视图，结果报错。因为，带符号的 16 位整数需要两个字节，所以byteOffset参数必须能够被 2 整除。
+
+如果想从任意字节开始解读ArrayBuffer对象，必须使用DataView视图，因为TypedArray视图只提供 12 种固定的解读格式。
+
+##### TypedArray(length)
+视图还可以不通过ArrayBuffer对象，直接分配内存而生成。
+```js
+const f64a = new Float64Array(8);
+f64a[0] = 10;
+f64a[1] = 20;
+f64a[2] = f64a[0] + f64a[1];
+```
+上面代码生成一个 8 个成员的Float64Array数组（共 64 字节），然后依次对每个成员赋值。这时，视图构造函数的参数就是成员的个数。可以看到，视图数组的赋值操作与普通数组的操作毫无两样。
+
+##### TypedArray(typedArray)
+TypedArray 数组的构造函数，可以接受另一个TypedArray实例作为参数。
+```js
+const typedArray = new Int8Array(new Uint8Array(4));
+```
+注意，此时生成的新数组，只是复制了参数数组的值，对应的底层内存是不一样的。新数组会开辟一段新的内存储存数据，不会在原数组的内存之上建立视图。
+```js
+const x = new Int8Array([1, 1]);
+const y = new Int8Array(x);
+x[0] // 1
+y[0] // 1
+
+x[0] = 2;
+y[0] // 1
+```
+
+如果想基于同一段内存，构造不同的视图，可以采用下面的写法。
+```js
+const x = new Int8Array([1, 1]);
+const y = new Int8Array(x.buffer);
+x[0] // 1
+y[0] // 1
+
+x[0] = 2;
+y[0] // 2
+```
+
+##### TypedArray(arrayLikeObject)
+构造函数的参数也可以是一个普通数组，然后直接生成TypedArray实例。
+```js
+const typedArray = new Uint8Array([1, 2, 3, 4]);
+```
+注意，这时TypedArray视图会重新开辟内存，不会在原数组的内存上建立视图。
+
+上面代码从一个普通的数组，生成一个 8 位无符号整数的TypedArray实例。
+
+TypedArray 数组也可以转换回普通数组。
+```js
+const normalArray = [...typedArray];
+// or
+const normalArray = Array.from(typedArray);
+// or
+const normalArray = Array.prototype.slice.call(typedArray);
+```
+
+#### 数组方法
+普通数组的操作方法和属性，对 TypedArray 数组完全适用。
+- TypedArray.prototype.copyWithin(target, start[, end = this.length])
+- TypedArray.prototype.entries()
+- TypedArray.prototype.every(callbackfn, thisArg?)
+- TypedArray.prototype.fill(value, start=0, end=this.length)
+- TypedArray.prototype.filter(callbackfn, thisArg?)
+- TypedArray.prototype.find(predicate, thisArg?)
+- TypedArray.prototype.findIndex(predicate, thisArg?)
+- TypedArray.prototype.forEach(callbackfn, thisArg?)
+- TypedArray.prototype.indexOf(searchElement, fromIndex=0)
+- TypedArray.prototype.join(separator)
+- TypedArray.prototype.keys()
+- TypedArray.prototype.lastIndexOf(searchElement, fromIndex?)
+- TypedArray.prototype.map(callbackfn, thisArg?)
+- TypedArray.prototype.reduce(callbackfn, initialValue?)
+- TypedArray.prototype.reduceRight(callbackfn, initialValue?)
+- TypedArray.prototype.reverse()
+- TypedArray.prototype.slice(start=0, end=this.length)
+- TypedArray.prototype.some(callbackfn, thisArg?)
+- TypedArray.prototype.sort(comparefn)
+- TypedArray.prototype.toLocaleString(reserved1?, reserved2?)
+- TypedArray.prototype.toString()
+- TypedArray.prototype.values()
+
+注意，TypedArray 数组没有concat方法。如果想要合并多个 TypedArray 数组，可以用下面这个函数。
+```js
+function concatenate(resultConstructor, ...arrays) {
+  let totalLength = 0;
+  for (let arr of arrays) {
+    totalLength += arr.length;
+  }
+  let result = new resultConstructor(totalLength);
+  let offset = 0;
+  for (let arr of arrays) {
+    result.set(arr, offset);
+    offset += arr.length;
+  }
+  return result;
+}
+
+concatenate(Uint8Array, Uint8Array.of(1, 2), Uint8Array.of(3, 4))
+// Uint8Array [1, 2, 3, 4]
+```
+TypedArray 数组与普通数组一样，部署了 Iterator 接口，所以可以被遍历。
+```js
+let ui8 = Uint8Array.of(0, 1, 2);
+for (let byte of ui8) {
+  console.log(byte);
+}
+// 0
+// 1
+// 2
+```
+
+#### BYTES_PER_ELEMENT 属性
+每一种视图的构造函数，都有一个BYTES_PER_ELEMENT属性，表示这种数据类型占据的字节数。
+```js
+Int8Array.BYTES_PER_ELEMENT // 1
+Uint8Array.BYTES_PER_ELEMENT // 1
+Uint8ClampedArray.BYTES_PER_ELEMENT // 1
+Int16Array.BYTES_PER_ELEMENT // 2
+Uint16Array.BYTES_PER_ELEMENT // 2
+Int32Array.BYTES_PER_ELEMENT // 4
+Uint32Array.BYTES_PER_ELEMENT // 4
+Float32Array.BYTES_PER_ELEMENT // 4
+Float64Array.BYTES_PER_ELEMENT // 8
+```
+这个属性在TypedArray实例上也能获取，即有TypedArray.prototype.BYTES_PER_ELEMENT。
+
+#### ArrayBuffer 与字符串的互相转换
+ArrayBuffer 和字符串的相互转换，使用原生 TextEncoder 和 TextDecoder 方法。为了便于说明用法，下面的代码都按照 TypeScript 的用法，给出了类型签名。
+```js
+/**
+ * Convert ArrayBuffer/TypedArray to String via TextDecoder
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/TextDecoder
+ */
+function ab2str(
+  input: ArrayBuffer | Uint8Array | Int8Array | Uint16Array | Int16Array | Uint32Array | Int32Array,
+  outputEncoding: string = 'utf8',
+): string {
+  const decoder = new TextDecoder(outputEncoding)
+  return decoder.decode(input)
+}
+
+/**
+ * Convert String to ArrayBuffer via TextEncoder
+ *
+ * @see https://developer.mozilla.org/zh-CN/docs/Web/API/TextEncoder
+ */
+function str2ab(input: string): ArrayBuffer {
+  const view = str2Uint8Array(input)
+  return view.buffer
+}
+
+/** Convert String to Uint8Array */
+function str2Uint8Array(input: string): Uint8Array {
+  const encoder = new TextEncoder()
+  const view = encoder.encode(input)
+  return view
+}
+```
+上面代码中，ab2str()的第二个参数outputEncoding给出了输出编码的编码，一般保持默认值（utf-8）。
+
+#### 溢出
+不同的视图类型，所能容纳的数值范围是确定的。超出这个范围，就会出现溢出。比如，8 位视图只能容纳一个 8 位的二进制值，如果放入一个 9 位的值，就会溢出。
+
+TypedArray 数组的溢出处理规则，简单来说，就是抛弃溢出的位，然后按照视图类型进行解释。
+```js
+const uint8 = new Uint8Array(1);
+
+uint8[0] = 256;
+uint8[0] // 0
+
+uint8[0] = -1;
+uint8[0] // 255
+```
+上面代码中，uint8是一个 8 位视图，而 256 的二进制形式是一个 9 位的值100000000，这时就会发生溢出。根据规则，只会保留后 8 位，即00000000。uint8视图的解释规则是无符号的 8 位整数，所以00000000就是0。
+
+负数在计算机内部采用“2 的补码”表示，也就是说，将对应的正数值进行否运算，然后加1。比如，-1对应的正值是1，进行否运算以后，得到11111110，再加上1就是补码形式11111111。uint8按照无符号的 8 位整数解释11111111，返回结果就是255。
+
+一个简单转换规则，可以这样表示。
+- 正向溢出（overflow）：当输入值大于当前数据类型的最大值，结果等于当前数据类型的最小值加上余值，再减去 1。
+- 负向溢出（underflow）：当输入值小于当前数据类型的最小值，结果等于当前数据类型的最大值减去余值的绝对值，再加上 1。
+
+Uint8ClampedArray视图的溢出规则，与上面的规则不同。它规定，凡是发生正向溢出，该值一律等于当前数据类型的最大值，即 255；如果发生负向溢出，该值一律等于当前数据类型的最小值，即 0。
+```js
+const uint8c = new Uint8ClampedArray(1);
+
+uint8c[0] = 256;
+uint8c[0] // 255
+
+uint8c[0] = -1;
+uint8c[0] // 0
+```
+
+#### TypedArray.prototype.buffer
+TypedArray实例的buffer属性，返回整段内存区域对应的ArrayBuffer对象。该属性为只读属性。
+```js
+const a = new Float32Array(64);
+const b = new Uint8Array(a.buffer);
+```
+上面代码的a视图对象和b视图对象，对应同一个ArrayBuffer对象，即同一段内存。
+
+#### TypedArray.prototype.byteLength与TypedArray.prototype.byteOffset 
+byteLength属性返回 TypedArray 数组占据的内存长度，单位为字节。byteOffset属性返回 TypedArray 数组从底层ArrayBuffer对象的哪个字节开始。这两个属性都是只读属性。
+```js
+const b = new ArrayBuffer(8);
+
+const v1 = new Int32Array(b);
+const v2 = new Uint8Array(b, 2);
+const v3 = new Int16Array(b, 2, 2);
+
+v1.byteLength // 8
+v2.byteLength // 6
+v3.byteLength // 4
+
+v1.byteOffset // 0
+v2.byteOffset // 2
+v3.byteOffset // 2
+```
+
+#### TypedArray.prototype.length
+length属性表示 TypedArray 数组含有多少个成员。注意将 length 属性和 byteLength 属性区分，前者是成员长度，后者是字节长度。
+```js
+const a = new Int16Array(8);
+
+a.length // 8
+a.byteLength // 16
+```
+
+#### TypedArray.prototype.set()
+TypedArray 数组的set方法用于复制数组（普通数组或 TypedArray 数组），也就是将一段内容完全复制到另一段内存。
+```js
+const a = new Uint8Array(8);
+const b = new Uint8Array(8);
+
+b.set(a);
+```
+上面代码复制a数组的内容到b数组，它是整段内存的复制，比一个个拷贝成员的那种复制快得多。
+
+set方法还可以接受第二个参数，表示从b对象的哪一个成员开始复制a对象。
+```js
+const a = new Uint16Array(8);
+const b = new Uint16Array(10);
+
+b.set(a, 2)
+```
+
+#### TypedArray.prototype.subarray()
+subarray方法是对于 TypedArray 数组的一部分，再建立一个新的视图。subarray方法的第一个参数是起始的成员序号，第二个参数是结束的成员序号（不含该成员），如果省略则包含剩余的全部成员。
+```js
+const a = new Uint16Array(8);
+const b = a.subarray(2,3);
+
+a.byteLength // 16
+b.byteLength // 2
+```
+上面代码的a.subarray(2,3)，意味着 b 只包含a[2]一个成员，字节长度为 2。
+
+#### TypedArray.prototype.slice()
+TypeArray 实例的slice方法，可以返回一个指定位置的新的TypedArray实例。slice方法的参数，表示原数组的具体位置，开始生成新数组。负值表示逆向的位置，即-1 为倒数第一个位置，-2 表示倒数第二个位置，以此类推。
+```js
+let ui8 = Uint8Array.of(0, 1, 2);
+ui8.slice(-1)
+// Uint8Array [ 2 ]
+```
+上面代码中，ui8是 8 位无符号整数数组视图的一个实例。它的slice方法可以从当前视图之中，返回一个新的视图实例。
+
+#### TypedArray.of()
+TypedArray 数组的所有构造函数，都有一个静态方法of，用于将参数转为一个TypedArray实例。
+```js
+Float32Array.of(0.151, -8, 3.7)
+// Float32Array [ 0.151, -8, 3.7 ]
+```
+下面三种方法都会生成同样一个 TypedArray 数组。
+```js
+// 方法一
+let tarr = new Uint8Array([1,2,3]);
+
+// 方法二
+let tarr = Uint8Array.of(1,2,3);
+
+// 方法三
+let tarr = new Uint8Array(3);
+tarr[0] = 1;
+tarr[1] = 2;
+tarr[2] = 3;
+```
+
+#### TypedArray.from()
+静态方法from接受一个可遍历的数据结构（比如数组）作为参数，返回一个基于这个结构的TypedArray实例。
+```js
+Uint16Array.from([0, 1, 2])
+// Uint16Array [ 0, 1, 2 ]
+```
+这个方法还可以将一种TypedArray实例，转为另一种。
+```js
+const ui16 = Uint16Array.from(Uint8Array.of(0, 1, 2));
+ui16 instanceof Uint16Array // true
+```
+from方法还可以接受一个函数，作为第二个参数，用来对每个元素进行遍历，功能类似map方法。
+```js
+Int8Array.of(127, 126, 125).map(x => 2 * x)
+// Int8Array [ -2, -4, -6 ]
+
+Int16Array.from(Int8Array.of(127, 126, 125), x => 2 * x)
+// Int16Array [ 254, 252, 250 ]
+```
+上面的例子中，from方法没有发生溢出，这说明遍历不是针对原来的 8 位整数数组。也就是说，from会将第一个参数指定的 TypedArray 数组，拷贝到另一段内存之中，处理之后再将结果转成指定的数组格式。
+
+### 复合视图
+由于视图的构造函数可以指定起始位置和长度，所以在同一段内存之中，可以依次存放不同类型的数据，这叫做“复合视图”。
+```js
+const buffer = new ArrayBuffer(24);
+
+const idView = new Uint32Array(buffer, 0, 1);
+const usernameView = new Uint8Array(buffer, 4, 16);
+const amountDueView = new Float32Array(buffer, 20, 1);
+```
+上面代码将一个 24 字节长度的ArrayBuffer对象，分成三个部分：
+- 字节 0 到字节 3：1 个 32 位无符号整数
+- 字节 4 到字节 19：16 个 8 位整数
+- 字节 20 到字节 23：1 个 32 位浮点数
+
+### DataView 视图
