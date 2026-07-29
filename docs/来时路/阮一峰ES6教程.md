@@ -3778,3 +3778,442 @@ const amountDueView = new Float32Array(buffer, 20, 1);
 - 字节 20 到字节 23：1 个 32 位浮点数
 
 ### DataView 视图
+如果一段数据包括多种类型（比如服务器传来的 HTTP 数据），这时除了建立ArrayBuffer对象的复合视图以外，还可以通过DataView视图进行操作。
+
+DataView视图提供更多操作选项，而且支持设定字节序。本来，在设计目的上，ArrayBuffer对象的各种TypedArray视图，是用来向网卡、声卡之类的本机设备传送数据，所以使用本机的字节序就可以了；而DataView视图的设计目的，是用来处理网络设备传来的数据，所以大端字节序或小端字节序是可以自行设定的。
+
+DataView视图本身也是构造函数，接受一个ArrayBuffer对象作为参数，生成视图。
+```js
+new DataView(ArrayBuffer buffer [, 字节起始位置 [, 长度]]);
+```
+DataView实例有以下属性，含义与TypedArray实例的同名方法相同。
+- DataView.prototype.buffer：返回对应的 ArrayBuffer 对象
+- DataView.prototype.byteLength：返回占据的内存字节长度
+- DataView.prototype.byteOffset：返回当前视图从对应的 ArrayBuffer 对象的哪个字节开始
+
+DataView实例提供11个方法读取内存。
+- getInt8：读取 1 个字节，返回一个 8 位整数。
+- getUint8：读取 1 个字节，返回一个无符号的 8 位整数。
+- getInt16：读取 2 个字节，返回一个 16 位整数。
+- getUint16：读取 2 个字节，返回一个无符号的 16 位整数。
+- getInt32：读取 4 个字节，返回一个 32 位整数。
+- getUint32：读取 4 个字节，返回一个无符号的 32 位整数。
+- getBigInt64：读取 8 个字节，返回一个 64 位整数。
+- getBigUint64：读取 8 个字节，返回一个无符号的 64 位整数。
+- getFloat16：读取 2 个字节，返回一个 16 位浮点数。
+- getFloat32：读取 4 个字节，返回一个 32 位浮点数。
+- getFloat64：读取 8 个字节，返回一个 64 位浮点数。
+
+这一系列get方法的参数都是一个字节序号（不能是负数，否则会报错），表示从哪个字节开始读取。
+```js
+const buffer = new ArrayBuffer(24);
+const dv = new DataView(buffer);
+
+// 从第1个字节读取一个8位无符号整数
+const v1 = dv.getUint8(0);
+
+// 从第2个字节读取一个16位无符号整数
+const v2 = dv.getUint16(1);
+
+// 从第4个字节读取一个16位无符号整数
+const v3 = dv.getUint16(3);
+```
+如果一次读取两个或两个以上字节，就必须明确数据的存储方式，到底是小端字节序还是大端字节序。默认情况下，DataView的get方法使用大端字节序解读数据，如果需要使用小端字节序解读，必须在get方法的第二个参数指定true。
+```js
+// 小端字节序
+const v1 = dv.getUint16(1, true);
+
+// 大端字节序
+const v2 = dv.getUint16(3, false);
+
+// 大端字节序
+const v3 = dv.getUint16(3);
+```
+
+DataView 视图提供11个方法写入内存。
+- setInt8：写入 1 个字节的 8 位整数。
+- setUint8：写入 1 个字节的 8 位无符号整数。
+- setInt16：写入 2 个字节的 16 位整数。
+- setUint16：写入 2 个字节的 16 位无符号整数。
+- setInt32：写入 4 个字节的 32 位整数。
+- setUint32：写入 4 个字节的 32 位无符号整数。
+- setBigInt64：写入 8 个字节的 64 位整数。
+- setBigUint64：写入 8 个字节的 64 位无符号整数。
+- setFloat16：写入 2 个字节的 16 位浮点数。
+- setFloat32：写入 4 个字节的 32 位浮点数。
+- setFloat64：写入 8 个字节的 64 位浮点数。
+
+这一系列set方法，接受两个参数，第一个参数是字节序号，表示从哪个字节开始写入，第二个参数为写入的数据。对于那些写入两个或两个以上字节的方法，需要指定第三个参数，false或者undefined表示使用大端字节序写入，true表示使用小端字节序写入。
+```js
+// 在第1个字节，以大端字节序写入值为25的32位整数
+dv.setInt32(0, 25, false);
+
+// 在第5个字节，以大端字节序写入值为25的32位整数
+dv.setInt32(4, 25);
+
+// 在第9个字节，以小端字节序写入值为2.5的32位浮点数
+dv.setFloat32(8, 2.5, true);
+```
+
+### 二进制数组的应用
+大量的 Web API 用到了ArrayBuffer对象和它的视图对象。
+
+#### AJAX
+传统上，服务器通过 AJAX 操作只能返回文本数据，即responseType属性默认为text。XMLHttpRequest第二版XHR2允许服务器返回二进制数据，这时分成两种情况。如果明确知道返回的二进制数据类型，可以把返回类型（responseType）设为arraybuffer；如果不知道，就设为blob。
+```js
+let xhr = new XMLHttpRequest();
+xhr.open('GET', someUrl);
+xhr.responseType = 'arraybuffer';
+
+xhr.onload = function () {
+  let arrayBuffer = xhr.response;
+  // ···
+};
+
+xhr.send();
+```
+
+#### Canvas
+网页Canvas元素输出的二进制像素数据，就是 TypedArray 数组。
+```js
+const canvas = document.getElementById('myCanvas');
+const ctx = canvas.getContext('2d');
+
+const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+const uint8ClampedArray = imageData.data;
+```
+需要注意的是，上面代码的uint8ClampedArray虽然是一个 TypedArray 数组，但是它的视图类型是一种针对Canvas元素的专有类型Uint8ClampedArray。这个视图类型的特点，就是专门针对颜色，把每个字节解读为无符号的 8 位整数，即只能取值 0 ～ 255，而且发生运算的时候自动过滤高位溢出。这为图像处理带来了巨大的方便。
+
+举例来说，如果把像素的颜色值设为Uint8Array类型，那么乘以一个 gamma 值的时候，就必须这样计算：
+```js
+u8[i] = Math.min(255, Math.max(0, u8[i] * gamma));
+```
+
+因为Uint8Array类型对于大于 255 的运算结果（比如0xFF+1），会自动变为0x00，所以图像处理必须要像上面这样算。这样做很麻烦，而且影响性能。如果将颜色值设为Uint8ClampedArray类型，计算就简化许多。
+```js
+pixels[i] *= gamma;
+```
+Uint8ClampedArray类型确保将小于 0 的值设为 0，将大于 255 的值设为 255。注意，IE 10 不支持该类型。
+
+#### WebSockets
+WebSocket可以通过ArrayBuffer，发送或接收二进制数据。
+```js
+let socket = new WebSocket('ws://127.0.0.1:8081');
+socket.binaryType = 'arraybuffer';
+
+// Wait until socket is open
+socket.addEventListener('open', function (event) {
+  // Send binary data
+  const typedArray = new Uint8Array(4);
+  socket.send(typedArray.buffer);
+});
+
+// Receive binary data
+socket.addEventListener('message', function (event) {
+  const arrayBuffer = event.data;
+  // ···
+});
+```
+
+#### Fetch API
+Fetch API 取回的数据，就是ArrayBuffer对象。
+```js
+fetch(url)
+.then(function(response){
+  return response.arrayBuffer()
+})
+.then(function(arrayBuffer){
+  // ...
+});
+```
+
+#### File API
+如果知道一个文件的二进制数据类型，也可以将这个文件读取为ArrayBuffer对象。
+```js
+const fileInput = document.getElementById('fileInput');
+const file = fileInput.files[0];
+const reader = new FileReader();
+reader.readAsArrayBuffer(file);
+reader.onload = function () {
+  const arrayBuffer = reader.result;
+  // ···
+};
+```
+
+#### SharedArrayBuffer
+JavaScript 是单线程的，Web worker 引入了多线程：主线程用来与用户互动，Worker 线程用来承担计算任务。每个线程的数据都是隔离的，通过postMessage()通信。下面是一个例子。
+```js
+// 主线程
+const w = new Worker('myworker.js');
+w.postMessage('hi');
+w.onmessage = function (ev) {
+  console.log(ev.data);
+}
+```
+主线程新建了一个 Worker 线程。该线程与主线程之间会有一个通信渠道，主线程通过w.postMessage向 Worker 线程发消息，同时通过message事件监听 Worker 线程的回应。Worker 线程也是通过监听message事件，来获取主线程发来的消息，并作出反应。
+```js
+// Worker 线程
+onmessage = function (ev) {
+  console.log(ev.data);
+  postMessage('ho');
+}
+```
+线程之间的数据交换可以是各种格式，不仅仅是字符串，也可以是二进制数据。这种交换采用的是复制机制，即一个进程将需要分享的数据复制一份，通过postMessage方法交给另一个进程。如果数据量比较大，这种通信的效率显然比较低。很容易想到，这时可以留出一块内存区域，由主线程与 Worker 线程共享，两方都可以读写，那么就会大大提高效率，协作起来也会比较简单（不像postMessage那么麻烦）。
+
+ES2017 引入SharedArrayBuffer，允许 Worker 线程与主线程共享同一块内存。SharedArrayBuffer的 API 与ArrayBuffer一模一样，唯一的区别是后者无法共享数据。
+```js
+// 主线程
+
+// 新建 1KB 共享内存
+const sharedBuffer = new SharedArrayBuffer(1024);
+
+// 主线程将共享内存的地址发送出去
+w.postMessage(sharedBuffer);
+
+// 在共享内存上建立视图，供写入数据
+const sharedArray = new Int32Array(sharedBuffer);
+```
+Worker 线程从事件的data属性上面取到数据。
+```js
+// Worker 线程
+onmessage = function (ev) {
+  // 主线程共享的数据，就是 1KB 的共享内存
+  const sharedBuffer = ev.data;
+
+  // 在共享内存上建立视图，方便读写
+  const sharedArray = new Int32Array(sharedBuffer);
+
+  // ...
+};
+```
+共享内存也可以在 Worker 线程创建，发给主线程。SharedArrayBuffer与ArrayBuffer一样，本身是无法读写的，必须在上面建立视图，然后通过视图读写。
+```js
+// 分配 10 万个 32 位整数占据的内存空间
+const sab = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 100000);
+
+// 建立 32 位整数视图
+const ia = new Int32Array(sab);  // ia.length == 100000
+
+// 新建一个质数生成器
+const primes = new PrimeGenerator();
+
+// 将 10 万个质数，写入这段内存空间
+for ( let i=0 ; i < ia.length ; i++ )
+  ia[i] = primes.next();
+
+// 向 Worker 线程发送这段共享内存
+w.postMessage(ia);
+```
+Worker 线程收到数据后的处理如下。
+```js
+// Worker 线程
+let ia;
+onmessage = function (ev) {
+  ia = ev.data;
+  console.log(ia.length); // 100000
+  console.log(ia[37]); // 输出 163，因为这是第38个质数
+}
+```
+
+### Atomics对象
+多线程共享内存，最大的问题就是如何防止两个线程同时修改某个地址，或者说，当一个线程修改共享内存以后，必须有一个机制让其他线程同步。SharedArrayBuffer API 提供Atomics对象，保证所有共享内存的操作都是“原子性”的，并且可以在所有线程内同步。
+
+什么叫“原子性操作”呢？现代编程语言中，一条普通的命令被编译器处理以后，会变成多条机器指令。如果是单线程运行，这是没有问题的；多线程环境并且共享内存时，就会出问题，因为这一组机器指令的运行期间，可能会插入其他线程的指令，从而导致运行结果出错。请看下面的例子。
+```js
+// 主线程
+ia[42] = 314159;  // 原先的值 191
+ia[37] = 123456;  // 原先的值 163
+
+// Worker 线程
+console.log(ia[37]);
+console.log(ia[42]);
+// 可能的结果
+// 123456
+// 191
+```
+上面代码中，主线程的原始顺序是先对 42 号位置赋值，再对 37 号位置赋值。但是，编译器和 CPU 为了优化，可能会改变这两个操作的执行顺序（因为它们之间互不依赖），先对 37 号位置赋值，再对 42 号位置赋值。而执行到一半的时候，Worker 线程可能就会来读取数据，导致打印出123456和191。
+
+```js
+// 主线程
+const sab = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 100000);
+const ia = new Int32Array(sab);
+
+for (let i = 0; i < ia.length; i++) {
+  ia[i] = primes.next(); // 将质数放入 ia
+}
+
+// worker 线程
+ia[112]++; // 错误
+Atomics.add(ia, 112, 1); // 正确
+```
+上面代码中，Worker 线程直接改写共享内存ia[112]++是不正确的。因为这行语句会被编译成多条机器指令，这些指令之间无法保证不会插入其他进程的指令。请设想如果两个线程同时ia[112]++，很可能它们得到的结果都是不正确的。
+
+Atomics对象就是为了解决这个问题而提出，它可以保证一个操作所对应的多条机器指令，一定是作为一个整体运行的，中间不会被打断。也就是说，它所涉及的操作都可以看作是原子性的单操作，这可以避免线程竞争，提高多线程共享内存时的操作安全。所以，ia[112]++要改写成Atomics.add(ia, 112, 1)。
+
+Atomics对象提供多种方法。
+#### Atomics.store()与Atomics.load()
+store()方法用来向共享内存写入数据，load()方法用来从共享内存读出数据。比起直接的读写操作，它们的好处是保证了读写操作的原子性。
+
+此外，它们还用来解决一个问题：多个线程使用共享内存的某个位置作为开关（flag），一旦该位置的值变了，就执行特定操作。这时，必须保证该位置的赋值操作，一定是在它前面的所有可能会改写内存的操作结束后执行；而该位置的取值操作，一定是在它后面所有可能会读取该位置的操作开始之前执行。store()方法和load()方法就能做到这一点，编译器不会为了优化，而打乱机器指令的执行顺序。
+```js
+Atomics.load(typedArray, index)
+Atomics.store(typedArray, index, value)
+```
+- store()方法接受三个参数：typedArray对象（SharedArrayBuffer 的视图）、位置索引和值，返回typedArray[index]的值。
+- load()方法只接受两个参数：typedArray对象（SharedArrayBuffer 的视图）和位置索引，也是返回typedArray[index]的值。
+
+```js
+// 主线程 main.js
+ia[42] = 314159;  // 原先的值 191
+Atomics.store(ia, 37, 123456);  // 原先的值是 163
+
+// Worker 线程 worker.js
+while (Atomics.load(ia, 37) == 163);
+console.log(ia[37]);  // 123456
+console.log(ia[42]);  // 314159
+```
+上面代码中，主线程的Atomics.store()向 42 号位置的赋值，一定是早于 37 位置的赋值。只要 37 号位置等于 163，Worker 线程就不会终止循环，而对 37 号位置和 42 号位置的取值，一定是在Atomics.load()操作之后。
+
+```js
+// 主线程
+const worker = new Worker('worker.js');
+const length = 10;
+const size = Int32Array.BYTES_PER_ELEMENT * length;
+// 新建一段共享内存
+const sharedBuffer = new SharedArrayBuffer(size);
+const sharedArray = new Int32Array(sharedBuffer);
+for (let i = 0; i < 10; i++) {
+  // 向共享内存写入 10 个整数
+  Atomics.store(sharedArray, i, 0);
+}
+worker.postMessage(sharedBuffer);
+
+
+// worker.js
+self.addEventListener('message', (event) => {
+  const sharedArray = new Int32Array(event.data);
+  for (let i = 0; i < 10; i++) {
+    const arrayValue = Atomics.load(sharedArray, i);
+    console.log(`The item at array index ${i} is ${arrayValue}`);
+  }
+}, false);
+```
+上面代码中，主线程用Atomics.store()方法写入数据。Worker 线程用Atomics.load()方法读取数据。
+
+#### Atomics.exchange()
+Worker 线程如果要写入数据，可以使用上面的Atomics.store()方法，也可以使用Atomics.exchange()方法。它们的区别是，Atomics.store()返回写入的值，而Atomics.exchange()返回被替换的值。
+```js
+// Worker 线程
+self.addEventListener('message', (event) => {
+  const sharedArray = new Int32Array(event.data);
+  for (let i = 0; i < 10; i++) {
+    if (i % 2 === 0) {
+      const storedValue = Atomics.store(sharedArray, i, 1);
+      console.log(`The item at array index ${i} is now ${storedValue}`);
+    } else {
+      const exchangedValue = Atomics.exchange(sharedArray, i, 2);
+      console.log(`The item at array index ${i} was ${exchangedValue}, now 2`);
+    }
+  }
+}, false);
+```
+上面代码将共享内存的偶数位置的值改成1，奇数位置的值改成2。
+
+#### Atomics.wait()与Atomics.notify()
+使用while循环等待主线程的通知，不是很高效，如果用在主线程，就会造成卡顿，Atomics对象提供了wait()和notify()两个方法用于等待通知。这两个方法相当于锁内存，即在一个线程进行操作时，让其他线程休眠（建立锁），等到操作结束，再唤醒那些休眠的线程（解除锁）。
+
+Atomics.notify()方法以前叫做Atomics.wake()，后来进行了改名。
+```js
+// Worker 线程
+self.addEventListener('message', (event) => {
+  const sharedArray = new Int32Array(event.data);
+  const arrayIndex = 0;
+  const expectedStoredValue = 50;
+  Atomics.wait(sharedArray, arrayIndex, expectedStoredValue);
+  console.log(Atomics.load(sharedArray, arrayIndex));
+}, false);
+```
+上面代码中，Atomics.wait()方法等同于告诉 Worker 线程，只要满足给定条件（sharedArray的0号位置等于50），就在这一行 Worker 线程进入休眠。
+
+主线程一旦更改了指定位置的值，就可以唤醒 Worker 线程。
+```js
+// 主线程
+const newArrayValue = 100;
+Atomics.store(sharedArray, 0, newArrayValue);
+const arrayIndex = 0;
+const queuePos = 1;
+Atomics.notify(sharedArray, arrayIndex, queuePos);
+```
+
+Atomics.wait()方法的使用格式如下。
+```js
+Atomics.wait(sharedArray, index, value, timeout)
+```
+它的四个参数含义如下。
+- sharedArray：共享内存的视图数组。
+- index：视图数据的位置（从0开始）。
+- value：该位置的预期值。一旦实际值等于预期值，就进入休眠。
+- timeout：整数，表示过了这个时间以后，就自动唤醒，单位毫秒。该参数可选，默认值是Infinity，即无限期的休眠，只有通过Atomics.notify()方法才能唤醒。
+Atomics.wait()的返回值是一个字符串，共有三种可能的值。如果sharedArray[index]不等于value，就返回字符串not-equal，否则就进入休眠。如果Atomics.notify()方法唤醒，就返回字符串ok；如果因为超时唤醒，就返回字符串timed-out。
+
+Atomics.notify()方法的使用格式如下。
+```js
+Atomics.notify(sharedArray, index, count)
+```
+它的三个参数含义如下。
+- sharedArray：共享内存的视图数组。
+- index：视图数据的位置（从0开始）。
+- count：需要唤醒的 Worker 线程的数量，默认为Infinity。
+
+Atomics.notify()方法一旦唤醒休眠的 Worker 线程，就会让它继续往下运行。
+```js
+// 主线程
+console.log(ia[37]);  // 163
+Atomics.store(ia, 37, 123456);
+Atomics.notify(ia, 37, 1);
+
+// Worker 线程
+Atomics.wait(ia, 37, 163);
+console.log(ia[37]);  // 123456
+```
+上面代码中，视图数组ia的第 37 号位置，原来的值是163。Worker 线程使用Atomics.wait()方法，指定只要ia[37]等于163，就进入休眠状态。主线程使用Atomics.store()方法，将123456写入ia[37]，然后使用Atomics.notify()方法唤醒 Worker 线程。
+
+#### 运算方法
+共享内存上面的某些运算是不能被打断的，即不能在运算过程中，让其他线程改写内存上面的值。Atomics 对象提供了一些运算方法，防止数据被改写。
+
+##### Atomics.add()
+Atomics.add用于将value加到sharedArray[index]，返回sharedArray[index]旧的值。
+```js
+Atomics.add(sharedArray, index, value)
+```
+
+##### Atomics.sub()
+Atomics.sub用于将value从sharedArray[index]减去，返回sharedArray[index]旧的值。
+```js
+Atomics.sub(sharedArray, index, value)
+```
+
+##### Atomics.and()
+Atomics.and用于将value与sharedArray[index]进行位运算and，放入sharedArray[index]，并返回旧的值。
+```js
+Atomics.and(sharedArray, index, value)
+```
+
+##### Atomics.or()
+Atomics.or用于将value与sharedArray[index]进行位运算or，放入sharedArray[index]，并返回旧的值。
+```js
+Atomics.or(sharedArray, index, value)
+```
+
+##### Atomics.xor()
+Atomic.xor用于将vaule与sharedArray[index]进行位运算xor，放入sharedArray[index]，并返回旧的值。
+```js
+Atomics.xor(sharedArray, index, value)
+```
+
+#### 其他方法
+Atomics对象还有以下方法。
+- Atomics.compareExchange(sharedArray, index, oldval, newval)：如果sharedArray[index]等于oldval，就写入newval，返回oldval。
+- Atomics.isLockFree(size)：返回一个布尔值，表示Atomics对象是否可以处理某个size的内存锁定。如果返回false，应用程序就需要自己来实现锁定。
+
+Atomics.compareExchange的一个用途是，从 SharedArrayBuffer 读取一个值，然后对该值进行某个操作，操作结束以后，检查一下 SharedArrayBuffer 里面原来那个值是否发生变化（即被其他线程改写过）。如果没有改写过，就将它写回原来的位置，否则读取新的值，再重头进行一次操作。
