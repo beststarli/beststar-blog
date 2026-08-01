@@ -141,16 +141,6 @@ export const projects: Project[] = [
         type: 'app',
     },
     {
-        title: '天气查询Agent',
-        description: '基于自编写的ReAct最小可实现架构构建的天气查询Agent',
-        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/weather.png',
-        website: 'https://github.com/beststarli/weather-agent',
-        source: 'https://github.com/beststarli/weather-agent',
-        tags: ['opensource', 'personal'],
-        type: 'personal',
-    },
-
-    {
         title: 'OpenGMS介绍页',
         description: '基于React和TailwindCSS搭建的前端技术栈练习Demo',
         preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/ogmsintro.png',
@@ -168,6 +158,25 @@ export const projects: Project[] = [
         tags: ['opensource', 'personal', 'design'],
         type: 'personal',
     },
+    {
+        title: '天气查询Agent',
+        description: '基于自编写的ReAct最小可实现架构构建的天气查询Agent',
+        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/weather.png',
+        website: 'https://github.com/beststarli/weather-agent',
+        source: 'https://github.com/beststarli/weather-agent',
+        tags: ['opensource', 'personal'],
+        type: 'personal',
+    },
+    {
+        title: 'React手撕组件Demo',
+        description: '针对常见的React手撕题的练习Demo，包括组件效果展示与源码',
+        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/reactdemo.png',
+        website: 'react-demo-mruy5n63j-1023039317-qqcoms-projects.vercel.app',
+        source: 'https://github.com/beststarli/react-demo',
+        tags: ['opensource', 'personal', 'design', 'favorite'],
+        type: 'personal',
+    },
+
     {
         title: '双token无感刷新demo',
         description: '基于React、Express、PostgreSQL实现的双token无感刷新验证Demo',
