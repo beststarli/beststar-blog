@@ -77,7 +77,7 @@ image: https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/blog/emotion/infj/i
 
 ## 关于十年布局
 
-
+我体内的火车
 
 人生的走向如同一棵n叉树，我会在无数选择前递归出那条深度最大的路径。
 
