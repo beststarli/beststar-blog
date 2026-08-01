@@ -171,7 +171,7 @@ export const projects: Project[] = [
         title: 'React手撕组件Demo',
         description: '针对常见的React手撕题的练习Demo，包括组件效果展示与源码',
         preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/reactdemo.png',
-        website: 'react-demo-mruy5n63j-1023039317-qqcoms-projects.vercel.app',
+        website: 'https://react-demo-phi-beryl.vercel.app/',
         source: 'https://github.com/beststarli/react-demo',
         tags: ['opensource', 'personal', 'design', 'favorite'],
         type: 'personal',
