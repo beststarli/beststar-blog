@@ -176,7 +176,15 @@ export const projects: Project[] = [
         tags: ['opensource', 'personal', 'design', 'favorite'],
         type: 'personal',
     },
-
+    {
+        title: 'Webpack原理与操作Demo',
+        description: '针对Webpack原理与操作练习的Demo',
+        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/webpackdemo.png',
+        website: 'https://webpack-demo-omega.vercel.app/',
+        source: 'https://github.com/beststarli/webpack-demo',
+        tags: ['opensource', 'personal', 'design', 'favorite'],
+        type: 'personal',
+    },
     {
         title: '双token无感刷新demo',
         description: '基于React、Express、PostgreSQL实现的双token无感刷新验证Demo',

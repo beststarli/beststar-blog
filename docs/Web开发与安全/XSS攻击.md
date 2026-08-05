@@ -117,4 +117,5 @@ DOM中的内联事件监听器，如location、onclick、onerror、onload、onmo
 
 
 ## 参考
-- [这一次，彻底理解XSS攻击](https://juejin.cn/post/6912030758404259854?searchId=20251224145251399EF67B18D7BBBE9FC5)
+- [**这一次，彻底理解XSS攻击**](https://juejin.cn/post/6912030758404259854?searchId=20251224145251399EF67B18D7BBBE9FC5)
+- [**前端XSS和CSRF以及CSP**](https://juejin.cn/post/7512902892585844772?searchId=20260723210606118401077566C125D454)
