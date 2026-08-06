@@ -19,11 +19,11 @@ function addScript(src) {
   document.body.appendChild(script)
 }
 
-addScript('http://localhost:3000/jsonp?callback=handleData')
 // 设置一个全局的callback函数，接收服务器返回的数据
 function handleRes(res) {
   console.log(res)
 }
-// 接口返回的数据格式
-handleRes({a: 1, b: 2})
+
+addScript('http://localhost:3000/jsonp?callback=handleRes')
+// 接口返回的数据格式是：handleRes({a: 1, b: 2})
 ```
