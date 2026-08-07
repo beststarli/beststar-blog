@@ -43,6 +43,7 @@ console.log(add(3)(4)(5)) // 12
 4. 由于后面没有传入参数，等于返回的temp函数不被执行而是打印，代码中temp函数的toString函数return m值，而m值是最后一步执行函数时的值m=12，所以返回值是12。
 
 ### 参数长度不固定
+#### 柯里化函数
 ```js
 function add(...args) {
   return args.reduce((a, b) => a + b)
@@ -66,4 +67,21 @@ let addCurry = currying(add)
 console.log(addCurry(3)(4)(5)()) // 12
 console.log(addCurry(3, 4)(5)()) // 12
 console.log(addCurry(3)(4, 5)()) // 12
+```
+
+#### 自调用
+```js
+function add(...args) {
+  // TODO：返回可继续链式调用的函数，空参时返回总和
+  let sum = args.reduce((a, b) => a + b, 0)
+
+  function added(...rest) {
+    if (rest.length === 0) {
+      return sum
+    }
+    sum += rest.reduce((a, b) => a + b, 0)
+    return added
+  }
+  return added
+}
 ```
