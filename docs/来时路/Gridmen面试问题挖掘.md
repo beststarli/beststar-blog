@@ -1,6 +1,7 @@
 ---
 title: Gridmen面试问题挖掘
 description: 对Gridmen中除WebGL外内容挖掘可能的面试问题。
+draft: true
 sidebar_position: 15
 date: 2026-07-20
 ---
