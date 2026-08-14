@@ -186,6 +186,15 @@ export const projects: Project[] = [
         type: 'personal',
     },
     {
+        title: 'React原理全景',
+        description: '从一次setState出发理解React的底层原理',
+        preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/react教程.png',
+        website: 'https://react-internals-guide.vercel.app/01-foundations/intro.html',
+        source: 'https://github.com/beststarli/react-internals-guide',
+        tags: ['opensource', 'personal', 'design', 'favorite'],
+        type: 'personal',
+    },
+    {
         title: '双token无感刷新demo',
         description: '基于React、Express、PostgreSQL实现的双token无感刷新验证Demo',
         preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/doubleToken.png',
@@ -210,7 +219,7 @@ export const projects: Project[] = [
         website: 'https://www.beststarli.cn/',
         source: 'https://github.com/beststarli/beststar-blog',
         tags: ['opensource', 'personal', 'design', 'favorite'],
-        type: 'personal',
+        type: 'app',
     },
 ]
 
