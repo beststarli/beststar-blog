@@ -1707,7 +1707,7 @@ componentDidCatch(error, info)，此生命周期在后代组件抛出错误后�
 
 另外一种情况则是需要获取DOM元素状态，但是由于在fiber中，render可打断，可能在wilMount中获取到的元素状态很可能与实际需要的不同，这个通常可以使用第二个新增的生命函数的解决getSnapshotBeforeUpdate(prevProps, prevState)
 
-### getSnapshotBeforeUpdate(prevProps, prevState)
+## getSnapshotBeforeUpdate(prevProps, prevState)
 返回的值作为componentDidUpdate的第三个参数。与willMount不同的是，getSnapshotBeforeUpdate会在最终确定的render执行之前执行，也就是能保证其获取到的元素状态与didUpdate中获取到的元素状态相同。官方参考代码：
 ```jsx
 class ScrollingList extends React.Component {
