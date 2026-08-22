@@ -4,6 +4,19 @@
 import type { AlbumPhoto } from '../src/pages/album/_types'
 
 const photos: AlbumPhoto[] = [
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/IMG_2883.jpg', title: 'IMG 2883' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/IMG_2922.jpg', title: 'IMG 2922' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/IMG_2882.jpg', title: 'IMG 2882' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/e32e558deoa0379206bc595888c2dd09.jpg', title: 'E32e558deoa0379206bc595888c2dd09' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/f79d57c8dk84c5ce8d193a9c7ca2fb69.JPG', title: 'F79d57c8dk84c5ce8d193a9c7ca2fb69' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/d09765ee9qebb40e818b0f1b515d9907.jpg', title: 'D09765ee9qebb40e818b0f1b515d9907' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/d9d989ba5jf6102569be7bc4a5599d6c.jpg', title: 'D9d989ba5jf6102569be7bc4a5599d6c' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/df5962816t340601da15fd88e3f2a452.jpg', title: 'Df5962816t340601da15fd88e3f2a452' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/2510e0ac7j4c99a6af4dd1e6dacd2d83.jpg', title: '2510e0ac7j4c99a6af4dd1e6dacd2d83' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/aaba4a1cah4cd88a09d7752bb716bc52.JPG', title: 'Aaba4a1cah4cd88a09d7752bb716bc52' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/6c465f3e4t7870d8cc71d00027427e44.JPG', title: '6c465f3e4t7870d8cc71d00027427e44' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/92da0355cs83a679e2b8ab91bd02c208.JPG', title: '92da0355cs83a679e2b8ab91bd02c208' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/3ae3125d7s048231e83b32e87fccd993.jpg', title: '3ae3125d7s048231e83b32e87fccd993' },
     { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/IMG_2623.jpg', title: 'IMG 2623' },
     { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/IMG_2634.jpg', title: 'IMG 2634' },
     { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/IMG_2608.jpg', title: 'IMG 2608' },
