@@ -8,6 +8,129 @@ date: 2026-07-20
 
 # Gridman面试问题挖掘
 
+## 并行计算调度
+### 整体结构
+```txt
+浏览器渲染主线程
+┌─────────────────────────────────────────┐
+│ React / Mapbox / TopologyLayer          │
+│                    ↓                    │
+│                PatchCore                │
+│                    ↓                    │
+│                Dispatcher               │
+│          ┌─────────┼─────────┐          │
+│       Actor 0   Actor 1   Actor 2       │
+└───────────┬─────────┬─────────┬─────────┘
+            │ postMessage + Transferable
+════════════╪═════════╪═════════╪════════════
+            │         │         │
+┌───────────▼──┐ ┌────▼──────┐ ┌▼──────────┐
+│ Web Worker 0 │ │ Worker 1  │ │ Worker 2  │
+│ Worker Actor │ │ Actor     │ │ Actor     │
+│ PatchManager │ │ Manager   │ │ Manager   │
+│ API functions│ │ Functions │ │ Functions │
+└──────────────┘ └───────────┘ └───────────┘
+```
+
+### 并行计算在算什么
+这套Web Worker主要用于海量网格的空间坐标、渲染顶点计算以及批量网格操作编排。后端为前端返回的数据中，包含标识每个网格的level和globalId，主要的计算流程是：
+```txt
+源坐标系格网四角坐标 → proj4 投影转换 → Mercator 坐标 → 高低位拆分的 Float32 顶点
+```
+所谓高低位拆分就是把一个Float64拆成两个Float32，分别存储高位和低位，避免精度损失。因为地图坐标数值很大，GPU 顶点通常用 Float32，只有约 7 位十进制有效精度。
+
+这套Actor + Dispatcher + WorkerPool简单来说就是在Worker之间建立了一层轻量的RPC调度。
+
+### Web Worker在算什么
+JS的浏览器主线程同时负责react渲染、DOM事件、Mapbox交互、Patch数据，一个Patch中包含最大25000000个网格，每个网格的渲染顶点计算需要经过：
+```txt
+level + globalId
+    ↓
+计算网格行列位置
+    ↓
+计算原始坐标包围盒
+    ↓
+proj4 坐标系转换
+    ↓
+转为 MercatorCoordinate
+    ↓
+高低位浮点拆分
+    ↓
+生成四个顶点
+```
+如果所有网格的这些计算都在主线程进行的话，就会造成主线程的阻塞。而Web Worker提供了独立的JS线程，它不能访问DOM、不直接使用React、有自己的全局作用域和全局对象self，通过postMessage与主线程通信，可以执行 Fetch、Proj4、TypedArray 计算。所以将批量坐标计算和部分 Patch API 请求放进 Worker，使主线程主要负责状态缓存和 GPU 更新。
+
+#### PatchCore
+可以认为每一个Patch都对应一个PatchCore，它是前端内存中维护的网格数据的核心对象。
+
+#### WorkerPool
+是一个用单例模式实现的类，首次通过内部定义的acquire来创建Worker。多个Dispatcher使用同一套Worker，最后一个使用方在释放时才会终止他们。这样避免频繁创建 Worker 的脚本加载、初始化和内存成本。实现Worker实例的全局复用。
+
+首次acquire时workers数组length为0，通过while调用createWorker()将worker加入workers数组中，后续acquire时则通过slice()返回workers数组的浅拷贝，复制数组而不复置worker实例。
+
+createWorker是base.worker.ts暴露出的worker实例创建方法，每次创建时为这个worker全局挂一个Actor实例，同时通过register为worker的全局对象挂上对应的工具函数，函数名作为键，通过bind显式绑定self后的函数作为值。这样主线程的actor只需要通过自己的send()方法从postMessage传入字符串方法名就能在Worker Actor中执行对应函数。
+
+#### Actor
+不是严格意义上的完整的Actor Model，更接近一个双向RPC通信端点。它主要做四件事：
+1. 为每个请求生成id
+2. 保存请求对应的回调
+3. 序列化并发送消息
+4. 收到响应后找到原回调
+
+在主线程和Worker侧各有一个Actor，Actor在创建时需要传入target和parent，其中target是Actor监听和发送消息的对象，parent是RPC服务对象、方法宿主、消息处理对象、业务能力提供者
+- 对于主线层侧：Actor的target是worker，parent是patchCore，主线程更多的是使用请求时保存的回调
+- 对于worker侧：Actor的target是self即worker，parent也是self
+
+#### 一次请求中主线程和worker侧如何配合
+比如当前主线程要让Worker计算Cell顶点：
+1. 主线程使用Actor的send()发送请求
+2. Worker侧的Actor通过监听message接收到postMessage中的请求
+3. Worker查找业务方法，因为在初始化worker实例时进行了self上的方法绑定，且Worker侧Actor的parent是self，于是在self上寻找请求中要执行的方法，并执行
+4. 执行完毕后，Worker侧Actor通过target，Worker侧Actor的target是self，将结果通过postMessage返回
+5. 主线程Actor接收到Worker响应，并执行发送请求时保存的回调来处理结果。
+
+#### Dispatcher
+PatchCore在初始化时会创建Dispatcher：
+1. 调用WorkerPool.acquire()获取Worker实例
+2. 每个Worker都创建一个Actor
+
+Dispathcer的作用是用来管理多个Actor的，主要是PatchCore初始化时通过Dispatcher广播来让所有Worker注册PatchManager上下文，这样后续在所有Worker接收到Cell计算任务时，每个Worker都有相同的PatchManager上下文。
+
+Dispatcher通过round.Robin来轮询选择Actor来发送请求。
+
+#### PatchManager在Worker中做了什么
+PatchManager 初始化：
+1. 获取源 CRS 的 Proj4 定义；
+2. 创建源坐标系到目标坐标系的转换器；
+3. 根据 Patch 的 rules 计算各层网格宽高；
+4. 计算相对中心；
+5. 为后续 Cell 批量计算做好准备。
+
+### Transferable是什么，序列化与反序列化是怎么做的
+Web Worker 与主线程拥有不同的 JavaScript 堆，不能直接共享普通对象引用。在主线程与Worker进行线程间通信时，postMessage()虽然可以做到结构化克隆，但是有两个痛点：
+1. 类实例丢失原型，降级为普通对象
+2. 大块数据默认深拷贝，性能差
+
+于是采用一套serialize/deserialize + Transferable的方式，避免深拷贝和原型丢失。serialize发生在发消息前，deserialize发生在收到消息后。
+
+#### serialize序列化
+1. 基本数据类型：直接返回
+2. 二进制大块：标记为transferable可转移，进行零拷贝，利用postMessage的第二参数可转移对象列表，通过登记transferable对象的引用，postMessage会把它们从主线程内存中移除，转移到Worker线程内存中。不拷贝内存只是转移所有权，Worker线程可以直接访问这些内存。
+3. 数组：递归处理每项
+4. set：set会转为带有'$name': 'Set' 标记的普通对象，在反序列化时恢复
+5. 类实例：记录类名，递归处理各个属性，反序列化时通过类名恢复原型
+
+#### deserialize反序列化
+1. 对于类：查找其$name属性，如果没有则是普通对象；如果有的话，判断是否为Set，如果是Set则还原为set并递归处理各个属性；如果是类实例则通过类名恢复原型，并递归处理各个属性
+2. 普通对象、数组：递归处理后返回
+3. 基本数据类型：直接返回
+
+### Scheduler
+每个Actor内部都有一个Scheduler，它负责的是该Actor接收到的任务按什么顺序执行，当请求发送给对应的Actor时，并不是立刻同步执行的，而是通过一个FIFO的队列来记录这个Actor按顺序接收到的任务ID并异步执行，通过throttledInvoker利用messageChannel()来往事件循环中安排任务。
+
+Actor 把消息包装成 RPC，Scheduler 把 RPC 请求排成队列，ThrottledInvoker 负责以事件循环 tick 为单位唤醒队列；每次唤醒推进一个任务，任务执行结果再由 Actor 按请求 ID 返回给调用方。
+
+
 > 说明：本文从字节跳动前端开发校招面试视角分析 `client`。候选人未参与 WebGL 部分，因此重点准备 Electron、React、TypeScript、资源树、状态管理、Mapbox 业务交互、矢量编辑和工程化；不把 Three.js、Shader、Gaussian Splatting 等底层渲染实现包装成个人贡献。
 
 ## 一、项目定位
