@@ -35,7 +35,8 @@ date: 2026-07-20
 ### 并行计算在算什么
 这套Web Worker主要用于海量网格的空间坐标、渲染顶点计算以及批量网格操作编排。后端为前端返回的数据中，包含标识每个网格的level和globalId，主要的计算流程是：
 ```txt
-源坐标系格网四角坐标 → proj4 投影转换 → Mercator 坐标 → 高低位拆分的 Float32 顶点
+源坐标系格网四角坐标 → proj4 投影转换 → Mercator 坐标 → 高低位拆分的 Float32 顶点 -> Transferable 传输到主线程 → WebGL
+ GPU 顶点缓冲区 -> vertex shader重建相机相对坐标 -> Mapbox矩阵变换 -> 实例化绘制到canvas
 ```
 所谓高低位拆分就是把一个Float64拆成两个Float32，分别存储高位和低位，避免精度损失。因为地图坐标数值很大，GPU 顶点通常用 Float32，只有约 7 位十进制有效精度。
 
