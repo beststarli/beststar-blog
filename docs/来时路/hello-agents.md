@@ -13,7 +13,7 @@ date: 2026-08-24
 
 #### 智能体的构成与运行原理
 智能体并非一次性完成任务，而是通过一个持续的循环与环境进行交互，这个核心机制被称为 **智能体循环** (Agent Loop)
-![agentloop](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/agentloop.png)
+![agentloop](https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/docs/job/agent-loop.png)
 这个循环主要包括：
 1. 感知（Perception）：这是循环的起点。智能体通过其传感器（例如，API 的监听端口、用户输入接口）接收来自环境的输入信息。这些信息，即观察 (Observation)，既可以是用户的初始指令，也可以是上一步行动所导致的环境状态变化反馈。
 2. 思考（Thought）：接收到观察信息后，智能体进入其核心决策阶段。对于 LLM 智能体而言，这通常是由大语言模型驱动的内部推理过程。“思考”阶段可进一步细分为两个关键环节：
