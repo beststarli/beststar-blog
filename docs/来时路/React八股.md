@@ -2590,29 +2590,78 @@ hooks很好的解决了上述问题，hooks提供了很多方法：
 - useLayoutEffect DOM改变后同步触发。使用它来从DOM读取布局并同步重新渲染
 
 ## React与Vue对比
+> 一句话：**Vue 是「编译时优化 + 响应式驱动」的渐进式框架，React 是「运行时 + 不可变数据驱动」的 UI 库。** 前者把优化做进编译器和响应式系统，让开发者少操心；后者把控制权交还给开发者，用灵活性和生态规模换取更高的心智成本。
+
 ### 相似之处
-- 都将注意力集中保持在核心库，而将其他功能如路由和全局状态管理交给相关的库
-- 都有自己的构建工具，能让你得到一个根据最佳实践设置的项目模板。
-- 都使用了Virtual DOM（虚拟DOM）提高重绘性能
-- 都有props的概念，允许组件间的数据传递
-- 都鼓励组件化应用，将应用分拆成一个个功能明确的模块，提高复用性
+- 都是**组件化**的声明式 UI 方案，都提倡「核心库 + 周边生态」的分层
+- 都使用**虚拟 DOM**，用同层比较的 diff 算法减少真实 DOM 操作
+- 都通过 **props 向下传递数据**，都遵守单向数据流的约束（Vue 的 `v-model` 只是语法糖）
+- 都支持 SSR / 静态站点生成，都有对应的元框架（Nuxt / Next.js）
+- 都有函数式的逻辑复用方案（Composition API / Hooks）和成熟的构建脚手架
 
 ### 不同之处
+#### 模板 vs JSX
+| | Vue | React |
+|---|---|---|
+| 视图写法 | SFC 模板，接近原生 HTML，配 `v-if`/`v-for`/`v-model` 等指令 | JSX，JavaScript 的语法扩展，`if`/`map` 就是 JS 本身 |
+| 编译期优化 | 能做静态分析：静态提升（`hoistStatic`）、`patchFlag` 标记动态节点 | JSX 是表达式，运行时才知道结构，做不了同等程度的静态分析 |
+| 表达力 | 指令覆盖常见场景，复杂逻辑落到 `computed`/`methods` | 图灵完备，抽象能力强，但容易写出难以维护的「聪明代码」 |
+| 上手成本 | 会 HTML 就能写，模板/逻辑/样式收在一个 `.vue` 文件里 | 要先接受 JSX、不可变数据、Hooks 规则这一套心智模型 |
+
+#### 响应式原理（最本质的差异）
+- **Vue 是「推」（push）**：用 `Proxy`（Vue 3）或 `Object.defineProperty`（Vue 2）劫持数据，在 `get` 时收集依赖、`set` 时派发通知。每个组件对应一个渲染 effect，数据一变，Vue**精确知道哪些组件依赖了它**，直接触发这些组件更新。
+- **React 是「拉」（pull）**：不劫持数据，靠 `setState` 显式触发。状态变化后从**触发更新的那个组件往下重新执行 render**，再拿新老虚拟 DOM 做 diff——React 并不知道「到底哪里变了」，只能「重算一遍再看」。
+
+由此衍生出两者完全不同的优化姿势：
+- Vue 里**默认就是优化的**，正常写代码即可。
+- React 里**默认需要手动优化**：`React.memo` 阻断 props 未变的子树、`useMemo`/`useCallback` 稳定引用、`PureComponent`/`shouldComponentUpdate` 做浅比较，否则父组件一 render，整棵子树跟着 render。
+- 代价的另一面：React 的不可变数据让状态变化可追溯、可时间旅行调试；Vue 的可变数据写起来更自然，但变更来源相对隐蔽。
+
+> Vue 2 `Object.defineProperty` 的缺陷和 Vue 3 `Proxy` 的改进，见 [Vue2与Vue3的区别](../Vue/Vue2与Vue3的区别#响应式原理)。
+
 #### 数据流
-Vue默认支持数据双向绑定，而React一直提倡单向数据流
-#### 虚拟DOM
-- Vue宣称可以更快地计算出Virtual DOM的差异，这是由于它在渲染过程中，会跟踪每一个组件的依赖关系，不需要重新渲染整个组件树。
-- 对于React而言，每当应用的状态被改变时，全部子组件都会重新渲染。当然，这可以通过 PureComponent/shouldComponentUpdate这个生命周期方法来进行控制，但Vue将此视为默认的优化。
-#### 组件化
-React与Vue最大的不同是模板的编写。Vue鼓励写近似常规HTML的模板。写起来很接近标准 HTML元素，只是多了一些属性。React推荐你所有的模板通用JavaScript的语法扩展——JSX书写。
+- Vue 默认支持**双向绑定**，`v-model` 本质是 `:value` + `@input` 的语法糖，父子同步很省事。
+- React 严格**单向数据流**，表单必须写受控组件（`value` + `onChange` 手动 `setState`），啰嗦但数据流向始终清晰。
+- 注意：Vue 的 props 同样是单向的，`v-model` 改的也是父组件的数据，子组件不能直接改 prop。
 
-具体来讲：React中render函数是支持闭包特性的，所以我们import的组件在render中可以直接调用。但是在Vue中，由于模板中使用的数据都必须挂在 this 上进行一次中转，所以 import 完组件之后，还需要在 components 中再声明下。
-#### 监听数据变化的实现原理不同
-- Vue 2 通过 getter/setter 劫持（`Object.defineProperty`），Vue 3 改用 `Proxy` 代理，能精确知道数据变化，不需要特别的优化就能达到很好的性能
-- React 默认是通过比较引用的方式进行的，如果不优化（PureComponent/shouldComponentUpdate）可能导致大量不必要的vDOM的重新渲染。这是因为 Vue 使用的是可变数据，而React更强调数据的不可变。
+#### diff 策略与更新粒度
+- **Vue**：编译期就知道哪些节点是动态的，运行时**只 diff 动态节点**；再叠加响应式的组件级精确更新，单次更新成本天然就低，所以**从不需要时间切片**。
+- **React**：JSX 无法静态分析，每次更新从 Fiber 根节点开始**全量 diff**，只能靠 Fiber 架构把渲染拆成可中断的任务分片，用时间切片（`useTransition`、`useDeferredValue`）和 `Suspense` 保证不阻塞用户输入。
+- 详细对比见上文 [React与Vue的Diff算法区别](#react与vue的diff算法区别)。
 
-#### 高阶组件
-react可以通过高阶组件（Higher Order Components-- HOC）来扩展，而vue需要通过mixins来扩展。高阶组件就是高阶函数，而React的组件本身就是纯粹的函数，所以高阶函数对React来说易如反掌。相反Vue.js使用HTML模板创建视图组件，这时模板无法有效的编译，因此Vue不采用HOC来实现。
+#### 逻辑复用
+- Vue 2 时代主要靠 **mixin**，问题很典型：数据来源不清晰、命名冲突、隐性的跨模块耦合。
+- Vue 3 的 **Composition API** 把同一逻辑的代码收进一个 `useXxx` 函数，解决了上述问题，形态上和 React Hooks 非常像。
+- 但两者有一处关键区别：**React Hooks 有调用顺序限制**（不能在条件、循环、嵌套函数里调用），因为 React 靠链表按调用顺序存取 hook 状态；**Vue 的 Composable 没有这个限制**，因为 `setup` 只执行一次，`ref` 是独立对象，状态不依赖调用顺序。
+
+#### 状态管理与生态
+| | Vue | React |
+|---|---|---|
+| 路由 | Vue Router（官方维护） | React Router（社区维护） |
+| 状态管理 | Pinia / Vuex（官方维护） | Redux / Zustand / Jotai / Recoil（社区，需自己选型） |
+| 元框架 | Nuxt | Next.js |
+| 样式 | SFC 内置 `<style scoped>`，方案收敛 | 官方不管，CSS Modules / CSS-in-JS / Tailwind 自己选 |
+| 移动端 | uni-app 等 | React Native 更成熟 |
+
+Vue 的官方全家桶让方案更统一、少踩坑；React 的社区生态规模更大、选择更多，但选型和版本升级的成本要自己承担。**岗位数量上 React 整体更多（尤其海外和大厂），国内中小厂、传统企业里 Vue 占比更高。**
+
+#### TypeScript 支持
+- React 本身就是「用 JS/TS 写 UI」，**TSX 的类型推导天然完整**。
+- Vue 3 用 TS 重写、`defineComponent` 也能推导，但模板里的类型检查要靠 Volar / `vue-tsc` 额外支持，深层对象的推导偶尔力不从心。
+- 综合来看 React 的 TS 体验更顺，Vue 3 相比 Vue 2 时代已经好很多。
+
+#### 体积
+- Vue 3 支持 tree-shaking，运行时 gzip 后约 13KB 量级，更小。
+- React 18 + ReactDOM gzip 后约 45KB 量级，大一截，但生态规模和跨端能力（React Native）是它的护城河。
+
+### 面试速答版
+被问到「Vue 和 React 的区别」，按这条线讲最稳：
+
+1. **定位**：Vue 是渐进式框架，模板 + 响应式；React 是 UI 库，JSX + 不可变数据。
+2. **响应式**：Vue 用 `Proxy` 精确追踪依赖，改数据自动更新（推）；React 靠 `setState` 显式触发，从当前组件往下重新 render 再 diff（拉）。
+3. **优化方式**：Vue 编译期静态提升 + 只 diff 动态节点，默认就快；React 靠 Fiber 时间切片 + `memo`/`useMemo`/`useCallback` 手动优化。
+4. **写法**：Vue 模板接近 HTML、有指令、支持 `v-model` 双向绑定；React 全 JS/JSX、严格单向数据流。
+5. **生态**：Vue 官方全家桶（Router/Pinia/Nuxt）统一；React 社区方案多（Redux/Next.js）但要自己选型，且跨端和岗位更多。
 
 ## React设计思路
 ### 编写简单直观的代码
