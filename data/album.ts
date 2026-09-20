@@ -4,6 +4,21 @@
 import type { AlbumPhoto } from '../src/pages/album/_types'
 
 const photos: AlbumPhoto[] = [
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_2791.jpg', title: 'ZFC 2791' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_2767.jpg', title: 'ZFC 2767' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_2761.JPG', title: 'ZFC 2761' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_2614.jpg', title: 'ZFC 2614' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_2693.jpg', title: 'ZFC 2693' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_2718.JPG', title: 'ZFC 2718' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_2544.jpg', title: 'ZFC 2544' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_2548.JPG', title: 'ZFC 2548' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/IMG_3092.jpg', title: 'IMG 3092' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/IMG_3235.jpg', title: 'IMG 3235' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_2524.jpg', title: 'ZFC 2524' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/IMG_2975.jpg', title: 'IMG 2975' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/IMG_2982.jpg', title: 'IMG 2982' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/IMG_3069.jpg', title: 'IMG 3069' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/fxn 2026-09-19 200641.jpg', title: 'Fxn 2026 09 19 200641' },
     { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/IMG_2883.jpg', title: 'IMG 2883' },
     { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/IMG_2922.jpg', title: 'IMG 2922' },
     { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/IMG_2882.jpg', title: 'IMG 2882' },
