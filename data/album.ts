@@ -4,6 +4,14 @@
 import type { AlbumPhoto } from '../src/pages/album/_types'
 
 const photos: AlbumPhoto[] = [
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/DSC_0136.jpg', title: 'DSC 0136' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/DSC_0269.jpg', title: 'DSC 0269' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/调整1.png', title: '调整1' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/调整2.png', title: '调整2' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/调整3.png', title: '调整3' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/调整4.png', title: '调整4' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/调整5.png', title: '调整5' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/调整6.png', title: '调整6' },
     { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_9843.JPG', title: 'ZFC 9843' },
     { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_9893.JPG', title: 'ZFC 9893' },
     { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_9783.JPG', title: 'ZFC 9783' },
