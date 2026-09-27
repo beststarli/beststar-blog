@@ -4,6 +4,14 @@
 import type { AlbumPhoto } from '../src/pages/album/_types'
 
 const photos: AlbumPhoto[] = [
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/明故宫1.png', title: '明故宫1' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_1698.JPG', title: 'ZFC 1698' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_1212.JPG', title: 'ZFC 1212' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_0937.JPG', title: 'ZFC 0937' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_0934.JPG', title: 'ZFC 0934' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/ZFC_0907.JPG', title: 'ZFC 0907' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/调整7.png', title: '调整7' },
+    { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/调整8.png', title: '调整8' },
     { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/DSC_0136.jpg', title: 'DSC 0136' },
     { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/DSC_0269.jpg', title: 'DSC 0269' },
     { src: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/album/调整1.png', title: '调整1' },
