@@ -25,7 +25,8 @@ export default [
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-
+      '@stylistic/no-multi-spaces': 'off',
+      '@stylistic/semi': 'off',
       'tailwindcss/no-custom-classname': 'off',
     },
   },
