@@ -168,7 +168,7 @@ export const projects: Project[] = [
         type: 'personal',
     },
     {
-        title: 'React手撕组件Demo',
+        title: 'React手撕Demo',
         description: '针对常见的React手撕题的练习Demo，包括组件效果展示与源码',
         preview: 'https://blog-1385521233.cos.ap-guangzhou.myqcloud.com/projects/reactdemo.png',
         website: 'https://react-demo-phi-beryl.vercel.app/',
