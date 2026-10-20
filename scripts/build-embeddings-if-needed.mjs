@@ -10,6 +10,7 @@
  *
  * 用法：node scripts/build-embeddings-if-needed.mjs
  *
+ * 开关：docusaurus.config.ts 中的 ENABLE_EMBEDDINGS（true / false）
  * 若要强制重新生成，可手动删除 .vercel/cache/embedding-date.txt
  */
 
@@ -17,9 +18,17 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawn } from 'node:child_process'
+import { isEmbeddingsEnabled } from './embeddings-config.mjs'
 
 const __dirname = resolve(fileURLToPath(import.meta.url), '..')
 const ROOT = resolve(__dirname, '..')
+
+// ── 检查 docusaurus.config.ts 中的手动开关 ──
+
+if (!isEmbeddingsEnabled()) {
+  console.log('[embeddings] 🚫 docusaurus.config.ts 中 ENABLE_EMBEDDINGS = false，跳过向量化')
+  process.exit(0)
+}
 
 const CACHE_FILE = resolve(ROOT, '.vercel', 'cache', 'embedding-date.txt')
 const EMBEDDINGS_OUT = join(ROOT, 'public', 'embeddings.json')

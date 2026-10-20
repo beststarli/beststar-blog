@@ -5,13 +5,16 @@
  * 切分、向量化、生成 public/embeddings.json
  *
  * 用法：node scripts/build-embeddings.mjs
+ * 开关：docusaurus.config.ts 中的 ENABLE_EMBEDDINGS（true / false）
  * 环境变量：OPENAI_API_KEY（必填）- 用于 embedding
+ *          EMBEDDINGS_FORCE=1（可选）- 即使开关为 false 也强制生成
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { resolve, extname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { isEmbeddingsEnabled } from './embeddings-config.mjs'
 
 const __dirname = resolve(fileURLToPath(import.meta.url), '..')
 const ROOT = resolve(__dirname, '..')
@@ -29,6 +32,12 @@ if (existsSync(envPath)) {
     const v = t.slice(i + 1).trim().replace(/^["']|["']$/g, '')
     if (!process.env[k]) process.env[k] = v
   }
+}
+
+if (!isEmbeddingsEnabled() && process.env.EMBEDDINGS_FORCE !== '1') {
+  console.log('[embeddings] 🚫 docusaurus.config.ts 中 ENABLE_EMBEDDINGS = false，跳过向量化')
+  console.log('[embeddings]    如需强制生成，可在命令前加 EMBEDDINGS_FORCE=1')
+  process.exit(0)
 }
 
 const API_KEY = process.env.OPENAI_API_KEY
@@ -152,7 +161,9 @@ async function main() {
     const batch = allChunks.slice(i, i + BATCH)
     console.log(`[embeddings] 向量化 ${i + 1}-${Math.min(i + BATCH, allChunks.length)}/${allChunks.length} ...`)
     const embeddings = await embed(batch.map(c => c.text))
-    embeddings.forEach((e, j) => { e.source = batch[j].source })
+    embeddings.forEach((e, j) => {
+      e.source = batch[j].source
+    })
     results.push(...embeddings)
     if (i + BATCH < allChunks.length) await new Promise(r => setTimeout(r, 9000))
   }

@@ -10,6 +10,11 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 const beian = '冀ICP备2026007642号-1'
 const beian1 = '冀公网安备13040202001096号'
 
+// ── 构建功能开关 ──
+// 是否在构建时向量化 docs 文章（生成 public/embeddings.json，供 AI 问答检索使用）
+// 改为 false 后，scripts/build-embeddings-if-needed.mjs 会直接跳过，不调用 Embedding API
+const ENABLE_EMBEDDINGS = false
+
 const config: Config = {
 
     title: '嘉星的博客',
@@ -20,6 +25,8 @@ const config: Config = {
     projectName: 'beststar-blog',
     // 自定义字段
     customFields: {
+        // 构建时向量化开关，便于运行时读取
+        enableEmbeddings: ENABLE_EMBEDDINGS,
         bio: '让行动超越思考',
         description: '欢迎访问我的博客，这是一个基于 Docusaurus 构建的个人博客，主要分享技术文章、项目经验和生活碎碎念。',
     },
