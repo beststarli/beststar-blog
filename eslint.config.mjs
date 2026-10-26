@@ -28,6 +28,7 @@ export default [
       '@stylistic/no-multi-spaces': 'off',
       '@stylistic/semi': 'off',
       'tailwindcss/no-custom-classname': 'off',
+      '@stylistic/brace-style': 'off',
     },
   },
   {

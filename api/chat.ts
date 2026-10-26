@@ -15,9 +15,11 @@ interface EmbeddingItem {
 function cosineSimilarity(a: number[], b: number[]): number {
     let dot = 0, na = 0, nb = 0
     for (let i = 0; i < a.length; i++) {
-        dot += a[i] * b[i]
-        na += a[i] * a[i]
-        nb += b[i] * b[i]
+        const av = a[i] ?? 0
+        const bv = b[i] ?? 0
+        dot += av * bv
+        na += av * av
+        nb += bv * bv
     }
     return dot / (Math.sqrt(na) * Math.sqrt(nb))
 }
@@ -83,7 +85,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(500).json({ error: `MiniMax API error: ${JSON.stringify(qData.base_resp)}` })
             }
             qVector = qData.vectors[0]
-        } else {
+        }
+        else {
             qVector = qData.data[0].embedding
         }
 
@@ -143,6 +146,11 @@ ${context || '（暂无相关参考资料）'}
         res.write(`data: ${JSON.stringify({ type: 'sources', data: sources })}\n\n`)
 
         // 透传 LLM 返回的 SSE
+        if (!chatRes.body) {
+            res.write(`data: ${JSON.stringify({ type: 'error', data: '模型响应缺少数据流' })}\n\n`)
+            res.end()
+            return
+        }
         const reader = chatRes.body.getReader()
         const decoder = new TextDecoder()
         let buffer = ''
@@ -165,7 +173,8 @@ ${context || '（暂无相关参考资料）'}
                     if (content) {
                         res.write(`data: ${JSON.stringify({ type: 'text', data: content })}\n\n`)
                     }
-                } catch {
+                }
+                catch {
                     // 跳过解析失败的行
                 }
             }
@@ -173,11 +182,13 @@ ${context || '（暂无相关参考资料）'}
 
         res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`)
         res.end()
+        return
     } catch (err) {
         console.error('[chat] 错误:', err)
         try {
             res.write(`data: ${JSON.stringify({ type: 'error', data: '服务器内部错误' })}\n\n`)
             res.end()
         } catch { /* ignore */ }
+        return
     }
 }
